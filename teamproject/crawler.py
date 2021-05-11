@@ -4,7 +4,7 @@ it to our internal format.
 """
 
 import pandas as pd
-
+import requests
 
 def fetch_data():
     """
@@ -18,3 +18,7 @@ def fetch_data():
         ['Tübingen', 0, 0, 'Bremen'],
         ['Bremen', 0, 1, 'Leverkusen'],
     ], columns=columns)
+
+def pullDataFromAPI(url):
+    response = requests.get(url)
+    return response.status_code, response.json()
