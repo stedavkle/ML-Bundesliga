@@ -39,9 +39,10 @@ table_content = ['TeamInfoId',
                  'Matches', 'Won', 'Lost', 'Draw', 'GoalDiff']
 match_content = ['MatchID','LeagueId','MatchDateTimeUTC','MatchIsFinished',
                  'Team1.TeamId','Team2.TeamId','Location.LocationID']
-results_content = ['MatchID','PointsTeam1','PointsTeam2','ResultTypeID']
+results_content = ['MatchID', 'Team1.TeamId','Team2.TeamId', 'PointsTeam1','PointsTeam2','ResultTypeID']
 goals_content = ['MatchID','GoalID','ScoreTeam1','ScoreTeam2','GoalGetterID','IsOwnGoal']
 
+meta_data = ['MatchID', ['Team1', 'TeamId'], ['Team2', 'TeamId']]
 
 # In[26]:
 
@@ -82,8 +83,10 @@ def getAllMatchesOfYearFromAPI(bl_league, year):
     # TODO: fix error where 'Location' is always None
     #       and Location.LocationId not present (occuring on year 2018 league 3)
     matches = pd.json_normalize(data_json)[match_content]
-    match_results = pd.json_normalize(data_json, record_path='MatchResults', meta='MatchID')[results_content]
-    match_goals = pd.json_normalize(data_json, record_path='Goals', meta='MatchID')[goals_content]
+    match_results = pd.json_normalize(data_json, record_path='MatchResults',
+                                      meta=meta_data)[results_content]
+    match_goals = pd.json_normalize(data_json, record_path='Goals',
+                                    meta=meta_data)[goals_content]
     # save datasets as csv
     matches.to_csv(season_matches_db_path.format(bl_league,year), index=False)
     match_results.to_csv(season_results_db_path.format(bl_league,year), index=False)
@@ -109,8 +112,12 @@ def getMatchupHistoryFromAPI(team1_id, team2_id):
     data_json = response.json()
     # split and extract necessary data
     matches = pd.json_normalize(data_json)[match_content]
-    match_results = pd.json_normalize(data_json, record_path='MatchResults')[results_content]
-    match_goals = pd.json_normalize(data_json, record_path='Goals', meta='MatchID')[goals_content]
+    match_results = pd.json_normalize(data_json,
+                                      record_path='MatchResults',
+                                      meta=meta_data, errors='ignore')[results_content]
+    match_goals = pd.json_normalize(data_json,
+                                    record_path='Goals',
+                                    meta=meta_data)[goals_content]
     # save datasets as csv
     matches.to_csv(matches_path)
     match_results.to_csv(results_path)
@@ -246,28 +253,35 @@ def downloadTeamIcons():
 
 # In[53]:
 
+# for testing inside the script
+if __name__ == '__main__':
+    bl_league = 1
+    year = 2020
+    league_id = 4222
 
-bl_league = 1
-year = 2020
-league_id = 4222
+    print("TEAMS DATA STRUCTURE:")
+    teams = getTeams(bl_league, year)
+    print(teams.head(3), end='\n\n')
 
-print("TEAMS DATA STRUCTURE:")
-teams = getTeams(bl_league, year)
-print(teams.head(3), end='\n\n')
+    print("ID <=> TeamName DICTS:")
+    id_to_team, team_to_id = getTeamDicts(bl_league, year)
+    print(str(team_to_id['VfB Stuttgart']) + ' : ' + id_to_team[16], end='\n\n')
 
-print("ID <=> TeamName DICTS:")
-id_to_team, team_to_id = getTeamDicts(bl_league, year)
-print(str(team_to_id['VfB Stuttgart']) + ' : ' + id_to_team[16], end='\n\n')
+    print("TABLE FROM LEAGUE")
+    table = getBlTable(bl_league, year)
+    print(table.head(3), end='\n\n')
 
-print("TABLE FROM LEAGUE")
-table = getBlTable(bl_league, year)
-print(table.head(3), end='\n\n')
+    matches, results, goals = getDatasetOfMatchesFromLeaguesAndYears([1,2], [2020,2019,2018])
+    print("MATCHES DATA STRUCTURE:")
+    print(matches.head(3))
+    print("RESULTS DATA STRUCTURE:")
+    print(results.head(3))
+    print("GOALS DATA STRUCTURE:")
+    print(goals.head(3))
 
-matches, results, goals = getDatasetOfMatchesFromLeaguesAndYears([1,2], [2020,2019,2018])
-print("MATCHES DATA STRUCTURE:")
-print(matches.head(3))
-print("RESULTS DATA STRUCTURE:")
-print(results.head(3))
-print("GOALS DATA STRUCTURE:")
-print(goals.head(3))
 
+    matches, results, goals = getMatchupHistoryFromAPI(16,87)
+    print(results.head(3))
+    print(results[results['Team1.TeamId']==16]['PointsTeam1'])
+    print("SUMME: ")
+    print(results['PointsTeam1'].sum(axis=0))
