@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Landingpage</title>
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- test: implement bootstrap -->
+    <link rel="stylesheet" href="/css/bootstrap-5.0.1-dist/css/bootstrap.min.css">
+
+    <script src="/css/bootstrap-5.0.1-dist/js/bootstrap.min.js"></script>
+    <!-- end tests -->
+
+    <script type="text/javascript" src="\eel.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+    <script type="text/javascript" src="back_functions.js"></script>
+    <script>
+        window.onload = function (){
+            list_algorithms();
+        }
+    </script>
+
+
+</head>
+<body>
+    <!-- navbar -->
+    <div class="navbar">
+        <div id="back_button"></div>
+    </div>
+
+    <!-- welcome page -->
+    <div id="welcome_page">
+        <h1>Willkommen und so ein scheiß...</h1>
+        <h2>Wähle einen Algorithmus aus</h2>
+        <div id="algo_selection_dummy"></div>
+        <div id="algo_submit"></div>
+
+    </div>
+
+    <!-- data selection -->
+
+    <div id="data_1" style="display: none">
+        <div id="select_league"></div>
+        <div id="select_seasons"></div>
+        <div id="test"></div>
+        <button onclick="start_crawler()">Beziehe Daten</button>
+
+    </div>
+
+    <!-- training -->
+    <div id="training" style="display: none">
+        <p>training status...</p>
+        <button onclick="get_clubs()">weiter</button>
+    </div>
+
+    <!-- match selection -->
+    <div id="match_selection" style="display: none">
+        <h3>hier soll die gewählte Saison stehen...</h3>
+        <div id="clubs_home"></div>
+        <div id="test2"></div>
+        <div id="opponent_buttons">
+            <button onclick="get_next_opponent()">nächster Gegner</button>
+            <button onclick="select_opponent()">Gegner wählen</button>
+        </div>
+        <div id="clubs_guest" style="display: none"></div>
+        <div id="submit_buttons" style="display: none">
+            <div id="switch_button"></div>
+        </div>
+        <div id="hint"></div>
+    </div>
+
+    <!-- display result -->
+    <div id="result" style="display: none"></div>
+
+
+</body>
+</html>
