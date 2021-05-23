@@ -2,10 +2,45 @@
 This module contains code for a prediction models.
 """
 
+from crawler import getMatchupHistoryFromAPI
 from collections import Counter
 import pandas as pd
 
-class sumMostGoalsIsWinner:
+def Model_Handler(team1, team2, seasons, leagues, algo_id):
+    if algo_id == 1:
+        model = MostWins(team1, team2)
+        return model.predict_winner()
+
+class MostWins:
+    def __init__(self, team1, team2):
+        self.team1 = team1
+        self.team2 = team2
+        self.matches, self.match_results, self.match_goals = getMatchupHistoryFromAPI(team1, team2)
+        self.end_results = self.match_results[self.match_results['ResultTypeID'] == 2]
+        self.team1_is_team1_id_results = self.end_results[self.end_results['Team1.TeamId'] == self.team1]
+        self.team1_is_team2_id_results = self.end_results[self.end_results['Team1.TeamId'] == self.team2]
+        self.results = self.team1_is_team1_id_results['PointsTeam1'] - self.team1_is_team1_id_results['PointsTeam2']
+
+
+    def predict_winner(self):
+        team1_wins = 0
+        team2_wins = 0
+        draws = 0
+
+        for key in self.results:
+            if key > 0:
+                team1_wins += 1
+            elif key < 0:
+                team2_wins += 1
+            else:
+                draws += 1
+
+        total_matches = team1_wins + team2_wins + draws
+        return [self.team1, self.team2, (team1_wins / total_matches)*100, (draws / total_matches)*100, (team2_wins / total_matches)*100]
+
+
+
+class SumMostGoalsIsWinner:
     def __init__(self, results):
         self.end_results = results[results['ResultTypeID'] == 2]
         self.team1_id = results.loc[0,'Team1.TeamId']
@@ -45,11 +80,14 @@ class ExperienceAlwaysWins:
         else:
             return guest_team
 
+
 # for testing inside the script
 if __name__ == '__main__':
-    from crawler import getMatchupHistoryFromAPI
 
-    matches, match_results, match_goals = getMatchupHistoryFromAPI(16,87)
-    algo = sumMostGoalsIsWinner(match_results)
-    print(algo.predict_winner())
 
+    #matches, match_results, match_goals = getMatchupHistoryFromAPI(16,87)
+    #algo = SumMostGoalsIsWinner(match_results)
+    #print(algo.predict_winner())
+
+    algo_trivial = Model_Handler(87, 16, 0, 0, 1)
+    print(algo_trivial)

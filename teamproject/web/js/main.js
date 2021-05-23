@@ -6,7 +6,7 @@ var algorithms =    {
                     };
 
 // just for testing:
-var seasons = [1990];
+var seasons = '2020';
 var leagues = {
                 1: 'Bundesliga',
                 2: '2. Bundesliga',
@@ -28,8 +28,8 @@ var leagues = {
 var team_list = "";
 var selected_algo_id;
 var selected_algo_data;
-var selected_league;
-var selected_seasons;
+var selected_league = "";
+var selected_seasons = "2020";
 var team1;
 var team1_id = 0;
 var team2;
@@ -58,11 +58,14 @@ function welcome_page(){
 
 function select_data(){
   select_data_designer();
+
+  // TODO: Darstellungsabhängigkeit von gewähltem Algorithmus wählen
+
   set_innerHTML("back_btn", "<button class='btn btn-outline-danger btn-sm' onclick='welcome_page()'>zurück</button>");
   set_innerHTML("1-col-1", "<h3>Bestimme abzurufende Daten:</h3>");
 
   var html_str_left = "<p>Liga:</p>" +
-    "<select id='league_selection' onchange='set_league()'>" +
+    "<select id='league_selection' onchange='set_league(), data_submit()'>" +
     "<option value='0' selected disabled hidden>nichts ausgewählt</option>";
 
   for (var key in leagues){
@@ -74,6 +77,7 @@ function select_data(){
 
   // TODO: Season Auswahl
 
+  /*
   // dummy Selection
   var html_str_right = "<p>Saisons:</p>" +
     "<select id='seasons_selection' onchange='set_seasons()'>" +
@@ -83,10 +87,12 @@ function select_data(){
   for (var key in leagues){
     html_str_right += "<option value='" + key + "'>" + seasons[key] + "</option>";
   }*/
+  /*
   html_str_right += "<option value='2020'>2020/21</option>";
   html_str_right += "</select>";
 
   set_innerHTML("2-col-2", html_str_right);
+  */
 }
 
 
@@ -98,18 +104,24 @@ function set_league(){
 function set_seasons(){
   selected_seasons = document.getElementById("seasons_selection").value;
 
-  if (selected_seasons != 0 && selected_league != 0){
-    set_innerHTML("right_btn", "<button class='btn btn-danger' onclick='start_crawler()'>Daten beziehen</button>");
-    display("right_btn");
-  }
+  //if (selected_seasons != 0 && selected_league != 0){
+    // TODO: Abfanglösung für mehfach und einfach Auswahl
+  //}
+}
+
+function data_submit(){
+  set_innerHTML("right_btn", "<button class='btn btn-danger' onclick='start_crawler()'>Daten beziehen</button>");
+  display("right_btn");
 }
 
 function start_crawler(){
-  eel.start_crawler()(callback_start_crawler);
+  eel.start_crawler(selected_league, selected_seasons)(callback_start_crawler);
 }
 
 function callback_start_crawler(){
   // TODO: Trainingsanzeige in Abhängigkeit vom Algorithmus
+  team1_id = 0;
+  team2_id = 0;
   get_clubs();
 }
 
@@ -120,7 +132,7 @@ function get_clubs(){
   // TODO: back Button evtl anpassen
   set_innerHTML("back_btn", "<button class='btn btn-outline-danger btn-sm' onclick='select_data()'>zurück</button>");
 
-  eel.get_clubs(selected_league)(callback_select_clubs);
+  eel.get_clubs()(callback_select_clubs);
 }
 
 function callback_select_clubs(clubs){
@@ -135,6 +147,7 @@ function callback_select_clubs(clubs){
     }
     html_str += "</select>";
     set_innerHTML("2-col-1", html_str);
+
 }
 
 function get_next_opponent(){
@@ -186,6 +199,7 @@ function set_team(sel){
 }
 
 function start_prediction(){
+  //set_innerText("hint", team1_id)
   if (team1_id == team2_id){
     // TODO: ALERT
   }
@@ -193,12 +207,15 @@ function start_prediction(){
     // TODO: ALERT
   }
   else {
-    eel.start_algo(team1, team2)(callback_result);
+    eel.start_algo(team1_id, team2_id, selected_algo_id)(callback_result);
   }
 }
 
 function callback_result(result){
   result_designer();
+
+
+  // TODO: Darstellung überarbeiten
 
   // just for testing
     var t1 = result[0];
@@ -210,11 +227,11 @@ function callback_result(result){
   set_innerHTML("left_btn", "<button class='btn btn-primary' onclick='get_clubs()'>anderes Match wählen</button>");
   set_innerHTML("right_btn", "<button class='btn btn-danger' onclick='welcome_page()'>zurück zur Startseite</button>");
 
-  col1_html = "<div class='d-flex justify-content-center'><h3>" + t1 + "</h3></div>" +
+  col1_html = "<div class='d-flex justify-content-center'><h3>" + team_list[t1] + "</h3></div>" +
       "<div class='d-flex justify-content-center'><p>" + h + "</p></div>";
   col2_html = "<div class='d-flex justify-content-center'><h3>:</h3></div>" +
       "<div class='d-flex justify-content-center'><p>" + d + "</p></div>";
-  col3_html = "<div class='d-flex justify-content-center'><h3>" + t2 + "</h3></div>" +
+  col3_html = "<div class='d-flex justify-content-center'><h3>" + team_list[t2] + "</h3></div>" +
       "<div class='d-flex justify-content-center'><p>" + g + "</p></div>";
 
   set_innerHTML("1-col-1", "<h2 class='d-flex justify-content-center'>Ergebnis:</h2>");
@@ -226,5 +243,6 @@ function callback_result(result){
   team2_id = 0;
 }
 
-// TODO: alert toasts, code kommentieren, Bilder abrufen, statischeres alignment im result screen
+// TODO: alert toasts, code kommentieren, Bilder abrufen, statischeres alignment im result screen, Seasons selection, Algo Auswahl Description Field, next Match Auswahl
 
+// TODO: Algo Dictionary erweitern: {1 : {name : Algo Name, des : Beschreibung, param1 : Auswahlmöglichkeit 1, param2: Auswahlmöglichkeit 2, ...}
