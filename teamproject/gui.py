@@ -48,4 +48,4 @@ def start_algo(team1, team2):
     return result
 
 def main():
-    eel.start('index.html', size=(600, 400))  # landing page of gui and window size
+    eel.start('index.html', size=(800, 600))  # landing page of gui and window size

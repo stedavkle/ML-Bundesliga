@@ -8,73 +8,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- test: implement bootstrap -->
-    <link rel="stylesheet" href="/css/bootstrap-5.0.1-dist/css/bootstrap.min.css">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-    <script src="/css/bootstrap-5.0.1-dist/js/bootstrap.min.js"></script>
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <!-- end tests -->
 
-    <script type="text/javascript" src="\eel.js"></script>
-    <script type="text/javascript" src="main.js"></script>
-    <script type="text/javascript" src="back_functions.js"></script>
-    <script type="text/javascript" src="dom_manipulation.js"></script>
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    <script type="text/javascript" src="js/designer.js"></script>
+    <script type="text/javascript" src="js/dom_manipulation.js"></script>
     <script>
         window.onload = function (){
-            list_algorithms();
+            welcome_page();
         }
     </script>
 
 
 </head>
 <body>
-    <!-- navbar -->
-    <div class="navbar">
-        <div id="back_button"></div>
-    </div>
+     <nav class="navbar p-3 navbar-expand bg-dark navbar-dark justify-content-between">
+        <div id="back_btn">
 
-    <!-- welcome page -->
-    <div id="welcome_page">
-        <h1>Willkommen und so ein scheiß...</h1>
-        <h2>Wähle einen Algorithmus aus</h2>
-        <div id="algo_selection_dummy"></div>
-        <div id="algo_submit"></div>
-
-    </div>
-
-    <!-- data selection -->
-
-    <div id="data_1" style="display: none">
-        <div id="select_league"></div>
-        <div id="select_seasons"></div>
-        <div id="test"></div>
-        <button onclick="start_crawler()">Beziehe Daten</button>
-
-    </div>
-
-    <!-- training -->
-    <div id="training" style="display: none">
-        <p>training status...</p>
-        <button onclick="get_clubs()">weiter</button>
-    </div>
-
-    <!-- match selection -->
-    <div id="match_selection" style="display: none">
-        <h3>hier soll die gewählte Saison stehen...</h3>
-        <div id="clubs_home"></div>
-        <div id="test2"></div>
-        <div id="opponent_buttons">
-            <button onclick="get_next_opponent()">nächster Gegner</button>
-            <button onclick="select_opponent()">Gegner wählen</button>
         </div>
-        <div id="clubs_guest" style="display: none"></div>
-        <div id="submit_buttons" style="display: none">
-            <div id="switch_button"></div>
+        <h2 class="text-white">ML Bundesliga Vorhersage</h2>
+      </nav>
+
+      <div class="container p-3">
+        <div class="d-flex" id="1-col">
+          <div class="flex-fill" id="1-col-1"></div>
         </div>
-        <div id="hint"></div>
-    </div>
 
-    <!-- display result -->
-    <div id="result" style="display: none"></div>
+        <div class="d-flex" id="2-col">
+          <div class="flex-fill" id="2-col-1"></div>
+          <div class="flex-fill" id="2-col-2"></div>
+        </div>
 
+        <div class="d-flex" id="3-col">
+          <div class="flex-fill" id="3-col-1"></div>
+          <div class="flex-fill" id="3-col-2"></div>
+          <div class="flex-fill" id="3-col-3"></div>
+        </div>
 
+        <div class="fixed-bottom p-3 bg-dark d-flex justify-content-between">
+          <div id="left_btn" style="visibility: hidden"></div>
+          <div id="right_btn" style="visibility: hidden"></div>
+        </div>
+
+      </div>
 </body>
 </html>
