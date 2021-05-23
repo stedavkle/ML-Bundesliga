@@ -17,7 +17,7 @@ pd.set_option('display.width', 200)
 
 # PATHs for Data
 teams_db_path = r'./data/teams_bl{}_{}.csv'
-icons_path = "./icons/{}.png"
+icons_path = r'./icons/{}.png'
 table_db_path = r'./data/table_bl{}_{}.csv'
 season_matches_db_path = r'./data/matches_bl{}_{}.csv'
 season_results_db_path = r'./data/matches_bl{}_{}_results.csv'
@@ -136,7 +136,7 @@ def getNextMatchFromAPI(league_id, team_id):
         return -1
     match = pd.json_normalize(response.json())
     # extract necessary data
-    match = data[match_content]
+    match = match[match_content]
     return match
 
 
@@ -152,6 +152,11 @@ def getTeamIconsFromWiki(teams_data):
         except Exception:
             continue
 
+def startCrawlerFromGUI(bl_leagues,years):
+    # get big Dataset from leagues/years
+
+
+    return id_team_dicts_from_all_teams 
 
 # In[44]:
 
@@ -162,7 +167,7 @@ def getTeamIconsFromWiki(teams_data):
 # In[45]:
 
 
-def getTeams(bl_leagues, year):
+def getTeams(bl_league, year):
     db_path = teams_db_path.format(bl_league,year)
     if os.path.isfile(db_path):
         teams = pd.read_csv(db_path)
@@ -222,8 +227,6 @@ def getDatasetOfMatchesFromLeaguesAndYears(bl_leagues, years):
             dataset_matches = pd.concat([dataset_matches, matches])
             dataset_results = pd.concat([dataset_results, results])
             dataset_goals = pd.concat([dataset_goals, goals])
-            # drop old indices
-            
     return dataset_matches, dataset_results, dataset_goals
 
 
@@ -252,7 +255,7 @@ def downloadTeamIcons():
 
 
 # In[53]:
-
+# %%
 # for testing inside the script
 if __name__ == '__main__':
     bl_league = 1
@@ -261,7 +264,7 @@ if __name__ == '__main__':
 
     print("TEAMS DATA STRUCTURE:")
     teams = getTeams(bl_league, year)
-    print(teams.head(3), end='\n\n')
+    print(teams, end='\n\n')
 
     print("ID <=> TeamName DICTS:")
     id_to_team, team_to_id = getTeamDicts(bl_league, year)
@@ -282,6 +285,18 @@ if __name__ == '__main__':
 
     matches, results, goals = getMatchupHistoryFromAPI(16,87)
     print(results.head(3))
-    print(results[results['Team1.TeamId']==16]['PointsTeam1'])
+    print(results[results['Team1.TeamId']==16]['PointsTeam1'].head(3))
     print("SUMME: ")
     print(results['PointsTeam1'].sum(axis=0))
+
+# %%
+    bl_league = 1
+    year = 2020
+    league_id = 4222
+    
+    teams = getTeams(1, 2020)
+    teams[['TeamId','ShortName']]
+    teams = getTeams(1, 2019)
+    teams[['TeamId','ShortName']]
+    pd.concat[[]]
+# %%
