@@ -23,7 +23,7 @@ function hide(id){
 
 function hide_and_reset(id){
   document.getElementById(id).style.visibility = 'hidden';
-  document.getElementById(id).se
+  document.getElementById(id).innerHTML = '';
 }
 
 // ------- special display functions
