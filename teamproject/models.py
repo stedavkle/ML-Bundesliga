@@ -17,23 +17,31 @@ class MostWins:
         self.team2 = team2
         self.matches, self.match_results, self.match_goals = getMatchupHistoryFromAPI(team1, team2)
         self.end_results = self.match_results[self.match_results['ResultTypeID'] == 2]
-        self.team1_is_team1_id_results = self.end_results[self.end_results['Team1.TeamId'] == self.team1]
-        self.team1_is_team2_id_results = self.end_results[self.end_results['Team1.TeamId'] == self.team2]
-        self.results = self.team1_is_team1_id_results['PointsTeam1'] - self.team1_is_team1_id_results['PointsTeam2']
-
+        print(self.end_results)
 
     def predict_winner(self):
         team1_wins = 0
         team2_wins = 0
         draws = 0
 
-        for key in self.results:
-            if key > 0:
-                team1_wins += 1
-            elif key < 0:
-                team2_wins += 1
+        for key in self.end_results.index:
+            team = self.end_results.loc[key, "Team1.TeamId"]
+            result = self.end_results.loc[key, "PointsTeam1"] - self.end_results.loc[key, "PointsTeam2"]
+
+            if team == self.team1:
+                if result > 0:
+                    team1_wins += 1
+                elif result < 0:
+                    team2_wins += 1
+                else:
+                    draws += 1
             else:
-                draws += 1
+                if result < 0:
+                    team1_wins += 1
+                elif result > 0:
+                    team2_wins += 1
+                else:
+                    draws += 1
 
         total_matches = team1_wins + team2_wins + draws
         return [self.team1, self.team2, (team1_wins / total_matches)*100, (draws / total_matches)*100, (team2_wins / total_matches)*100]
@@ -89,5 +97,5 @@ if __name__ == '__main__':
     #algo = SumMostGoalsIsWinner(match_results)
     #print(algo.predict_winner())
 
-    algo_trivial = Model_Handler(87, 16, 0, 0, 1)
+    algo_trivial = Model_Handler(6, 16, 0, 0, 1)
     print(algo_trivial)
