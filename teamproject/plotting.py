@@ -183,11 +183,11 @@ def plot_game_result_distribution_one_team(team_id, league, seasons):
     cr = crawler.Crawler()
     dataset_matches, dataset_results, dataset_goals = cr.get_dataset_of_matches_from_leagues_and_years(league, seasons)
 
-    data = dataset_matches.loc[
-        (dataset_matches['team_home_id'] == team_id) | (dataset_matches['team_guest_id'] == team_id)]
-    print(data['match_id'].head(5))
-    # hole alle results mit match id in data
-    # if dataset_results['match_id'] == data['match_id']:
+    # extrahiert alle matches an denen das Team teilnimmt
+    match_data_cut = dataset_matches.loc[(dataset_matches['team_home_id'] == team_id) | (dataset_matches['team_guest_id'] == team_id)]
+    # extrahiert alle results deren match_id in match_data_cut['match_id'] auftaucht
+    # --------> pd.isin()
+    result_data_cut = dataset_results[dataset_results['match_id'].isin(match_data_cut['match_id'])]
 
     for index in dataset_results.index:
         # if points of the home team > points of the guest team
