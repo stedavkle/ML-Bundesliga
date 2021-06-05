@@ -1,4 +1,4 @@
-#%%
+# %%
 
 import pandas as pd
 import json
@@ -56,6 +56,8 @@ class Crawler(object):
     def __init__(self):
         """Crawler class constructor"""
         #return self.available_leagues, self.available_seasons
+
+
 
     #   PRIVATE API FUNCTIONS BELOW
     #   
@@ -162,19 +164,38 @@ class Crawler(object):
                 dataset_goals = pd.concat([dataset_goals, goals])
         return dataset_matches, dataset_results, dataset_goals
 
-    def extract_matchup_history_1v1(self, home_team_id, guest_team_id, data):
+    def extract_matchup_history_1v1(self, team_home_id, team_guest_id, data):
         # TODO:
-        return 0
+        dataset = data.loc[(data['team_home_id'] == team_home_id) & (data['team_guest_id'] == team_guest_id)
+                            | (data['team_home_id'] == team_guest_id) & (data['team_guest_id'] == team_home_id)]
+        return dataset
 # %%
 if __name__ == '__main__':
 
 
-    years = np.arange(2000,2020)
-    leagues = [1,2,3]
+    years = np.arange(2009,2010)
+    leagues = [1,2]
 
     crawler = Crawler()
 
-    teams = crawler.get_teams_from_API(1,2020)
-    matches, match_results, match_scores = crawler.get_all_matches_from_year_from_api(1,2020)
-    print(matches.head(5))
+    #teams = crawler.get_teams_from_API(1,2020)
+    matches, match_results, match_scores = crawler.get_dataset_of_matches_from_leagues_and_years([1], [2003])
+    dataset = crawler.extract_matchup_history_1v1(16, 87, matches)
+# %%
+api_match_content_columns = ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
+api_results_content_columns = ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
+api_score_content_columns = ['GoalID','ScoreTeam1','ScoreTeam2','GoalGetterID',
+                                'GoalGetterName', 'IsOvertime', 'MatchID']
+
+years = np.arange(2009,2010)
+leagues = [1,2]
+
+response = requests.get("https://www.openligadb.de/api/getmatchdata/bl{}/{}".format(2,2008))
+matches = pd.json_normalize(response.json())
+#matches[api_match_content_columns]
+match_results = pd.json_normalize(response.json(), record_path='MatchResults', meta='MatchID')
+#match_results[api_results_content_columns]
+match_scores = pd.json_normalize(response.json(), record_path='Goals', meta='MatchID')
+#match_scores[api_score_content_columns]
+
 # %%
