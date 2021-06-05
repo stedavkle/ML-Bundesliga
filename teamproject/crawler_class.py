@@ -55,7 +55,7 @@ class Crawler(object):
 
     def __init__(self):
         """Crawler class constructor"""
-        return self.available_leagues, self.available_seasons
+        #return self.available_leagues, self.available_seasons
 
     #   PRIVATE API FUNCTIONS BELOW
     #   
@@ -82,7 +82,7 @@ class Crawler(object):
             return -1
         data_json = response.json()
 
-        matches = pd.json_normalize(data_json)[self.uniform_match_content_columns]
+        matches = pd.json_normalize(data_json)[self.api_match_content_columns]
         matches.columns = self.uniform_match_content_columns
 
         match_results = pd.json_normalize(data_json, record_path='MatchResults', meta=self.api_meta_data)[self.api_result_content_columns]
@@ -93,7 +93,7 @@ class Crawler(object):
         # save datasets as csv
         # TODO: concatenate data sets?
         matches.to_csv(self.uniform_season_matches_db_path.format(bl_league,year), index=False)
-        match_results.to_csv(self.uniform_season_results_db_path(bl_league,year), index=False)
+        match_results.to_csv(self.uniform_season_results_db_path.format(bl_league,year), index=False)
         match_scores.to_csv(self.uniform_season_goals_db_path.format(bl_league,year), index=False)
         return matches, match_results, match_scores
 
@@ -167,10 +167,14 @@ class Crawler(object):
         return 0
 # %%
 if __name__ == '__main__':
+
+
+    years = np.arange(2000,2020)
+    leagues = [1,2,3]
+
     crawler = Crawler()
-    crawler2 = Crawler()
 
     teams = crawler.get_teams_from_API(1,2020)
-    teams.head(5)
-
+    matches, match_results, match_scores = crawler.get_all_matches_from_year_from_api(1,2020)
+    print(matches.head(5))
 # %%
