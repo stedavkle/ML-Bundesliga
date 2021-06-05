@@ -66,7 +66,7 @@ class Crawler(object):
     #   PRIVATE API FUNCTIONS BELOW
 
     def get_teams_from_API(self, bl_league, year):
-        """"""
+        """gets the team data for one season and league. Input Format: <Bundesliga(as simple number), Year> example: (1,2020)"""
         response = requests.get(self.api_teams_url.format(bl_league,year))
         # TODO: proper errorcode
         if response.status_code != 200:
@@ -77,7 +77,7 @@ class Crawler(object):
         return teams
 
     def get_all_matches_from_year_from_api(self, bl_league, year):
-        """"""
+        """gets all played matches for one season and league. Input Format: <Bundesliga(as simple number), Year> example: (1,2020)"""
         response = requests.get(self.api_matches_lg_ss_url.format(bl_league,year))
         # TODO: proper errorcode
         if response.status_code != 200:
@@ -100,7 +100,7 @@ class Crawler(object):
         return matches, match_results, match_scores
 
     def get_next_match_from_API(self, league_id, team_id):
-        """"""
+        """gets the next upcoming match for one team, Input: <league_id, team_id> example: (4442, 83)"""
         # <BundesLiga, Saison, LeagueID> 1 2020 4442; 2 2020 4443; 3 2020 4444
         response = requests.get(self.api_nextmatch_lg_tm_url.format(league_id, team_id))
         # TODO: proper errorcode
@@ -113,7 +113,7 @@ class Crawler(object):
         return match
 
     def get_team_icons_from_wiki(self, teams_data):
-        """"""
+        """gets team icon images for all teams in the Inputted uniform team data frame"""
         # TODO: check if Pics already saved
         for index, row in teams_data.iterrows():
             # TODO: handle icons that are .svg instead of .png (ID=9 and ID=95)
@@ -129,7 +129,7 @@ class Crawler(object):
     #   PUBLIC FUNCTIONS BELOW
     
     def get_team_dicts(self, bl_league, year):
-        """"""
+        """returns 2 dicts, the first mapping id to teams, the second teams to id"""
         if os.path.isfile(self.uniform_teams_database_path):
             teams_db = pd.read_csv(self.uniform_teams_database_path)
         else:
@@ -140,7 +140,7 @@ class Crawler(object):
         return id_to_team, team_to_id
 
     def get_dataset_of_matches_from_leagues_and_years(self, bl_leagues, years):
-        """"""
+        """returns all matches for the inputted arrays for leagues and years, league input format is Bundesliga-Number (e.g: 1, 2, 3)"""
         dataset_matches = pd.DataFrame()
         dataset_results = pd.DataFrame()
         dataset_goals = pd.DataFrame()
@@ -165,7 +165,8 @@ class Crawler(object):
         return dataset_matches, dataset_results, dataset_goals
 
     def extract_matchup_history_1v1(self, team_home_id, team_guest_id, data):
-        # TODO:
+        """"extracts all matches containing the two inputted teams and returns them in a seperate dataframe
+        does not alter original dataframe."""
         dataset = data.loc[(data['team_home_id'] == team_home_id) & (data['team_guest_id'] == team_guest_id)
                             | (data['team_home_id'] == team_guest_id) & (data['team_guest_id'] == team_home_id)]
         return dataset
