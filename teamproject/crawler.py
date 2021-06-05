@@ -47,18 +47,23 @@ class Crawler(object):
     api_meta_data = "MatchID"
 
     #SEASONS and LEAGUES available, hardcoded:
-    # TODO: add available leagues and seasons
+    # TODO: create dict from leagues -> avail. seasons
+    #       check if we are past june -> season is finished
     available_leagues = [1,2,3]
-    available_seasons = np.arange(1950,datetime.datetime.now().year)
+    available_seasons = np.arange(2002,datetime.datetime.now().year)
 
     # CONSTRUCTOR
 
     def __init__(self):
         """Crawler class constructor"""
-        #return self.available_leagues, self.available_seasons
+        self.all_teams = pd.DataFrame()
+        self.all_matches = pd.DataFrame()
+        self.all_match_results = pd.DataFrame()
+        self.all_match_scores = pd.DataFrame()
 
-
-
+    def init(self):
+        # TODO: return leagues, seasons and size of yeararray
+        return self.available_leagues, self.available_seasons
     #   PRIVATE API FUNCTIONS BELOW
     #   
     #   PRIVATE API FUNCTIONS BELOW
@@ -76,7 +81,7 @@ class Crawler(object):
         teams.to_csv(self.uniform_teams_database_path.format(bl_league,year), index=False)
         return teams
 
-    def get_all_matches_from_year_from_api(self, bl_league, year):
+    def get_matches_from_year_from_API(self, bl_league, year):
         """gets all played matches for one season and league. Input Format: <Bundesliga(as simple number), Year> example: (1,2020)"""
         response = requests.get(self.api_matches_lg_ss_url.format(bl_league,year))
         # TODO: proper errorcode
@@ -127,7 +132,11 @@ class Crawler(object):
     #   PUBLIC FUNCTIONS BELOW
     #
     #   PUBLIC FUNCTIONS BELOW
-    
+    def get_teams(leagues, seasons):
+        # TODO: concatenate TeamsDB from leagues/seasons and download all Pictures.
+        #       CHECK REDUNDANCY
+        return None
+
     def get_team_dicts(self, bl_league, year):
         """returns 2 dicts, the first mapping id to teams, the second teams to id"""
         if os.path.isfile(self.uniform_teams_database_path):
@@ -157,11 +166,12 @@ class Crawler(object):
                     results = pd.read_csv(self.uniform_season_results_db_path.format(league,year))
                     goals = pd.read_csv(self.uniform_season_goals_db_path.format(league,year))
                 else:
-                    matches, results, goals = self.get_all_matches_from_year_from_api(league, year)
+                    matches, results, goals = self.get_matches_from_year_from_API(league, year)
                 # concatenate data and drop old indices
                 dataset_matches = pd.concat([dataset_matches, matches])
                 dataset_results = pd.concat([dataset_results, results])
                 dataset_goals = pd.concat([dataset_goals, goals])
+        # TODO: return only status code
         return dataset_matches, dataset_results, dataset_goals
 
     def extract_matchup_history_1v1(self, team_home_id, team_guest_id, data):
@@ -170,6 +180,21 @@ class Crawler(object):
         dataset = data.loc[(data['team_home_id'] == team_home_id) & (data['team_guest_id'] == team_guest_id)
                             | (data['team_home_id'] == team_guest_id) & (data['team_guest_id'] == team_home_id)]
         return dataset
+    def extract_matchdays(self, days, data):
+        dataset = pd.DataFrame()
+        for day in days:
+            matches_on_day = data.loc[data['matchday'] == day]
+            dataset = pd.concat([dataset, matches_on_day])
+        return dataset
+
+    # Functions for Data grabbing for Model
+    def get_data_for_model(leagues, seasons, matchdays):
+        # TODO:
+        return 0
+    # Functions for Data grabbing for Algorithm
+    def get_data_for_algo(leagues, seasons, matchdays, team_home_id, team_guest_id):
+        # TODO:
+        return 0    
 # %%
 if __name__ == '__main__':
 
@@ -178,25 +203,38 @@ if __name__ == '__main__':
     leagues = [1,2]
 
     crawler = Crawler()
-
     #teams = crawler.get_teams_from_API(1,2020)
-    matches, match_results, match_scores = crawler.get_dataset_of_matches_from_leagues_and_years([1], [2003])
-    dataset = crawler.extract_matchup_history_1v1(16, 87, matches)
+    matches, match_results, match_scores = crawler.get_dataset_of_matches_from_leagues_and_years([1,2], [2003])
+
+    extracted_data = crawler.extract_matchup_history_1v1
+    #dataset = crawler.extract_matchup_history_1v1(16, 87, matches)
 # %%
 api_match_content_columns = ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
 api_results_content_columns = ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
 api_score_content_columns = ['GoalID','ScoreTeam1','ScoreTeam2','GoalGetterID',
                                 'GoalGetterName', 'IsOvertime', 'MatchID']
+uniform_match_content_columns = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
+uniform_result_content_columns = ['result_id', 'points_home', 'points_guest', 'result_type_id', 'match_id']
 
 years = np.arange(2009,2010)
 leagues = [1,2]
 
-response = requests.get("https://www.openligadb.de/api/getmatchdata/bl{}/{}".format(2,2008))
+response = requests.get("https://www.openligadb.de/api/getmatchdata/bl{}/{}".format(1,2020))
 matches = pd.json_normalize(response.json())
-#matches[api_match_content_columns]
+matches = matches[api_match_content_columns]
+matches.columns = uniform_match_content_columns
+
+matches = matches[matches['match_id'] == 58577]
+
 match_results = pd.json_normalize(response.json(), record_path='MatchResults', meta='MatchID')
-#match_results[api_results_content_columns]
-match_scores = pd.json_normalize(response.json(), record_path='Goals', meta='MatchID')
-#match_scores[api_score_content_columns]
+match_results = match_results[api_results_content_columns]
+match_results.columns = uniform_result_content_columns
+results = match_results[match_results['match_id'].isin(matches['match_id'])]
+results
+
+
+#match_scores = pd.json_normalize(response.json(), record_path='Goals', meta='MatchID')
+#print(match_scores)
+
 
 # %%
