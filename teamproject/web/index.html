@@ -24,10 +24,12 @@
     <script type="text/javascript" src="/eel.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
     <script type="text/javascript" src="js/designer.js"></script>
-    <script type="text/javascript" src="js/dom_manipulation.js"></script>
+    <script type="text/javascript" src="js/session.js"></script>
+    <script type="text/javascript" src="js/render.js"></script>
+    <script type="text/javascript" src="js/tools.js"></script>
     <script>
         window.onload = function (){
-            welcome_page();
+            on_page_load();
         }
     </script>
 
@@ -42,22 +44,30 @@
       </nav>
 
       <div class="container p-3">
-        <div class="d-flex" id="1-col">
-          <div class="flex-fill" id="1-col-1"></div>
+        <div class="d-flex p-3" id="1-row">
+          <div class="flex-fill p-3" id="1-col-1"></div>
         </div>
 
-        <div class="d-flex" id="2-col">
-          <div class="flex-fill" id="2-col-1"></div>
-          <div class="flex-fill" id="2-col-2"></div>
+        <div class="d-flex p-3" id="2-row">
+          <div class="flex-fill p-3" id="2-col-1"></div>
+          <div class="flex-fill p-3" id="2-col-2"></div>
         </div>
 
-        <div class="d-flex" id="3-col">
-          <div class="flex-fill" id="3-col-1"></div>
-          <div class="flex-fill" id="3-col-2"></div>
-          <div class="flex-fill" id="3-col-3"></div>
+        <div class="d-flex p-3" id="3-row">
+          <div class="flex-fill p-3" id="3-col-1"></div>
+          <div class="flex-fill p-3" id="3-col-2"></div>
+          <div class="flex-fill p-3" id="3-col-3"></div>
         </div>
 
-          <div id="hint"></div>
+        <!-- TODO: Für Zukünftige Layout Anpassung
+        <div class="d-flex p-3" id="4-row">
+          <div class="flex-fill p-3" id="4-col-1"></div>
+          <div class="flex-fill p-3" id="4-col-2"></div>
+        </div>
+         -->
+        <div id="hint"></div>
+
+        <div style="height: 50px"></div>
 
         <div class="fixed-bottom p-3 bg-dark d-flex justify-content-between">
           <div id="left_btn" style="visibility: hidden"></div>
