@@ -1,15 +1,21 @@
-// -------------------- display and hide functions concerning ids in index.html ---------
+// --------------------------------- DOM manipulation functions ---------------------------------
 
+/**
+ * sets string into html element
+ * @param id - id of html element
+ * @param text - content
+ */
 function set_innerHTML(id, text){
     document.getElementById(id).innerHTML = text;
 }
 
-function set_innerText(id, text){
-    document.getElementById(id).innerText = text;
-}
 
-function set_back_button(fun){
-  var button = "<button class='btn btn-danger' onclick='" + fun + "'>Bestätigen</button>"
+/**
+ * displays back button
+ * @param id - stage to set
+ */
+function set_back_button(id){
+  var button = "<button class='btn btn-outline-danger btn-sm' onclick=reset_stage_to(" + id + ")>zurück</button>"
   set_innerHTML("back_btn", button);
 }
 
@@ -17,19 +23,41 @@ function display(id){
   document.getElementById(id).style.visibility = 'visible';
 }
 
+
+/**
+ * hides html element
+ * @param id - id of html element
+ */
 function hide(id){
   document.getElementById(id).style.visibility = 'hidden';
 }
 
+
+/**
+ * hides html element and resets content
+ * @param id - id of html element
+ */
 function hide_and_reset(id){
   document.getElementById(id).style.visibility = 'hidden';
   document.getElementById(id).innerHTML = '';
 }
 
+
+/**
+ * returns value of selected element of html select
+ * @param id - id of html select
+ * @returns {*}
+ */
 function get_single_selected(id){
   return document.getElementById(id).value;
 }
 
+
+/**
+ * returns values of selected elements of html multiple select as an array
+ * @param id - id of html select
+ * @returns {*[]} - array
+ */
 function get_mult_selected(id){
   //window.alert("get_mult_selected(): entered");
   var selector = document.getElementById(id);
@@ -46,8 +74,10 @@ function get_mult_selected(id){
 
 
 
-// ------- special display functions
-
+// --------------------------------- special display functions ---------------------------------
+/**
+ * shows data submit, if leagues AND seasons are selected
+ */
 function show_data_submit(){
   //window.alert("show_data_submit(): entered");
   if (!(get_mult_selected('leagues_selection') == 0 || get_mult_selected('seasons_selection') == 0)){
@@ -55,19 +85,27 @@ function show_data_submit(){
   }
 }
 
+
+/**
+ * displays description text for models
+ */
 function show_model_description(){
   //window.alert("show_model_description(): entered");
   display('right_btn');
   display('2-col-2');
-  var model = new Models();
+  var models = get_session_item('models');
   var id = get_single_selected('model_selection');
-  var description = "<p>" + model.models[id].description + "</p>";
+  var description = "<p>" + models[id].description + "</p>";
   set_innerHTML('2-col-2', description);
 }
 
 
 
-// tool-functions
+// --------------------------------- tool-functions ---------------------------------
+/**
+ * stores selected data to session storage,
+ * calls build_stage() after setting stage to 1
+ */
 function store_crawler_parameter(){
   //window.confirm("store_crawler_parameter(): entered")
   var selected_leagues = get_mult_selected('leagues_selection');
@@ -87,6 +125,11 @@ function store_crawler_parameter(){
   build_stage();
 }
 
+
+/**
+ * stores selected model_id to session storage,
+ * calls build_stage() after setting stage to 2
+ */
 function set_model(){
   //window.alert("set_model(): entered");
   var model = get_session_item('models');
@@ -97,6 +140,12 @@ function set_model(){
   build_stage();
 }
 
+
+/**
+ * generates html multiple select based on selected data
+ * @param id - string of part of html select id
+ * @returns {string} - html select as string
+ */
 function create_select_of_selected(id){
   var possible_data = get_session_item(id);
   var selected_data = get_session_item("selected_" + id);
@@ -111,6 +160,12 @@ function create_select_of_selected(id){
   return html_str;
 }
 
+
+/**
+ * generates html select of matchdays
+ * @param id - string: first or last
+ * @returns {string} - html select as string
+ */
 function create_matchday_selection(id){
   //window.alert("create_matchday_selection(): entered");
   var html_str = "<select class='form-control' id='" + id + "_matchday'>";
@@ -137,6 +192,11 @@ function create_matchday_selection(id){
   return html_str;
 }
 
+
+/**
+ * writes selected data parameters to an object
+ * @param stage - number of next stage
+ */
 function store_selected_parameter(stage){
   // TODO: Abfangen, dass bei einer gewählten Saison first_matchday <= last_matchday
   var selected_leagues = get_mult_selected('leagues_fine_selection');
@@ -162,6 +222,12 @@ function store_selected_parameter(stage){
   build_stage();
 }
 
+
+/**
+ * writes team id to session storage
+ * according to input, switch and submit buttons will be displayed
+ * @param sel - number of html select (1 = team1, 2 = team2)
+ */
 function set_team(sel){
   //window.alert("set_team(): entered");
   var selector_id = "team" + sel + "_selection";
@@ -185,6 +251,11 @@ function set_team(sel){
   }
 }
 
+
+/**
+ * displays next opponent
+ * @param team2_id - id of team 2
+ */
 function show_next_opponent(team2_id){
   var team_list = get_session_item('team_list');
   set_session_item('team2_id', team2_id);
@@ -195,6 +266,10 @@ function show_next_opponent(team2_id){
   set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=start_prediction()>Vorhersage starten</button>");
 }
 
+
+/**
+ * generates html select of teams
+ */
 function set_opponent(){
   var team_list = get_session_item('team_list');
 
@@ -214,6 +289,11 @@ function set_opponent(){
   set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=start_prediction()>Vorhersage starten</button>");
 }
 
+
+/**
+ * checks if teams are selected and not the same
+ * sets state to 5 and calls build_stage
+ */
 function start_prediction(){
   var team1_id = get_session_item('team1_id');
   var team2_id = get_session_item('team2_id');

@@ -23,6 +23,7 @@ function sport_selection_render(){
     set_innerHTML("1-col-1", html_str);
 }
 
+
 /**
  * creates selection page for data, broadcasted by selected database
  * @param leagues_seasons - dictionary of leagues
@@ -30,7 +31,8 @@ function sport_selection_render(){
  */
 function crawler_data_render(leagues_seasons){
     crawler_data_designer();
-
+    set_back_button(-1);
+    //set_innerHTML("back_btn", "<button class='btn btn-outline-danger btn-sm' onclick='welcome_page()'>zurück</button>");
     var leagues = {};
     var seasons = {};
     var biggest_league_size = 0;
@@ -97,6 +99,7 @@ function crawler_data_render(leagues_seasons){
 function model_selection_render(models){
     model_selection_designer();
     //window.alert("model_selection_render(): entered");
+    set_back_button(0);
     set_session_item('models', models);
 
     set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=set_model()>Bestätigen</button>");
@@ -120,6 +123,7 @@ function model_selection_render(models){
  */
 function training_data_render(parameter){
     training_data_designer();
+    set_back_button(1);
     //var model_id = get_session_item('selected_model_id');
     var training = get_session_item('training');
 
@@ -176,6 +180,7 @@ function training_data_render(parameter){
  */
 function team_select_render(team_list){
     team_select_designer();
+    set_back_button(2);
     set_session_item('team_list', team_list);
     set_innerHTML("1-col-1", "<h3>Matchauswahl</h3>");
 
@@ -219,7 +224,7 @@ function result_screen_render(){
     var guest_win = result.guest_win;
 
     //TODO: Stages anpassen, damit man zu team_select_render springen kann
-    set_innerHTML("left_btn", "<button class='btn btn-primary' onclick=''>anderes Match wählen</button>");
+    set_innerHTML("left_btn", "<button class='btn btn-primary' onclick=reset_stage_to(3)>anderes Match wählen</button>");
     set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=reset_program()>zurück zur Startseite</button>");
 
     var col1_html = "<div><img src=" + img_team1 + " alt=" + team1_name + "><h3>" + team1_name + "</h3></div>" +

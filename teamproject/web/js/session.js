@@ -81,6 +81,26 @@ function get_session_item(key){
 
 
 /**
+ * resets stage to given id
+ * @param id - stage
+ */
+function reset_stage_to(id){
+    if (id == -1){
+        close_session();
+        on_page_load();
+    }
+    else {
+        if (id == 3){
+            set_session_item('team1_id', 0);
+            set_session_item('team2_id', 0);
+        }
+        set_session_item('stage', id);
+        build_stage();
+    }
+}
+
+
+/**
  * clears session storage
  */
 function close_session(){
