@@ -58,15 +58,15 @@ class Crawler(object):
             year = datetime.datetime.now().year+1
         else:
             year = datetime.datetime.now().year
-        self.first_league_available_seasons = np.arange(2002,year)
-        self.second_league_available_seasons = np.arange(2006,year)
-        self.third_league_available_seasons = np.arange(2008,year)
+        self.first_league_available_seasons = list(range(2002, year))
+        self.second_league_available_seasons = list(range(2006,year))
+        self.third_league_available_seasons = list(range(2008,year))
 
     def get_available_seasons_for_leagues(self):
         """return leagues, seasons and size of yeararray"""
-        self.dict = {1: {'name': '1. Bundesliga', 'seasons': self.first_league_available_seasons, 'size': self.first_league_available_seasons.size, 'matchdays': 34},
-                    2: {'name': '2. Bundesliga', 'seasons': self.second_league_available_seasons, 'size': self.second_league_available_seasons.size, 'matchdays': 34},
-                    3: {'name': '3. Liga', 'seasons': self.third_league_available_seasons, 'size': self.third_league_available_seasons.size, 'matchdays': 38}
+        self.dict = {1: {'name': '1. Bundesliga', 'seasons': self.first_league_available_seasons, 'size': len(self.first_league_available_seasons), 'matchdays': 34},
+                    2: {'name': '2. Bundesliga', 'seasons': self.second_league_available_seasons, 'size': len(self.second_league_available_seasons), 'matchdays': 34},
+                    3: {'name': '3. Liga', 'seasons': self.third_league_available_seasons, 'size': len(self.third_league_available_seasons), 'matchdays': 38}
                }
         return self.dict
 
@@ -101,6 +101,7 @@ class Crawler(object):
                 match_results = pd.json_normalize(data_json, record_path='MatchResults', meta=self.api_meta_data)[self.api_result_content_columns]
                 match_results.columns = self.uniform_result_content_columns
                 # TODO: concatenate score_home and score_guest to a tuple (score_home, score_guest) in one column 'temp_score'
+                # TODO: handle score_db not present
                 match_scores = pd.json_normalize(data_json, record_path='Goals', meta=self.api_meta_data)[self.api_score_content_columns]
                 match_scores.columns = self.uniform_score_content_columns
                 # save datasets as csv
@@ -235,14 +236,14 @@ if __name__ == '__main__':
     #                                                         team_home_id, team_guest_id)
     leagues = [1]
     seasons = np.arange(2009,2020)
-    # matches, results, scores = crawler.get_data_for_algo([1],[2020,2019,2018],0,0,16,87)
-    # print(matches.head(10))
+    matches, results, scores = crawler.get_data_for_algo([1],[2020,2019,2018],0,0,16,87)
+    print(matches.head(10))
 
     # teams = crawler.get_teams(leagues, seasons).sort_values(['team_id'])
     # print(teams)
 
-    id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
-    print(team_to_id["1. FC Köln"])
+    #id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
+    #print(team_to_id["1. FC Köln"])
 
     
 # %%

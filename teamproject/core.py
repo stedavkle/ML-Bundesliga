@@ -1,23 +1,35 @@
 """
 web gui
 """
-import sys
-
 import eel
 import numpy as np
 import json
 
-# from crawler import getTeamDicts
-# from models import Model_Handler
+import crawler
 
-"""Initialize Browser Presettings"""
-my_options = {
-    'host': 'localhost',
-    'port': '8080'
-}
 
-"""directory where web files located"""
-eel.init('web')
+# TODO: macht der Spaß wirklich Sinn? Doch lieber Globals?
+
+''' --- CLASS DECLARATION --- '''
+class Core:
+    """Initialize Browser Presettings"""
+    my_options = {
+        'host': 'localhost',
+        'port': '8080'
+    }
+    """directory where web files located"""
+    eel.init('web')
+
+    """set instace variables"""
+    sport = 0
+    crawler_instance = ''
+
+    def __init__(self):
+        eel.start('index.html', size=(800, 600))  # landing page of gui and window size
+        print("Object of class 'Core' initialized.")
+
+
+
 
 """ FUNCTION COLLECTION """
 
@@ -25,48 +37,38 @@ eel.init('web')
 # TODO: Crawler Call
 @eel.expose
 def get_crawler_data(sport):
-    # TODO: init crawler function call
-    print("get_crawler_data(): executed successfully")
-    # seasons = {2019: "2019/20", 2020: "2020/21"}
-    # leagues = {1: "1. Bundesliga", 2: "2. Bundesliga", 3: "3. Bundesliga"}
+    sport = int(sport)
+    Core.sport = sport
 
-    #seasons_bl1 = json.dumps(np.arange(2002, 2020).tolist())
-    #seasons_bl2 = json.dumps(np.arange(2006, 2020).tolist())
-    #seasons_bl3 = json.dumps(np.arange(2008, 2020).tolist())
+    if sport == 1:
+        Core.crawler_instance = crawler.Crawler()
 
-    seasons_bl1 = np.arange(2002, 2020).tolist()
-    seasons_bl2 = np.arange(2006, 2020).tolist()
-    seasons_bl3 = np.arange(2008, 2020).tolist()
+        leagues = Core.crawler_instance.get_available_seasons_for_leagues()
+        print(leagues)
 
-    # TODO: Wo lege ich die Instanz meiner Crawler Klasse an?
-    # leagues, size = crawler.init()
-
-    leagues = {1: {'name': '1. Bundesliga', 'seasons': seasons_bl1, 'size': len(seasons_bl1), 'matchdays': 34},
-               2: {'name': '2. Bundesliga', 'seasons': seasons_bl2, 'size': len(seasons_bl2), 'matchdays': 34},
-               3: {'name': '3. Liga', 'seasons': seasons_bl3, 'size': len(seasons_bl3), 'matchdays': 38}
-               }
-    print(leagues)
-
-    return leagues
+        return leagues
+    else:
+        print("get_crawler_data(): no sport selected")
+        return None
 
 
 @eel.expose
-def start_crawler(sport, leagues, seasons):
-    # TODO: start crawler, WAS BEKOMME ICH ZURÜCK?
+def start_crawler(leagues, seasons):
     print("start_crawler(): executed successfully")
+
+    leagues = [int(i) for i in leagues]
+    seasons = [int(i) for i in seasons]
     print(leagues)
     print(seasons)
 
-    # crawler.get_dataset_of_matches_from_leagues_and_years(leagues, seasons)
-
+    Core.crawler_instance.get_matches_from_leagues_and_seasons_from_API(leagues, seasons)
     return None
 
 
 @eel.expose
-def get_required_model_data(sport, model):
+def get_required_model_data(model):
     print("get_required_model_data(): executed successfully")
-    print(sport)
-    print(model)
+    print(type(model))
     # TODO: Rückgabe der Auswahl von trainings und analysedaten (acc. to model instance)
 
     # Algo Instanz gibt Dict zurück mit nötigen parametern
@@ -130,6 +132,3 @@ def start_prediction(sport, model, team1_id, team2_id):
 
     return dummy
 
-
-def main():
-    eel.start('index.html', size=(800, 600))  # landing page of gui and window size

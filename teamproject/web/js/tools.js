@@ -135,6 +135,7 @@ function create_matchday_selection(id){
 }
 
 function store_selected_parameter(stage){
+  // TODO: Abfangen, dass bei einer gewählten Saison first_matchday <= last_matchday
   var selected_leagues = get_mult_selected('leagues_fine_selection');
   var selected_seasons = get_mult_selected('seasons_fine_selection');
   var first_matchday = get_single_selected('first_matchday');
@@ -159,15 +160,15 @@ function store_selected_parameter(stage){
 }
 
 function set_team(sel){
-  window.alert("set_team(): entered");
+  //window.alert("set_team(): entered");
   var selector_id = "team" + sel + "_selection";
   var selector = document.getElementById(selector_id);
   var team_list = get_session_item('team_list');
-  window.alert("team name: " + team_list[selector.value]);
+
   if (selector_id === "team1_selection"){
     set_session_item('team1_id', selector.value);
     set_session_item('team1_name', team_list[selector.value]);
-    window.alert("type of team2_id: " + typeof get_session_item('team2_id'));
+
     if (get_session_item('team2_id') === 0){
       set_innerHTML("left_btn", "<button class='btn btn-primary' onclick=eel.get_next_opponent("+ selector.value +")(show_next_opponent)>nächster Gegner</button>");
       set_innerHTML("right_btn", "<button class='btn btn-primary' onclick=set_opponent()>Gegner wählen</button>");
@@ -222,11 +223,4 @@ function start_prediction(){
   }
 }
 
-// TODO: Brauchen wir die wirklich?
-function show_select_algo_submit(){
-  selected_algo_id = document.getElementById("algo_selection").value;
 
-  if (selected_algo_id != 0){
-    display("right_btn");
-  }
-}

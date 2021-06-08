@@ -33,12 +33,12 @@ function build_stage(){
             // start crawler, get selection of models
             var leagues = get_session_item('selected_leagues');
             var seasons = get_session_item('selected_seasons');
-            eel.start_crawler(sport, leagues, seasons)(model_selection_render);
+            eel.start_crawler(leagues, seasons)(model_selection_render);
             break;
         case 2:
             // get training data from crawler, according to selected model
             clear_page();
-            eel.get_required_model_data(sport, model_id)(training_data_render);
+            eel.get_required_model_data(model_id)(training_data_render);
             break;
         case 3:
             // TODO: send Analysedaten Auswahl, get matches
