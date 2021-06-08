@@ -56,8 +56,6 @@ class Crawler(object):
         self.results = pd.DataFrame()
         self.results = pd.DataFrame()
 
-        # TODO: create dict from leagues -> avail. seasons
-        #       check if we are past june -> season is finished
         self.available_leagues = [1,2,3]
         if(datetime.datetime.now().month >= 7):
             year = datetime.datetime.now().year+1
@@ -79,18 +77,16 @@ class Crawler(object):
     #   PRIVATE API FUNCTIONS BELOW
     #   
  
-    def get_teams_from_API(self, leagues, seasons):
+    def get_teams_from_API(self, league, season):
         """Gets and saves the data of available teams from API. Input Format: <int>, <YYYY> example: (1,2020)"""
-        for league in leagues:
-            for season in seasons:
-                response = requests.get(self.api_teams_url.format(league,season))
-                # TODO: proper errorcode
-                if response.status_code != 200:
-                    return -1
-                teams = pd.read_json(response.content)[self.api_teams_content_columns]
-                teams.columns = self.uniform_teams_columns
-                teams.to_csv(self.uniform_teams_database_path.format(league,season), index=False)
-        return 1
+        response = requests.get(self.api_teams_url.format(league,season))
+        # TODO: proper errorcode
+        if response.status_code != 200:
+            return -1
+        teams = pd.read_json(response.content)[self.api_teams_content_columns]
+        teams.columns = self.uniform_teams_columns
+        teams.to_csv(self.uniform_teams_database_path.format(league,season), index=False)
+        return teams
 
     def get_matches_from_leagues_and_seasons_from_API(self, leagues, seasons):
         """Gets and saves Data of all matches played in gicen leagues/seasons from API. Input Format: <[int], [YYYY]> example: ([1],[2020,2019])"""
@@ -188,11 +184,11 @@ class Crawler(object):
     #
     def get_team_dicts(self, bl_league, season):
         """returns 2 dictionarys, the first maps team_id to team_name, the second is vice versa"""
-        # TODO: work with self.teams
+        # TODO: work with self.teams, but first implement self.get_teams
         if os.path.isfile(self.uniform_teams_database_path):
             teams_db = pd.read_csv(self.uniform_teams_database_path)
         else:
-            teams_db = self.get_teams_from_API([bl_league], [season])
+            teams_db = self.get_teams_from_API(bl_league, season)
         # create dicts out of 2 columns, 'TeamId' and 'TeamName'
         id_to_team = pd.Series(teams_db.team_name.values,index=teams_db.team_id).to_dict()
         team_to_id = pd.Series(teams_db.team_id.values,index=teams_db.team_name).to_dict()
