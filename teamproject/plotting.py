@@ -5,7 +5,11 @@ import matplotlib.pyplot as plt
 import numpy
 
 import crawler
+
 cr = crawler.Crawler()
+
+
+#### FUNCTIONS FOR SEASONS ####
 
 #### game result ####
 def plot_game_result_distribution(league, seasons):
@@ -18,7 +22,10 @@ def plot_game_result_distribution(league, seasons):
     guest_wins = 0
 
     # get data from crawler
-    dataset_matches, dataset_results, dataset_goals = cr.get_dataset_of_matches_from_leagues_and_years(league, seasons)
+    dataset_matches, dataset_results, dataset_goals = cr.get_data_for_algo(league, seasons, 0, 0, 0, 0)
+
+    # cut only end results
+    dataset_results = dataset_results[dataset_results['result_type_id'] == 1]
 
     # for loop to sum up amount of wins, ties, loses
     for index in dataset_results.index:
@@ -43,7 +50,8 @@ def plot_game_result_distribution(league, seasons):
 
     # save figure
     # TODO: if you want to save the file, uncomment here
-    # plt.savefig('C:/Users/User/Universität/plot_game_result_distribution_' + str(league[0]) + '_' + str(seasons[0]) + '.png')
+    # plt.savefig(
+    #    'C:/Users/User/Universität/plot_game_result_distribution_' + str(league[0]) + '_' + str(seasons[0]) + '.png')
 
     # show
     plt.show()
@@ -54,7 +62,6 @@ def plot_game_result_distribution(league, seasons):
     print('Dieses Schaubild zeigt eine Verteilung, wie häufig die Heimmannschaft gewonnen hat,\n'
           'wie häufig es ein Unentschieden gab. Und wie häufig die Gastmannschaft gewonnen hat.')
     print('_______')
-
 
 
 #### mean of goals ####
@@ -69,7 +76,10 @@ def plot_mean_of_goals(league, seasons):
     game_amount = 0
 
     # get data from crawler
-    dataset_matches, dataset_results, dataset_goals = cr.get_dataset_of_matches_from_leagues_and_years(league, seasons)
+    dataset_matches, dataset_results, dataset_goals = cr.get_data_for_algo(league, seasons, 0, 0, 0, 0)
+
+    # cut only end results
+    dataset_results = dataset_results[dataset_results['result_type_id'] == 1]
 
     # sum of goals
     for index in dataset_results.index:
@@ -95,8 +105,6 @@ def plot_mean_of_goals(league, seasons):
 
     # title
     plt.title('2 -- Anzahl der Tore pro Spiel in der ' + str(league[0]) + '. Bundesliga im Jahr ' + str(seasons[0]))
-    # title
-    # plt.title('Tor-Verteilung für Heim und Auswärtsteam und Total')
 
     # save figure
     # TODO: if you want to save the file, uncomment here
@@ -109,7 +117,10 @@ def plot_mean_of_goals(league, seasons):
     print()
     print('plot_mean_of_goals(' + str(league) + ' , ' + str(seasons) + ')')
     print('Dieses Schaubild zeigt, wie viele Tore pro Spiel für das Heimteam,'
-          'das Auswärtsteam und insgesamt gefallen sind. ')
+          ' das Auswärtsteam und insgesamt gefallen sind. ')
+    print('Tore fürs Heimteam: ' + str(round(goals_home, 2)))
+    print('Tore fürs Auswärtsteam: ' + str(round(goals_guest, 2)))
+    print('Tore Insgesamt: ' + str(round(goals_total, 2)))
     print('_______')
 
 
@@ -124,7 +135,10 @@ def plot_goal_distribution(league, seasons):
     goal_amounts = numpy.zeros(13)
 
     # get data from crawler
-    dataset_matches, dataset_results, dataset_goals = cr.get_dataset_of_matches_from_leagues_and_years(league, seasons)
+    dataset_matches, dataset_results, dataset_goals = cr.get_data_for_algo(league, seasons, 0, 0, 0, 0)
+
+    # cut only end results
+    dataset_results = dataset_results[dataset_results['result_type_id'] == 1]
 
     for index in dataset_results.index:
         goals_per_game = dataset_results.loc[index, 'points_home'] + dataset_results.loc[index, 'points_guest']
@@ -158,17 +172,19 @@ def plot_goal_distribution(league, seasons):
     print('_______')
 
 
-#### functions for one team only ####
+#### FUNCTIONS FOR ONE TEAM ####
 
 #### without plot game result distribution for one team only ####
 def game_result_distribution_one_team(team_id, league, seasons):
     ''' input: team-id, league, season
         output: plot of the distribution for home_wins, guest_wins and ties'''
     # get data from crawler
-    dataset_matches, dataset_results, dataset_goals = cr.get_dataset_of_matches_from_leagues_and_years(league, seasons)
-    league_extracted = league[0]
-    seasons_extracted = seasons[0]
-    id_to_team, team_to_id = cr.get_team_dicts(league_extracted, seasons_extracted)
+    dataset_matches, dataset_results, dataset_goals = cr.get_data_for_algo(league, seasons, 0, 0, 0, 0)
+
+    # cut only end results
+    dataset_results = dataset_results[dataset_results['result_type_id'] == 1]
+
+    id_to_team, team_to_id = cr.get_team_dicts(league, seasons)
 
     # initialize variables
     home_wins = 0
@@ -210,9 +226,9 @@ def game_result_distribution_one_team(team_id, league, seasons):
         game_amount += 1
 
     # normalize
-    home_wins_percent = round(home_wins/game_amount, 2)
-    guest_wins_percent = round(guest_wins/game_amount, 2)
-    ties_percent = round(ties/game_amount, 2)
+    home_wins_percent = round(home_wins / game_amount, 2)
+    guest_wins_percent = round(guest_wins / game_amount, 2)
+    ties_percent = round(ties / game_amount, 2)
     loses_percent = round(1 - (home_wins_percent + guest_wins_percent + ties_percent), 2)
 
     # comment
@@ -220,25 +236,25 @@ def game_result_distribution_one_team(team_id, league, seasons):
     print('plot_game_result_distribution_one_team(' + str(team_id) + ' , ' + str(league) + ' , ' + str(seasons) + ')')
     print()
     print('Dieses Schaubild zeigt, wie häufig ' + team_name + ' als Heimmannschaft und als Gastmannschaft gewonnen hat.'
-          '\nUnd wie häufig sie unentschieden gespielt hat.')
+                                                              '\nUnd wie häufig sie unentschieden gespielt hat.')
     print('Als Heimmannschaft gewonnen: ' + str(home_wins_percent))
     print('Als Gastmannschaft gewonnen: ' + str(guest_wins_percent))
     print('Unentschieden: ' + str(ties_percent))
     print('Verloren dementsprechend: ' + str(loses_percent))
     print('______')
 
-    return home_wins_percent, guest_wins_percent, ties_percent, loses_percent
 
-
-#### game result distribution for one team only ####
+#### plot game result distribution for one team only ####
 def plot_game_result_distribution_one_team(team_id, league, seasons):
     ''' input: team-id, league, season
         output: plot of the distribution for home_wins, guest_wins and ties'''
     # get data from crawler
-    dataset_matches, dataset_results, dataset_goals = cr.get_dataset_of_matches_from_leagues_and_years(league, seasons)
-    league_extracted = league[0]
-    seasons_extracted = seasons[0]
-    id_to_team, team_to_id = cr.get_team_dicts(league_extracted, seasons_extracted)
+    dataset_matches, dataset_results, dataset_goals = cr.get_data_for_algo(league, seasons, 0, 0, 0, 0)
+
+    # cut only end results
+    dataset_results = dataset_results[dataset_results['result_type_id'] == 1]
+
+    id_to_team, team_to_id = cr.get_team_dicts(league, seasons)
 
     # initialize variables
     home_wins = 0
@@ -280,9 +296,9 @@ def plot_game_result_distribution_one_team(team_id, league, seasons):
         game_amount += 1
 
     # normalize
-    home_wins_percent = round(home_wins/game_amount, 2)
-    guest_wins_percent = round(guest_wins/game_amount, 2)
-    ties_percent = round(ties/game_amount, 2)
+    home_wins_percent = round(home_wins / game_amount, 2)
+    guest_wins_percent = round(guest_wins / game_amount, 2)
+    ties_percent = round(ties / game_amount, 2)
     loses_percent = round(1 - (home_wins_percent + guest_wins_percent + ties_percent), 2)
 
     amounts = [home_wins, ties, guest_wins]
@@ -297,12 +313,12 @@ def plot_game_result_distribution_one_team(team_id, league, seasons):
     # title
     plt.title(
         'Verteilung der Spielausgänge der Mannschaft \n'
-        + team_name + ' aus der ' + str(league_extracted) + '. Bundesliga im Jahr ' + str(seasons_extracted))
+        + team_name + ' aus der ' + str(league[0]) + '. Bundesliga im Jahr ' + str(seasons[0]))
 
     # save figure
     # TODO: if you want to save the file, uncomment here
     # plt.savefig(
-    #    'C:/Users/User/Universität/plot_game_result_distribution_one_team_' + team_name + '_' + str(league[0]) + '_' + str(seasons[0]) + '.png')
+    #   'C:/Users/User/Universität/plot_game_result_distribution_one_team_' + team_name + '_' + str(league[0]) + '_' + str(seasons[0]) + '.png')
 
     # show
     plt.show()
@@ -312,24 +328,25 @@ def plot_game_result_distribution_one_team(team_id, league, seasons):
     print('plot_game_result_distribution_one_team(' + str(team_id) + ' , ' + str(league) + ' , ' + str(seasons) + ')')
     print()
     print('Dieses Schaubild zeigt, wie häufig ' + team_name + ' als Heimmannschaft und als Gastmannschaft gewonnen hat.'
-          '\nUnd wie häufig sie unentschieden gespielt hat.')
+                                                              '\nUnd wie häufig sie unentschieden gespielt hat.')
     print('Als Heimmannschaft gewonnen: ' + str(home_wins_percent))
     print('Als Gastmannschaft gewonnen: ' + str(guest_wins_percent))
     print('Unentschieden: ' + str(ties_percent))
     print('Verloren dementsprechend: ' + str(loses_percent))
     print('______')
 
-    return home_wins_percent, guest_wins_percent, ties_percent, loses_percent
 
-
-#### mean of goals for one team only ####
+#### plot mean of goals for one team only ####
 def plot_mean_of_goals_one_team(team_id, league, seasons):
     ''' input: team-id, league, season
         output: plot of the mean of goals for home_matches, guest_matches and total'''
 
     # get data from crawler
-    dataset_matches, dataset_results, dataset_goals = cr.get_dataset_of_matches_from_leagues_and_years(league, seasons)
-    id_to_team, team_to_id = cr.get_team_dicts(league[0], seasons[0])
+    dataset_matches, dataset_results, dataset_goals = cr.get_data_for_algo(league, seasons, 0, 0, 0, 0)
+    id_to_team, team_to_id = cr.get_team_dicts(league, seasons)
+
+    # cut only end results
+    dataset_results = dataset_results[dataset_results['result_type_id'] == 1]
 
     # initialize variables
     goals_as_home_team = 0
@@ -339,7 +356,8 @@ def plot_mean_of_goals_one_team(team_id, league, seasons):
     team_name = id_to_team[team_id]
 
     # extracts all matches from team_id
-    match_data_cut = dataset_matches.loc[(dataset_matches['team_home_id'] == team_id) | (dataset_matches['team_guest_id'] == team_id)]
+    match_data_cut = dataset_matches.loc[
+        (dataset_matches['team_home_id'] == team_id) | (dataset_matches['team_guest_id'] == team_id)]
     # extracts all home matches from team_id
     home_match_data_cut = dataset_matches.loc[(dataset_matches['team_home_id'] == team_id)]
     # extracts all guest matches from team_id
@@ -397,21 +415,26 @@ def plot_mean_of_goals_one_team(team_id, league, seasons):
     print('plot_mean_of_goals_one_team(' + str(team_id) + ' , ' + str(league) + ' , ' + str(seasons) + ')')
     print()
     print('Dieses Schaubild zeigt, wie viele Tore ' + team_name + ' gemittelt pro Spiel geschossen hat. \n'
-          'Ist unterteilt in als Heimmannschaft, als Gastmannschaft und Insgesamt.')
+                                                                  'Ist unterteilt in als Heimmannschaft, als Gastmannschaft und Insgesamt.')
     print('Als Heimmannschaft geschossen pro Spiel: ' + str(round(goals_home, 2)))
     print('Als Gastmannschaft geschossen pro Spiel: ' + str(round(goals_guest, 2)))
     print('Total geschossen pro Spiel: ' + str(round(goals_total, 2)))
     print('________')
 
 
-#### goal distribution for one team only ####
+#### plot goal distribution for one team only ####
 def plot_goal_distribution_one_team(team_id, league, seasons):
+    ''' input: team-id, league, season
+        output: plot of the histogram for goals'''
     # creating an array which contains the number of games with goals_per_game = index
     goal_amounts = numpy.zeros(13)
 
     # get data from crawler
-    dataset_matches, dataset_results, dataset_goals = cr.get_dataset_of_matches_from_leagues_and_years(league, seasons)
-    id_to_team, team_to_id = cr.get_team_dicts(league[0], seasons[0])
+    dataset_matches, dataset_results, dataset_goals = cr.get_data_for_algo(league, seasons, 0, 0, 0, 0)
+    id_to_team, team_to_id = cr.get_team_dicts(league, seasons)
+
+    # cut only end results
+    dataset_results = dataset_results[dataset_results['result_type_id'] == 1]
 
     # team name
     team_name = id_to_team[team_id]
@@ -449,7 +472,7 @@ def plot_goal_distribution_one_team(team_id, league, seasons):
     # save figure
     # TODO: if you want to save the file, uncomment here
     # plt.savefig('C:/Users/User/Universität/plot_goal_distribution_one_team_' + team_name + '_' + str(
-    #       league[0]) + '_' + str(seasons[0]) + '.png')
+    #      league[0]) + '_' + str(seasons[0]) + '.png')
 
     # show
     plt.show()
@@ -458,28 +481,68 @@ def plot_goal_distribution_one_team(team_id, league, seasons):
     print()
     print('plot_goal_distribution_one_team(' + str(team_id) + ' , ' + str(league) + ' , ' + str(seasons) + ')')
     print()
-    print('Dieses Schaubild zeigt eine Verteilung an darüber, wie viele Tore ' + team_name + ' in einem Spiel gemacht hat.')
-    #print('Als Heimmannschaft geschossen pro Spiel: ' + str(round(goals_home, 2)))
-    #print('Als Gastmannschaft geschossen pro Spiel: ' + str(round(goals_guest, 2)))
-    #print('Total geschossen pro Spiel: ' + str(round(goals_total, 2)))
+    print(
+        'Dieses Schaubild zeigt eine Verteilung an darüber, wie viele Tore ' + team_name + ' in einem Spiel gemacht hat.')
+    # print('Als Heimmannschaft geschossen pro Spiel: ' + str(round(goals_home, 2)))
+    # print('Als Gastmannschaft geschossen pro Spiel: ' + str(round(goals_guest, 2)))
+    # print('Total geschossen pro Spiel: ' + str(round(goals_total, 2)))
     print('________')
 
 
-#### goal distribution for all teams ####
+#### FUNCTIONS FOR MORE TEAMS AND MORE SEASONS####
+def statistic_for_more_teams_and_more_seasons(function, teams, league, seasons):
+    """ input: function(game_result_distribution_one_team, plot_game_result_distribution_one_team,
+                        plot_mean_of_goals_one_team, plot_goal_distribution_one_team)
+               teams (either 'all' or array), league (array), seasons (array)
+        output: prints of given teams with goal_distribution"""
+    id_to_team, team_to_id = cr.get_team_dicts(league, seasons)
+
+    if teams == 'all':
+        teams = id_to_team
+
+    for key in teams:
+        for key2 in seasons:
+            function(key, league, key2)
+
+
+# call the statistics not specific for teams for more seasons
+def statistic_for_more_seasons(function, league, seasons):
+    """ input: function (plot_game_result_distribution, plot_mean_of_goals, plot_goal_distribution)
+               league (array), seasons (array)
+        output: prints of given teams with goal_distribution"""
+
+    for key in seasons:
+        function(league, key)
+
+
+# TODO: function calls
+
+plot_game_result_distribution([1], [2020])
+plot_mean_of_goals([1], [2020])
+plot_goal_distribution([1], [2020])
+
+# statistic_for_more_seasons(plot_game_result_distribution, [1], [2020, 2019])
+
+# statistic_for_more_teams(plot_game_result_distribution_one_team, [16, 40], [1], [2020])
+# statistic_for_more_teams(plot_mean_of_goals_one_team, [16, 40], [1], [2020])
+# statistic_for_more_teams(plot_goal_distribution_one_team, [16, 40], [1], [2020])
+
+# plot_game_result_distribution_one_team(16, [1], [2020])
+# plot_mean_of_goals_one_team(16, [1], [2020])
+# plot_goal_distribution_one_team(16, [1], [2020])
+# goal_distribution_all_teams([87, 16], [1], [2020])
+
+
+#### plot goal distribution for all teams ####
 def plot_goal_distribution_all_teams(teams, league, seasons):
     id_to_team, team_to_id = cr.get_team_dicts(league[0], seasons[0])
     new_teams = dict()
 
     if teams == 'all':
         teams = id_to_team
-    else:
-        for (key, value) in id_to_team.items():
-            if key in teams:
-                new_teams[key] = value
 
     for key in teams:
-        home_wins_percent, guest_wins_percent, ties_percent, loses_percent =\
-            plot_game_result_distribution_one_team(key, league, seasons)
+        plot_game_result_distribution_one_team(key, league, seasons)
 
 
 def goal_distribution_all_teams(teams, league, seasons):
@@ -490,24 +553,10 @@ def goal_distribution_all_teams(teams, league, seasons):
 
     if teams == 'all':
         teams = id_to_team
-    else:
-        for (key, value) in id_to_team.items():
-            if key in teams:
-                new_teams[key] = value
 
     for key in teams:
-        home_wins_percent, guest_wins_percent, ties_percent, loses_percent =\
-            game_result_distribution_one_team(key, league, seasons)
+        game_result_distribution_one_team(key, league, seasons)
 
-
-# TODO: function calls
-# plot_game_result_distribution([1], [2020])
-# plot_mean_of_goals([1], [2020])
-# plot_goal_distribution([1], [2020])
-plot_game_result_distribution_one_team(16, [1], [2020])
-plot_mean_of_goals_one_team(16, [1], [2020])
-plot_goal_distribution_one_team(16, [1], [2020])
-# goal_distribution_all_teams([87, 16], [1], [2020])
 
 '''def plot_goal_distribution_all_teams(league, seasons):
     id_to_team, team_to_id = cr.get_team_dicts(league[0], seasons[0])
