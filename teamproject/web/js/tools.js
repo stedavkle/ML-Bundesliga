@@ -122,6 +122,7 @@ function store_crawler_parameter(){
   set_session_item('max_matchday_count', max_matchdays);
 
   set_session_item('stage', 1);
+  spinner_on();
   build_stage();
 }
 
@@ -137,6 +138,7 @@ function set_model(){
   set_session_item('selected_model_id', selected_model_id);
   set_session_item('training', model[selected_model_id].training);
   set_session_item('stage', 2);
+  spinner_on();
   build_stage();
 }
 
@@ -219,6 +221,7 @@ function store_selected_parameter(stage){
 
   set_session_item('selected_parameters', selected_parameters);
   set_session_item('stage', stage);
+  spinner_on();
   build_stage();
 }
 
@@ -306,6 +309,7 @@ function start_prediction(){
   }
   else {
     set_session_item('stage', 5);
+    spinner_on();
     build_stage();
   }
 }

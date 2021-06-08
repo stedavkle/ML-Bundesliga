@@ -42,6 +42,9 @@ function build_stage(){
             eel.get_required_model_data(model_id)(training_data_render);
             break;
         case 3:
+
+            // TODO: Training ersetzen durch Next Matchday Anzeige
+
             // TODO: send Analysedaten Auswahl, get matches
             var algo_data_parameter = get_session_item('selected_parameters');
             eel.get_teams_from_crawler(algo_data_parameter)(team_select_render);

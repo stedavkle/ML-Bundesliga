@@ -2,6 +2,7 @@
 
 function sport_selection_designer(){
   hide("back_btn");
+  hide('spinner_display');
   display("1-col-1")
   hide_and_reset("2-col-1");
   hide_and_reset("2-col-2");
@@ -14,6 +15,7 @@ function sport_selection_designer(){
 
 function crawler_data_designer(){
   display("back_btn");
+  hide('spinner_display');
   display("1-col-1")
   display("2-col-1");
   display("2-col-2");
@@ -26,6 +28,7 @@ function crawler_data_designer(){
 
 function model_selection_designer(){
   display("back_btn");
+  hide('spinner_display');
   display("1-col-1")
   display("2-col-1");
   hide_and_reset("2-col-2");
@@ -38,6 +41,7 @@ function model_selection_designer(){
 
 function training_data_designer(){
   display("back_btn");
+  hide('spinner_display');
   hide_and_reset("1-col-1")
   hide_and_reset("2-col-1");
   hide_and_reset("2-col-2");
@@ -50,6 +54,7 @@ function training_data_designer(){
 
 function team_select_designer(){
   display("back_btn");
+  hide('spinner_display');
   display("1-col-1")
   display("2-col-1");
   hide_and_reset("2-col-2");
@@ -62,6 +67,7 @@ function team_select_designer(){
 
 function result_stage_switcher_designer(){
   hide("back_btn");
+  hide('spinner_display');
   display("1-col-1")
   hide_and_reset("2-col-1");
   hide_and_reset("2-col-2");
@@ -74,6 +80,7 @@ function result_stage_switcher_designer(){
 
 function clear_page(){
   hide("back_btn");
+  hide('spinner_display');
   hide_and_reset("1-col-1")
   hide_and_reset("2-col-1");
   hide_and_reset("2-col-2");
@@ -82,4 +89,14 @@ function clear_page(){
   hide_and_reset("3-col-3");
   hide_and_reset("left_btn");
   hide_and_reset("right_btn");
+}
+
+function spinner_on(){
+  display('spinner_display');
+  hide('right_btn');
+  hide('left_btn');
+}
+
+function spinner_off(){
+  hide('spinner_display');
 }

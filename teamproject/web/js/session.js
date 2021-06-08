@@ -56,6 +56,8 @@ function create_session(){
     var sport_selection = get_single_selected("sport_selection");
     open_session(sport_selection);
     //window.alert("create_session(): successful");
+
+    spinner_on();
     build_stage();
 }
 
