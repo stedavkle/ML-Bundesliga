@@ -68,7 +68,7 @@ class Crawler(object):
         self.third_league_available_seasons = np.arange(2008,year)
 
     def get_available_seasons_for_leagues(self):
-        # TODO: return leagues, seasons and size of yeararray
+        """return leagues, seasons and size of yeararray"""
         self.dict = {1: {'name': '1. Bundesliga', 'seasons': self.first_league_available_seasons, 'size': self.first_league_available_seasons.size, 'matchdays': 34},
                     2: {'name': '2. Bundesliga', 'seasons': self.second_league_available_seasons, 'size': self.second_league_available_seasons.size, 'matchdays': 34},
                     3: {'name': '3. Liga', 'seasons': self.third_league_available_seasons, 'size': self.third_league_available_seasons.size, 'matchdays': 38}
@@ -149,6 +149,7 @@ class Crawler(object):
         #       CHECK REDUNDANCY
         # work with self.get_teams_from_api(), check if csv is saved, save all teams from one league/year seperately
         # save big DB to self.teams
+        
         return None
 
 
@@ -185,13 +186,13 @@ class Crawler(object):
     #
     #   Functions for cutting and extracting data from big DB
     #
-    def get_team_dicts(self, bl_league, year):
+    def get_team_dicts(self, bl_league, season):
         """returns 2 dictionarys, the first maps team_id to team_name, the second is vice versa"""
         # TODO: work with self.teams
         if os.path.isfile(self.uniform_teams_database_path):
             teams_db = pd.read_csv(self.uniform_teams_database_path)
         else:
-            teams_db = self.get_teams_from_API(bl_league, year)
+            teams_db = self.get_teams_from_API([bl_league], [season])
         # create dicts out of 2 columns, 'TeamId' and 'TeamName'
         id_to_team = pd.Series(teams_db.team_name.values,index=teams_db.team_id).to_dict()
         team_to_id = pd.Series(teams_db.team_id.values,index=teams_db.team_name).to_dict()
@@ -235,6 +236,9 @@ if __name__ == '__main__':
 
     matches, results, scores = crawler.get_data_for_algo([1],[2020,2019,2018],0,0,16,87)
     print(matches.head(10))
+
+    teams = crawler.get_team_dicts(1,2020)
+    print(teams)
 # %%
 if __name__ == '__main__':
     api_match_content_columns = ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
