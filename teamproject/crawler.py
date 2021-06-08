@@ -10,13 +10,10 @@ import datetime
 
 class Crawler(object):
     # PATHs for uniform Data
-    uniform_teams_database_path = r'./data/uniform_teams_bl{}_{}.csv'
-    uniform_matches_database_path = r'./data/uniform_matches_bl{}_{}.csv'
-    uniform_match_results_database_path = r'./data/uniform_match_results_bl{}_{}.csv'
-    uniform_match_score_database_path = r'./data/uniform_match_score_bl{}_{}.csv'
-    uniform_season_matches_db_path = r'./data/matches_bl{}_{}.csv'
-    uniform_season_results_db_path = r'./data/matches_bl{}_{}_results.csv'
-    uniform_season_goals_db_path = r'./data/matches_bl{}_{}_goals.csv'
+    uniform_teams_db_path = r'./data/bl{}_{}_teams_unif.csv'
+    uniform_season_matches_db_path = r'./data/bl{}_{}_matches_unif.csv'
+    uniform_season_results_db_path = r'./data/bl{}_{}_results_unif.csv'
+    uniform_season_scores_db_path = r'./data/bl{}_{}_scores_unif.csv'
 
     #COLUMNNAMES for uniform Data
     uniform_teams_columns = ['team_id', 'team_name', 'team_icon_url']
@@ -85,7 +82,7 @@ class Crawler(object):
             return -1
         teams = pd.read_json(response.content)[self.api_teams_content_columns]
         teams.columns = self.uniform_teams_columns
-        teams.to_csv(self.uniform_teams_database_path.format(league,season), index=False)
+        teams.to_csv(self.uniform_teams_db_path.format(league,season), index=False)
         return teams
 
     def get_matches_from_leagues_and_seasons_from_API(self, leagues, seasons):
@@ -109,7 +106,7 @@ class Crawler(object):
                 # save datasets as csv
                 matches.to_csv(self.uniform_season_matches_db_path.format(league,season), index=False)
                 match_results.to_csv(self.uniform_season_results_db_path.format(league,season), index=False)
-                match_scores.to_csv(self.uniform_season_goals_db_path.format(league,season), index=False)
+                match_scores.to_csv(self.uniform_season_scores_db_path.format(league,season), index=False)
         return matches, match_results, match_scores
 
     def get_next_match_from_API(self, league_id, team_id):
@@ -125,28 +122,40 @@ class Crawler(object):
         match.columns = self.uniform_match_content_columns
         return match
 
-    def get_team_icons_from_wiki(self, teams_data):
+    def get_team_icons_from_wiki(self):
         # TODO: download all pictures for teams listed in self.teams, remove parameter teams_data
         """gets team icon images for all teams in the Inputted uniform team data frame"""
         # TODO: check if Pics already saved
-        for index, row in teams_data.iterrows():
+        for index, row in self.teams.iterrows():
             # TODO: handle icons that are .svg instead of .png (ID=9 and ID=95)
             try:
                 urllib.request.urlretrieve(row["team_icon_url"], self.icons_path.format(row["team_id"]))
             except Exception:
                 continue
+        return 1
 
     #   
     #   PUBLIC FUNCTIONS BELOW
     #
 
-    def get_teams(leagues, seasons):
+    def get_teams(self, leagues, seasons):
         # TODO: concatenate TeamsDB from leagues/seasons and download all Pictures from the teams.
         #       CHECK REDUNDANCY
         # work with self.get_teams_from_api(), check if csv is saved, save all teams from one league/year seperately
         # save big DB to self.teams
-        
-        return None
+        teams = pd.DataFrame()
+        for league in leagues:
+            for season in seasons:
+                teams_path = self.uniform_teams_db_path.format(league,season)
+                if (os.path.isfile(teams_path)):
+                    new_teams = pd.read_csv(teams_path)
+                else: 
+                    new_teams = self.get_teams_from_API(league, season)
+                teams = pd.concat([teams, new_teams])
+                teams = teams.drop_duplicates(['team_id'])
+        self.teams = teams
+        self.get_team_icons_from_wiki()
+        return 1
 
 
 
@@ -155,43 +164,38 @@ class Crawler(object):
         """Extracts the desired data from multiple leagues/seasons and saves it internaly. Inputformat: (int[],int[])"""
         dataset_matches = pd.DataFrame()
         dataset_results = pd.DataFrame()
-        dataset_goals = pd.DataFrame()
+        dataset_scores = pd.DataFrame()
         # for all leagues in every year get matchdata
         for league in leagues:
             for season in seasons:
                 # format path strings
                 matches_path = self.uniform_season_matches_db_path.format(league,season)
                 results_path = self.uniform_season_results_db_path.format(league,season)
-                goals_path = self.uniform_season_goals_db_path.format(league,season)
+                scores_path = self.uniform_season_scores_db_path.format(league,season)
                 # check if data is stored, if not get from API
                 # TODO: Try: Except: instead of if() else()
-                if (os.path.isfile(matches_path)) & (os.path.isfile(results_path)) & (os.path.isfile(goals_path)):
-                    matches = pd.read_csv(self.uniform_season_matches_db_path.format(league,season))
-                    results = pd.read_csv(self.uniform_season_results_db_path.format(league,season))
-                    goals = pd.read_csv(self.uniform_season_goals_db_path.format(league,season))
+                if (os.path.isfile(matches_path)) & (os.path.isfile(results_path)) & (os.path.isfile(scores_path)):
+                    matches = pd.read_csv(matches_path)
+                    results = pd.read_csv(results_path)
+                    scores = pd.read_csv(scores_path)
                 else:
-                    matches, results, goals = self.get_matches_from_leagues_and_seasons_from_API([league], [season])
+                    matches, results, scores = self.get_matches_from_leagues_and_seasons_from_API([league], [season])
                 # concatenate data and drop old indices
                 dataset_matches = pd.concat([dataset_matches, matches])
                 dataset_results = pd.concat([dataset_results, results])
-                dataset_goals = pd.concat([dataset_goals, goals])
+                dataset_scores = pd.concat([dataset_scores, scores])
         self.matches = dataset_matches
         self.results = dataset_results
-        self.scores = dataset_goals
+        self.scores = dataset_scores
         return 1
     #
     #   Functions for cutting and extracting data from big DB
     #
-    def get_team_dicts(self, bl_league, season):
+    def get_team_dicts(self, leagues, seasons):
         """returns 2 dictionarys, the first maps team_id to team_name, the second is vice versa"""
-        # TODO: work with self.teams, but first implement self.get_teams
-        if os.path.isfile(self.uniform_teams_database_path):
-            teams_db = pd.read_csv(self.uniform_teams_database_path)
-        else:
-            teams_db = self.get_teams_from_API(bl_league, season)
-        # create dicts out of 2 columns, 'TeamId' and 'TeamName'
-        id_to_team = pd.Series(teams_db.team_name.values,index=teams_db.team_id).to_dict()
-        team_to_id = pd.Series(teams_db.team_id.values,index=teams_db.team_name).to_dict()
+        self.get_teams(leagues, seasons)
+        id_to_team = pd.Series(self.teams.team_name.values,index=self.teams.team_id).to_dict()
+        team_to_id = pd.Series(self.teams.team_id.values,index=self.teams.team_name).to_dict()
         return id_to_team, team_to_id
 
     def extract_matchup_history(self, team_home_id, team_guest_id):
@@ -229,12 +233,18 @@ if __name__ == '__main__':
     # matches, results, scores = crawler.get_data_for_algo(leagues, seasons,
     #                                                         day_start, day_end,
     #                                                         team_home_id, team_guest_id)
+    leagues = [1]
+    seasons = np.arange(2009,2020)
+    # matches, results, scores = crawler.get_data_for_algo([1],[2020,2019,2018],0,0,16,87)
+    # print(matches.head(10))
 
-    matches, results, scores = crawler.get_data_for_algo([1],[2020,2019,2018],0,0,16,87)
-    print(matches.head(10))
+    # teams = crawler.get_teams(leagues, seasons).sort_values(['team_id'])
+    # print(teams)
 
-    teams = crawler.get_team_dicts(1,2020)
-    print(teams)
+    id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
+    print(team_to_id["1. FC Köln"])
+
+    
 # %%
 if __name__ == '__main__':
     api_match_content_columns = ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
@@ -244,7 +254,7 @@ if __name__ == '__main__':
     uniform_match_content_columns = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
     uniform_result_content_columns = ['result_id', 'points_home', 'points_guest', 'result_type_id', 'match_id']
 
-    seasons = np.arange(2009,2010)
+    seasons = np.arange(2002,2021)
     leagues = [1,2]
 
     response = requests.get("https://www.openligadb.de/api/getmatchdata/bl{}/{}".format(1,2019))
@@ -261,7 +271,7 @@ if __name__ == '__main__':
     results
 
 
-    #match_scores = pd.json_normalize(response.json(), record_path='Goals', meta='MatchID')
+    #match_scores = pd.json_normalize(response.json(), record_path='scores', meta='MatchID')
     #print(match_scores)
 
 
