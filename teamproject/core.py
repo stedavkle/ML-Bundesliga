@@ -7,9 +7,6 @@ import json
 
 import crawler
 
-
-# TODO: macht der Spaß wirklich Sinn? Doch lieber Globals?
-
 ''' --- CLASS DECLARATION --- '''
 class Core:
     """Initialize Browser Presettings"""
@@ -23,6 +20,12 @@ class Core:
     """set instace variables"""
     sport = 0
     crawler_instance = ''
+    model = 0
+    leagues = []
+    seasons = []
+    first_matchday = 0
+    last_matchday = 0
+    points = 0
 
     def __init__(self):
         eel.start('index.html', size=(800, 600))  # landing page of gui and window size
@@ -34,7 +37,7 @@ class Core:
 """ FUNCTION COLLECTION """
 
 
-# TODO: Crawler Call
+# TODO: Crawler Call Docstring
 @eel.expose
 def get_crawler_data(sport):
     sport = int(sport)
@@ -53,7 +56,7 @@ def get_crawler_data(sport):
 
 
 @eel.expose
-def start_crawler(leagues, seasons):
+def start_crawler_get_models(leagues, seasons):
     print("start_crawler(): executed successfully")
 
     leagues = [int(i) for i in leagues]
@@ -62,13 +65,31 @@ def start_crawler(leagues, seasons):
     print(seasons)
 
     Core.crawler_instance.get_matches_from_leagues_and_seasons_from_API(leagues, seasons)
-    return None
+
+    # TODO: get Models
+    models = {
+        1: {'model_id': 1,
+            'model': 'trivialer Algorithmus',
+            'description': 'Einfacher Algorithmus, der Ergebnisse aller bisherigen Partieen zweier Teams vergleicht.',
+            'training': 0
+            },
+        2: {'model_id': 2,
+            'model': 'dummy Model',
+            'description': 'ML Model DUMMY',
+            'training': 1
+            }
+    };
+
+    return models
 
 
 @eel.expose
 def get_required_model_data(model):
     print("get_required_model_data(): executed successfully")
     print(type(model))
+    Core.model = model
+
+
     # TODO: Rückgabe der Auswahl von trainings und analysedaten (acc. to model instance)
 
     # Algo Instanz gibt Dict zurück mit nötigen parametern
@@ -81,32 +102,31 @@ def get_required_model_data(model):
 
 
 @eel.expose
-def start_training_and_get_teams(sport, model, parameter):
+def start_training_and_get_teams(parameter):
     print("start_training(): executed successfully")
-    print(model)
     print(parameter)
     return None
 
 
 @eel.expose
-def get_teams_from_crawler(sport, model, parameter):
+def get_teams_from_crawler(parameter):
     print("get_teams(): executed successfully")
-    print(model)
     print(parameter)
-    # TODO: Parameter abspeichern, Crawler Call get teams
-    teams = {19: "Bayern München",
-             93: "VfB Stuttgart",
-             17: "Borussia M'Gladbach",
-             100: "RB Leipzig",
-             9: "Borussia Dortmund",
-             1: "VfL Wolfsburg",
-             24: "Werder Bremen",
-             7: "SC Freiburg",
-             8: "FC Augsburg",
-             42: "Arminia Bielefeld",
-             2: "1. FC Heidenheim"}
 
-    return teams
+    Core.leagues = [int(i) for i in parameter['leagues']]
+    Core.seasons = [int(i) for i in parameter['seasons']]
+    Core.first_matchday = int(parameter['first_matchday'])
+    Core.last_matchday = int(parameter['last_matchday'])
+    Core.points = int(parameter['points'])
+
+    print(Core.leagues)
+    print(Core.seasons)
+
+    # TODO: Parameter abspeichern, Crawler Call get teams
+
+    id_to_team, team_to_id = Core.crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
+    print(id_to_team)
+    return id_to_team
 
 @eel.expose
 def get_next_opponent(id):
@@ -116,7 +136,7 @@ def get_next_opponent(id):
     return 42
 
 @eel.expose
-def start_prediction(sport, model, team1_id, team2_id):
+def start_prediction(team1_id, team2_id):
     print("start_prediction(): executed successfully")
     # TODO: get Icons and start Prediction
     print(team1_id)

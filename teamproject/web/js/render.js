@@ -23,6 +23,11 @@ function sport_selection_render(){
     set_innerHTML("1-col-1", html_str);
 }
 
+/**
+ * creates selection page for data, broadcasted by selected database
+ * @param leagues_seasons - dictionary of leagues
+ *
+ */
 function crawler_data_render(leagues_seasons){
     crawler_data_designer();
 
@@ -85,32 +90,40 @@ function crawler_data_render(leagues_seasons){
 }
 
 
-function model_selection_render(){
+/**
+ * displays model selection
+ * @param models - dictionary with available models
+ */
+function model_selection_render(models){
     model_selection_designer();
     //window.alert("model_selection_render(): entered");
-    set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=set_model()>Bestätigen</button>");
+    set_session_item('models', models);
 
+    set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=set_model()>Bestätigen</button>");
     set_innerHTML("1-col-1", "<p>Wähle einen Algorithmus oder ein ML-Modell aus:</p>");
 
     var html_str = "<select class='form-control' id='model_selection' onchange=show_model_description()>" +
     "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
 
-    var model = new Models();
-
-    for (var key in model.models){
-        html_str += "<option value=" + key + ">" + model.models[key]['model'] + "</option>";
+    for (var key in models){
+        html_str += "<option value=" + key + ">" + models[key]['model'] + "</option>";
     }
     html_str += "</select>";
 
     set_innerHTML("2-col-1", html_str);
 }
 
+
+/**
+ * displays fine selection of data
+ * @param parameter - dictionary of parameter options the model needs
+ */
 function training_data_render(parameter){
     training_data_designer();
-    var model_id = get_session_item('selected_model_id');
-    var models = new Models();
+    //var model_id = get_session_item('selected_model_id');
+    var training = get_session_item('training');
 
-    if (models.models[model_id].training){
+    if (training == 1){
         set_innerHTML('right_btn', "<button class='btn btn-danger' onclick=store_selected_parameter(4)>Training starten</button>");
     }
     else {
@@ -124,7 +137,7 @@ function training_data_render(parameter){
     var html_str_points = "<input type='checkbox' id='points_checkbox'>" +
         "<label for='points_checkbox'>Tore berücksichtigen</label>";
 
-    // TODO: sich klar werden, was genau eigentlich auswählbare Parameter sein sollen!!!
+
     set_innerHTML("2-col-1", html_str_leagues);
     set_innerHTML("2-col-2", html_str_seasons);
     set_innerHTML("3-col-1", html_str_matchdays_first);
@@ -156,6 +169,11 @@ function training_data_render(parameter){
     }
 }
 
+
+/**
+ * displays team selection
+ * @param team_list - dictionary of teams
+ */
 function team_select_render(team_list){
     team_select_designer();
     set_session_item('team_list', team_list);
@@ -172,6 +190,11 @@ function team_select_render(team_list){
     set_innerHTML("2-col-1", html_str);
 }
 
+
+/**
+ * bridging function to set result stage and render properties
+ * @param result - result of prediction
+ */
 function result_stage_switcher_render(result){
     result_stage_switcher_designer();
     set_session_item('result', result);
@@ -179,6 +202,10 @@ function result_stage_switcher_render(result){
     build_stage();
 }
 
+
+/**
+ * displays result
+ */
 function result_screen_render(){
     var result = get_session_item('result');
     var team_list = get_session_item('team_list');
@@ -206,70 +233,4 @@ function result_screen_render(){
     set_innerHTML("3-col-1", col1_html);
     set_innerHTML("3-col-2", col2_html);
     set_innerHTML("3-col-3", col3_html);
-}
-
-/**
- * DUMMYS
- * @param session
- */
-function dummy_page_render(session){
-    dummy_page_designer();
-    window.alert("dummy_page_render()");
-    //var stage = session.get_stage();
-
-    //var sports = JSON.stringify(session.get_sports());
-    //window.alert(sports)
-    set_innerHTML("1-col-1", get_session_item('sport'));
-
-    window.confirm("Set Random Variables to Stage");
-    set_session_item('stage', 1);
-    set_session_item('leagues', {1: "Bundesliga"});
-    set_session_item('seasons', {2020: "2020/21"});
-    set_session_item('team_list', {1: "Bayern", 2: "Gladbach"});
-    set_session_item('selected_algo_id', 1);
-    set_session_item('selected_leagues', [1]);
-    set_session_item('selected_seasons', [2019, 2020]);
-    set_session_item('team1_id', 1);
-    set_session_item('team2_id', 2);
-    set_session_item('team1_name', "Bayern");
-    set_session_item('team2_name', "Gladbach");
-    session.update_session_from_storage();
-}
-
-function display_storage_and_session(session){
-
-    var sport = get_session_item('sport');
-    var stage = get_session_item('stage');
-    var leagues = get_session_item('leagues');
-    var seasons = get_session_item('seasons');
-    var team_list = get_session_item('team_list');
-    var selected_algo_id = get_session_item('selected_algo_id');
-    var selected_leagues = get_session_item('selected_leagues');
-    var selected_seasons = get_session_item('selected_seasons');
-    var team1_id = get_session_item('team1_id');
-    var team2_id = get_session_item('team2_id');
-    var team1_name = get_session_item('team1_name');
-    var team2_name = get_session_item('team2_name');
-
-    var html_arr = [sport, stage, leagues, seasons, team_list, selected_algo_id, selected_leagues, selected_seasons, team1_id, team2_id, team1_name, team2_name];
-
-    var html_stor = "<h3>Storage Data</h3>" +
-        "<ul>";
-
-    for (var x in html_arr){
-        html_stor += "<li>" + typeof html_arr[x] + "</li>";
-    }
-    html_stor += "</ul>";
-    set_innerHTML('2-col-1', html_stor);
-
-    html_arr = session.return_all_values();
-
-    html_stor = "<h3>Session Data</h3>" +
-        "<ul>";
-
-    for (var x in html_arr){
-        html_stor += "<li>" + typeof html_arr[x] + "</li>";
-    }
-    html_stor += "</ul>";
-    set_innerHTML('2-col-2', html_stor);
 }

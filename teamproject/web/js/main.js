@@ -18,6 +18,7 @@ function on_page_load(){
 
 /**
  * triggers stage render function
+ *
  */
 function build_stage(){
     var stage = get_session_item('stage');
@@ -33,7 +34,7 @@ function build_stage(){
             // start crawler, get selection of models
             var leagues = get_session_item('selected_leagues');
             var seasons = get_session_item('selected_seasons');
-            eel.start_crawler(leagues, seasons)(model_selection_render);
+            eel.start_crawler_get_models(leagues, seasons)(model_selection_render);
             break;
         case 2:
             // get training data from crawler, according to selected model
@@ -43,19 +44,19 @@ function build_stage(){
         case 3:
             // TODO: send Analysedaten Auswahl, get matches
             var algo_data_parameter = get_session_item('selected_parameters');
-            eel.get_teams_from_crawler(sport, model_id, algo_data_parameter)(team_select_render);
+            eel.get_teams_from_crawler(algo_data_parameter)(team_select_render);
             break;
         case 4:
             // TODO: send Trainingdata, training progress, get matches
             var model_data_parameter = get_session_item('selected_parameters');
             progress_spinner_render();
-            eel.start_training_and_get_teams(sport, model_id, model_data_parameter)(team_select_render);
+            eel.start_training_and_get_teams(model_data_parameter)(team_select_render);
             break;
         case 5:
             // TODO: start prediction
             var team1_id = get_session_item('team1_id');
             var team2_id = get_session_item('team2_id');
-            eel.start_prediction(sport, model_id, team1_id, team2_id)(result_stage_switcher_render);
+            eel.start_prediction(team1_id, team2_id)(result_stage_switcher_render);
             break;
         case 6:
             // TODO: result
@@ -67,6 +68,9 @@ function build_stage(){
 }
 
 // TODO: Oder zur Crawler Daten Auswahl zurück springen???
+/**
+ * set program back to initial state
+ */
 function reset_program(){
     clear_page();
     close_session();

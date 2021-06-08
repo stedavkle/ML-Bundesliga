@@ -88,8 +88,11 @@ function store_crawler_parameter(){
 }
 
 function set_model(){
-  //window.alert("set_model(): entered")
-  set_session_item('selected_model_id', get_single_selected('model_selection'));
+  //window.alert("set_model(): entered");
+  var model = get_session_item('models');
+  var selected_model_id = get_single_selected('model_selection');
+  set_session_item('selected_model_id', selected_model_id);
+  set_session_item('training', model[selected_model_id].training);
   set_session_item('stage', 2);
   build_stage();
 }
@@ -176,6 +179,10 @@ function set_team(sel){
       display("right_btn");
     }
   }
+  else {
+    set_session_item('team2_id', selector.value);
+    set_session_item('team2_name', team_list[selector.value]);
+  }
 }
 
 function show_next_opponent(team2_id){
@@ -192,16 +199,16 @@ function set_opponent(){
   var team_list = get_session_item('team_list');
 
   var html_str = "<p>Gastteam:</p>" +
-    "<select id='team2_selection' onchange=set_team(2)>" +
+    "<select class='form-control' id='team2_selection' onchange=set_team(2)>" +
     "<option value=0 selected disabled hidden>kein Team ausgewählt</option>";
 
-    for (var key in team_list){
-      html_str += "<option value=" + key + ">" + team_list[key] + "</option>";
-    }
-    html_str += "</select>";
+  for (var key in team_list){
+    html_str += "<option value=" + key + ">" + team_list[key] + "</option>";
+  }
+  html_str += "</select>";
 
   set_innerHTML("2-col-2", html_str);
-
+  display('2-col-2');
   var team1_id = get_session_item('team1_id');
   set_innerHTML("left_btn","<button class='btn btn-primary' onclick=eel.get_next_opponent("+ team1_id +")(show_next_opponent)>nächster Gegner</button>");
   set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=start_prediction()>Vorhersage starten</button>");
