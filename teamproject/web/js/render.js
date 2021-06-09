@@ -197,11 +197,10 @@ function team_select_render(team_list){
 
 
 /**
- * bridging function to set result stage and render properties
+ * bridging function to set result stage
  * @param result - result of prediction
  */
 function result_stage_switcher_render(result){
-    result_stage_switcher_designer();
     set_session_item('result', result);
     set_session_item('stage', 6);
     build_stage();
@@ -212,6 +211,7 @@ function result_stage_switcher_render(result){
  * displays result
  */
 function result_screen_render(){
+    result_stage_switcher_designer();
     var result = get_session_item('result');
     var team_list = get_session_item('team_list');
 
@@ -227,15 +227,22 @@ function result_screen_render(){
     set_innerHTML("left_btn", "<button class='btn btn-primary' onclick=reset_stage_to(3)>anderes Match wählen</button>");
     set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=reset_program()>zurück zur Startseite</button>");
 
-    var col1_html = "<div><img src=" + img_team1 + " alt=" + team1_name + "><h3>" + team1_name + "</h3></div>" +
-        "<div><p>Sieg " + team1_name + ":</p><h5>" + home_win + "</h5></div>";
-    var col2_html = "<div><h2>:</h2></div>" +
-        "<div><p>Unentschieden:</p><h5>" + draw + "</h5></div>";
-    var col3_html = "<div><img src=" + img_team2 + " alt=" + team2_name + "><h3>" + team2_name + "</h3></div>" +
-        "<div><p>Sieg " + team2_name + ":</p><h5>" + guest_win + "</h5></div>";
+    var img_home_html = "<img src=" + img_team1 + " alt=" + team1_name + "><h4>" + team1_name + "</h4>";
+    var colon_html = "<div><h2>:</h2></div>";
+    var img_guest_html = "<img src=" + img_team2 + " alt=" + team2_name + "><h4>" + team2_name + "</h4>";
+    var propability_table = "<table class='table'>" +
+        "<thread><tr>" +
+        "<th>Sieg " + team1_name + "</th>" +
+        "<th>Unentschieden</th>" +
+        "<th>Sieg " + team2_name + "</th></tr></thread>" +
+        "<tbody><tr>" +
+        "<th>" + home_win + "</th>" +
+        "<th>" + draw + "</th>" +
+        "<th>" + guest_win + "</th></tr></tbody></table>";
 
     set_innerHTML("1-col-1", "<h2 class='d-flex justify-content-center'>Ergebnis:</h2>");
-    set_innerHTML("3-col-1", col1_html);
-    set_innerHTML("3-col-2", col2_html);
-    set_innerHTML("3-col-3", col3_html);
+    set_innerHTML("3-col-1", img_home_html);
+    set_innerHTML("3-col-2", colon_html);
+    set_innerHTML("3-col-3", img_guest_html);
+    set_innerHTML('5-col-1', propability_table);
 }
