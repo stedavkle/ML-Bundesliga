@@ -174,21 +174,21 @@ function create_matchday_selection(id){
   var max_matchdays = get_session_item('max_matchday_count');
 
   if (id === 'first'){
-    html_str += "<option value='1' selected>1</option>";
+    html_str += "<option value=1 selected>1</option>";
   }
   else {
-    html_str += "<option value='1'>1</option>";
+    html_str += "<option value=1>1</option>";
   }
 
   for (var i = 2; i < max_matchdays; i++){
-    html_str += "<option value='" + i + "'>" + i + "</option>";
+    html_str += "<option value=" + i + ">" + i + "</option>";
   }
 
   if (id === 'last'){
-    html_str += "<option value='" + max_matchdays + "' selected>" + max_matchdays + "</option>";
+    html_str += "<option value=" + max_matchdays + " selected>" + max_matchdays + "</option>";
   }
   else {
-    html_str += "<option value='" + max_matchdays + "'>" + max_matchdays + "</option>";
+    html_str += "<option value=" + max_matchdays + ">" + max_matchdays + "</option>";
   }
   html_str += "</select>";
   return html_str;
@@ -200,29 +200,35 @@ function create_matchday_selection(id){
  * @param stage - number of next stage
  */
 function store_selected_parameter(stage){
-  // TODO: Abfangen, dass bei einer gewählten Saison first_matchday <= last_matchday
   var selected_leagues = get_mult_selected('leagues_fine_selection');
   var selected_seasons = get_mult_selected('seasons_fine_selection');
-  var first_matchday = get_single_selected('first_matchday');
-  var last_matchday = get_single_selected('last_matchday');
+  var first_matchday = parseInt(get_single_selected('first_matchday'));
+  var last_matchday = parseInt(get_single_selected('last_matchday'));
   var points_checked = 0;
 
-  if (document.getElementById('points_checkbox').checked){
-    points_checked = 1;
-  };
+  if (selected_seasons.length == 1 && first_matchday > last_matchday)
+  {
+    // TODO: ALERT TOAST implementieren
+    window.alert("FEHLER: erster Spieltag liegt nach dem letzten Spieltag!")
+  }
+  else{
+    if (document.getElementById('points_checkbox').checked){
+      points_checked = 1;
+    };
 
-  var selected_parameters = {
-    'leagues': selected_leagues,
-    'seasons': selected_seasons,
-    'first_matchday': first_matchday,
-    'last_matchday': last_matchday,
-    'points': points_checked
-  };
+    var selected_parameters = {
+      'leagues': selected_leagues,
+      'seasons': selected_seasons,
+      'first_matchday': first_matchday,
+      'last_matchday': last_matchday,
+      'points': points_checked
+    };
 
-  set_session_item('selected_parameters', selected_parameters);
-  set_session_item('stage', stage);
-  spinner_on();
-  build_stage();
+    set_session_item('selected_parameters', selected_parameters);
+    set_session_item('stage', stage);
+    spinner_on();
+    build_stage();
+  }
 }
 
 
@@ -301,6 +307,7 @@ function start_prediction(){
   var team1_id = get_session_item('team1_id');
   var team2_id = get_session_item('team2_id');
 
+  // TODO: ALERT TOAST implementieren
   if (team1_id == team2_id){
     window.alert("start_prediction(): ERROR - Heim- und Auswärtsteam sind gleich!");
   }
