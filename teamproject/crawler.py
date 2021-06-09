@@ -1,5 +1,6 @@
 # %%
 
+from os import stat_result
 import pandas as pd
 import json
 import requests
@@ -77,22 +78,23 @@ class Crawler(object):
     def get_teams_from_API(self, league, season):
         """Gets and saves the data of available teams from API. Input Format: <int>, <YYYY> example: (1,2020)"""
         response = requests.get(self.api_teams_url.format(league,season))
-        # TODO: proper errorcode
+        # TODO: replace errorcode with custom error code? error code list found at: https://docs.python.org/3/library/exceptions.html#base-classes
+        # response.status_code List: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
         if response.status_code != 200:
-            return -1
+            raise LookupError('Failed to get Teams from ' + response.url + ', HTTP Response:' + str(response.status_code))
         teams = pd.read_json(response.content)[self.api_teams_content_columns]
         teams.columns = self.uniform_teams_columns
         teams.to_csv(self.uniform_teams_db_path.format(league,season), index=False)
         return teams
 
     def get_matches_from_leagues_and_seasons_from_API(self, leagues, seasons):
-        """Gets and saves Data of all matches played in gicen leagues/seasons from API. Input Format: <[int], [YYYY]> example: ([1],[2020,2019])"""
+        """Gets and saves Data of all matches played in given leagues/seasons from API. Input Format: <[int], [YYYY]> example: ([1],[2020,2019])"""
         for league in leagues:
             for season in seasons:
                 response = requests.get(self.api_matches_lg_ss_url.format(league,season))
-                # TODO: proper errorcode
+                # TODO: errorcode acceptable?
                 if response.status_code != 200:
-                    return -1
+                    raise LookupError('Failed to get Seasonal Match Table from ' + response.url + ', HTTP Response:' + str(response.status_code))
                 data_json = response.json()
 
                 matches = pd.json_normalize(data_json)[self.api_match_content_columns]
@@ -114,9 +116,9 @@ class Crawler(object):
         """gets the next upcoming match for one team, Input: <league_id, team_id> example: (4442, 83)"""
         # <BundesLiga, Saison, LeagueID> 1 2020 4442; 2 2020 4443; 3 2020 4444
         response = requests.get(self.api_nextmatch_lg_tm_url.format(league_id, team_id))
-        # TODO: proper errorcode
+        # TODO: Errorcode acceptable?
         if response.status_code != 200:
-            return -1
+            raise LookupError('Failed to get Match Information from ' + response.url + ', HTTP Response:' + str(response.status_code))
         match = pd.json_normalize(response.json())
         # extract necessary data
         match = match[self.api_match_content_columns]
@@ -124,7 +126,7 @@ class Crawler(object):
         return match
 
     def get_team_icons_from_wiki(self):
-        # TODO: download all pictures for teams listed in self.teams, remove parameter teams_data
+        #for id in self.teams
         """gets team icon images for all teams in the Inputted uniform team data frame"""
         # TODO: check if Pics already saved
         for index, row in self.teams.iterrows():
@@ -274,6 +276,5 @@ if __name__ == '__main__':
 
     #match_scores = pd.json_normalize(response.json(), record_path='scores', meta='MatchID')
     #print(match_scores)
-
 
 # %%
