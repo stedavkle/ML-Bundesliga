@@ -10,38 +10,38 @@ import datetime
 
 class Crawler(object):
     # PATHs for uniform Data
-    uniform_teams_db_path = r'./data/bl{}_{}_teams_unif.csv'
-    uniform_season_matches_db_path = r'./data/bl{}_{}_matches_unif.csv'
-    uniform_season_results_db_path = r'./data/bl{}_{}_results_unif.csv'
+    UNIFORM_TEAMS_DB_PATH = r'./data/bl{}_{}_teams_unif.csv'
+    UNIFORM_SEASON_MATCHES_DB_PATH = r'./data/bl{}_{}_matches_unif.csv'
+    UNIFORM_SEASON_RESULTS_DB_PATH = r'./data/bl{}_{}_results_unif.csv'
     #uniform_season_scores_db_path = r'./data/bl{}_{}_scores_unif.csv'
 
     #COLUMNNAMES for uniform Data
-    uniform_teams_columns = ['team_id', 'team_name', 'team_icon_url']
-    uniform_match_content_columns = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
-    uniform_result_content_columns = ['result_id', 'points_home', 'points_guest', 'result_type_id', 'match_id']
+    UNIFORM_TEAMS_COLUMNS = ['team_id', 'team_name', 'team_icon_url']
+    UNIFORM_MATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
+    UNIFORM_RESULT_CONTENT_COLUMNS = ['result_id', 'points_home', 'points_guest', 'result_type_id', 'match_id']
     #uniform_score_content_columns = ['goal_id','scores_home','scores_guest','scorer_id',
     #                                 'scorer_name', 'is_overtime', 'match_id']
 
     #PATHs for miscellaneous Data
-    icons_path = r'./icons/{}.png'
-    table_db_path = r'./data/table_bl{}_{}.csv'
+    ICONS_PATH = r'./icons/{}.png'
+    TABLE_DB_PATH = r'./data/table_bl{}_{}.csv'
 
     # URLs for OpenLigaDB API
-    api_teams_url = "https://www.openligadb.de/api/getavailableteams/bl{}/{}"
-    api_matches_lg_ss_url = "https://www.openligadb.de/api/getmatchdata/bl{}/{}"
-    api_matches_1v1_url = "https://www.openligadb.de/api/getmatchdata/{}/{}"
-    api_nextmatch_lg_tm_url = "https://www.openligadb.de/api/getnextmatchbyleagueteam/{}/{}"
-    api_table_lg_yr_url = "https://www.openligadb.de/api/getbltable/bl{}/{}"
+    API_TEAMS_URL = "https://www.openligadb.de/api/getavailableteams/bl{}/{}"
+    API_MATCHES_LEAGUE_SEASON_URL = "https://www.openligadb.de/api/getmatchdata/bl{}/{}"
+    API_MATCHUP_URL = "https://www.openligadb.de/api/getmatchdata/{}/{}"
+    API_NEXTMATCH_LEAGUE_TEAM_URL = "https://www.openligadb.de/api/getnextmatchbyleagueteam/{}/{}"
+    API_TABLE_LEAGUE_YEAR_URL = "https://www.openligadb.de/api/getbltable/bl{}/{}"
     
     # COLUMNNAMES for OpenLigaDB API
-    api_teams_content_columns = ['TeamId', 'TeamName', 'TeamIconUrl']
-    api_match_content_columns = ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
-    api_result_content_columns = ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
+    API_TEAMS_CONTENT_COLUMNS = ['TeamId', 'TeamName', 'TeamIconUrl']
+    API_MATCH_CONTENT_COLUMNS = ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
+    API_RESULT_CONTENT_COLUMNS = ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
     #api_score_content_columns = ['GoalID','ScoreTeam1','ScoreTeam2','GoalGetterID',
     #                            'GoalGetterName', 'IsOvertime', 'MatchID']
 
     # METADATA for OpenLigaDB API
-    api_meta_data = "MatchID"
+    API_META_DATA = "MatchID"
 
     # CONSTRUCTOR
 
@@ -86,13 +86,13 @@ class Crawler(object):
         :param int season: year with format <YYYY>
         :returns: pd.DataFrame()
         """
-        response = requests.get(self.api_teams_url.format(league,season))
+        response = requests.get(self.API_TEAMS_URL.format(league,season))
         # TODO: proper errorcode
         if response.status_code != 200:
             raise Exception
-        teams = pd.read_json(response.content)[self.api_teams_content_columns]
-        teams.columns = self.uniform_teams_columns
-        teams.to_csv(self.uniform_teams_db_path.format(league,season), index=False)
+        teams = pd.read_json(response.content)[self.API_TEAMS_CONTENT_COLUMNS]
+        teams.columns = self.UNIFORM_TEAMS_COLUMNS
+        teams.to_csv(self.UNIFORM_TEAMS_DB_PATH.format(league,season), index=False)
         return teams
 
     def get_matches_from_leagues_and_seasons_from_API(self, leagues, seasons):
@@ -104,24 +104,24 @@ class Crawler(object):
         """
         for league in leagues:
             for season in seasons:
-                response = requests.get(self.api_matches_lg_ss_url.format(league,season))
+                response = requests.get(self.API_MATCHES_LEAGUE_SEASON_URL.format(league,season))
                 # TODO: proper errorcode
                 if response.status_code != 200:
                     raise Exception
                 data_json = response.json()
 
-                matches = pd.json_normalize(data_json)[self.api_match_content_columns]
-                matches.columns = self.uniform_match_content_columns
+                matches = pd.json_normalize(data_json)[self.API_MATCH_CONTENT_COLUMNS]
+                matches.columns = self.UNIFORM_MATCH_CONTENT_COLUMNS
 
-                match_results = pd.json_normalize(data_json, record_path='MatchResults', meta=self.api_meta_data)[self.api_result_content_columns]
-                match_results.columns = self.uniform_result_content_columns
+                match_results = pd.json_normalize(data_json, record_path='MatchResults', meta=self.API_META_DATA)[self.API_RESULT_CONTENT_COLUMNS]
+                match_results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
                 # # TODO: concatenate score_home and score_guest to a tuple (score_home, score_guest) in one column 'temp_score'
                 # # TODO: handle score_db not present
-                # match_scores = pd.json_normalize(data_json, record_path='Goals', meta=self.api_meta_data)[self.api_score_content_columns]
+                # match_scores = pd.json_normalize(data_json, record_path='Goals', meta=self.API_META_DATA)[self.api_score_content_columns]
                 # match_scores.columns = self.uniform_score_content_columns
                 # save datasets as csv
-                matches.to_csv(self.uniform_season_matches_db_path.format(league,season), index=False)
-                match_results.to_csv(self.uniform_season_results_db_path.format(league,season), index=False)
+                matches.to_csv(self.UNIFORM_SEASON_MATCHES_DB_PATH.format(league,season), index=False)
+                match_results.to_csv(self.UNIFORM_SEASON_RESULTS_DB_PATH.format(league,season), index=False)
                 #match_scores.to_csv(self.uniform_season_scores_db_path.format(league,season), index=False)
         return matches, match_results#, match_scores
 
@@ -135,14 +135,14 @@ class Crawler(object):
         example ids: <BundesLiga, Saison, LeagueID> 1 2020 4442; 2 2020 4443; 3 2020 4444
         """
         
-        response = requests.get(self.api_nextmatch_lg_tm_url.format(league_id, team_id))
+        response = requests.get(self.API_NEXTMATCH_LEAGUE_TEAM_URL.format(league_id, team_id))
         # TODO: proper errorcode
         if response.status_code != 200:
             raise Exception
         match = pd.json_normalize(response.json())
         # extract necessary data
-        match = match[self.api_match_content_columns]
-        match.columns = self.uniform_match_content_columns
+        match = match[self.API_MATCH_CONTENT_COLUMNS]
+        match.columns = self.UNIFORM_MATCH_CONTENT_COLUMNS
         return match
 
     def get_team_icons_from_wiki(self):
@@ -155,7 +155,7 @@ class Crawler(object):
         for index, row in self.teams.iterrows():
             # TODO: handle icons that are .svg instead of .png (ID=9 and ID=95)
             try:
-                urllib.request.urlretrieve(row["team_icon_url"], self.icons_path.format(row["team_id"]))
+                urllib.request.urlretrieve(row["team_icon_url"], self.ICONS_PATH.format(row["team_id"]))
             except Exception:
                 continue
         return 1
@@ -175,7 +175,7 @@ class Crawler(object):
         teams = pd.DataFrame()
         for league in leagues:
             for season in seasons:
-                teams_path = self.uniform_teams_db_path.format(league,season)
+                teams_path = self.UNIFORM_TEAMS_DB_PATH.format(league,season)
                 if (os.path.isfile(teams_path)):
                     new_teams = pd.read_csv(teams_path)
                 else: 
@@ -208,8 +208,8 @@ class Crawler(object):
         for season in seasons:
             for league in leagues:
                 # format path strings
-                matches_path = self.uniform_season_matches_db_path.format(league,season)
-                results_path = self.uniform_season_results_db_path.format(league,season)
+                matches_path = self.UNIFORM_SEASON_MATCHES_DB_PATH.format(league,season)
+                results_path = self.UNIFORM_SEASON_RESULTS_DB_PATH.format(league,season)
                 #scores_path = self.uniform_season_scores_db_path.format(league,season)
                 # check if data is stored, if not get from API
                 # TODO: Try: Except: instead of if() else()
