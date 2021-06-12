@@ -46,10 +46,10 @@ def get_crawler_data(sport):
     if sport == 1:
         Core.crawler_instance = crawler.Crawler()
 
-        leagues = Core.crawler_instance.get_available_seasons_for_leagues()
-        print(leagues)
+        available_data = Core.crawler_instance.get_available_data_for_leagues()
+        print(available_data)
 
-        return leagues
+        return available_data
     else:
         print("get_crawler_data(): no sport selected")
         return None
