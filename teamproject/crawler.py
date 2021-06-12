@@ -62,8 +62,13 @@ class Crawler(object):
         self.second_league_available_seasons = list(range(2006,year))
         self.third_league_available_seasons = list(range(2008,year))
 
-    def get_available_seasons_for_leagues(self):
-        """return leagues, seasons and size of yeararray"""
+    def get_available_data_for_leagues(self):
+        """
+        Returns dict with names and available seasons/avail. matchdays for the leagues 1-3.
+        Dict is hard-coded.
+        
+        :returns: dict 
+        """
         self.dict = {1: {'name': '1. Bundesliga', 'seasons': self.first_league_available_seasons, 'size': len(self.first_league_available_seasons), 'matchdays': 34},
                     2: {'name': '2. Bundesliga', 'seasons': self.second_league_available_seasons, 'size': len(self.second_league_available_seasons), 'matchdays': 34},
                     3: {'name': '3. Liga', 'seasons': self.third_league_available_seasons, 'size': len(self.third_league_available_seasons), 'matchdays': 38}
@@ -75,7 +80,12 @@ class Crawler(object):
     #   
  
     def get_teams_from_API(self, league, season):
-        """Gets and saves the data of available teams from API. Input Format: <int>, <YYYY> example: (1,2020)"""
+        """
+        Gets and saves the data of available teams from API
+        :param int league: 1 | 2 | 3
+        :param int season: year with format <YYYY>
+        :returns: pd.DataFrame()
+        """
         response = requests.get(self.api_teams_url.format(league,season))
         # TODO: proper errorcode
         if response.status_code != 200:
@@ -86,7 +96,12 @@ class Crawler(object):
         return teams
 
     def get_matches_from_leagues_and_seasons_from_API(self, leagues, seasons):
-        """Gets and saves Data of all matches played in gicen leagues/seasons from API. Input Format: <[int], [YYYY]> example: ([1],[2020,2019])"""
+        """
+        Gets and saves data of all matches played in given leagues/seasons from API to .csv.
+        :param int[] leagues: array of league numbers (1,2,3)
+        :param int[] seasons: array of seasons, format: [<YYYY>,..] -> see get_available_data_for_leagues()
+        :returns: 2 pd.DataFrame (matches, match_results)
+        """
         for league in leagues:
             for season in seasons:
                 response = requests.get(self.api_matches_lg_ss_url.format(league,season))
@@ -111,8 +126,15 @@ class Crawler(object):
         return matches, match_results#, match_scores
 
     def get_next_match_from_API(self, league_id, team_id):
-        """gets the next upcoming match for one team, Input: <league_id, team_id> example: (4442, 83)"""
-        # <BundesLiga, Saison, LeagueID> 1 2020 4442; 2 2020 4443; 3 2020 4444
+        """
+        Returns the upcoming match of a team in a specific league.
+        :param int league_id: id of a league specified from OpenLigaDB
+        :param int team_id: id of a team, see get_team_dicts()
+        :returns: pd.DataFrame containing a single match
+        
+        example ids: <BundesLiga, Saison, LeagueID> 1 2020 4442; 2 2020 4443; 3 2020 4444
+        """
+        
         response = requests.get(self.api_nextmatch_lg_tm_url.format(league_id, team_id))
         # TODO: proper errorcode
         if response.status_code != 200:
@@ -124,7 +146,11 @@ class Crawler(object):
         return match
 
     def get_team_icons_from_wiki(self):
-        """gets team icon images for all teams in the Inputted uniform team data frame"""
+        """
+        Gets the team icons of all teams saved in self.teams.
+        Is automatically called when executing get_teams(leagues, seasons)
+        :returns: 1 if function is done
+        """
         # TODO: check if Pics already saved
         for index, row in self.teams.iterrows():
             # TODO: handle icons that are .svg instead of .png (ID=9 and ID=95)
@@ -139,7 +165,13 @@ class Crawler(object):
     #
 
     def get_teams(self, leagues, seasons):
-        """gets all unique teams from the specified leagues/seasons from API or DB and saves them internally"""
+        """
+        Gets all unique teams from the specified leagues/seasons from API or DB and saves them to self.teams.
+        Then gets all team icons.
+        :param int[] leagues: one or more from (1,2,3)
+        :param int[] seasons: array of seasons, format: [<YYYY>,..] -> see get_available_data_for_leagues()
+        :returns: 1 if function is done
+        """
         teams = pd.DataFrame()
         for league in leagues:
             for season in seasons:
@@ -157,8 +189,17 @@ class Crawler(object):
 
 
     def create_dataset_from_leagues_and_seasons(self, leagues, seasons, day_start, day_end):
-        # TODO: needs parameter start/end-day for first/last season, cut first and last season
-        """Extracts the desired data from multiple leagues/seasons and saves it internaly. Inputformat: (int[],int[])"""
+        """
+        Extracts the desired matches and results from specified leagues/seasons and saves them internaly.
+        
+        :param int[] leagues: one or more from (1,2,3)
+        :param int[] seasons: array of seasons, format: [<YYYY>,..]
+        :param int day_start: starting day of first season
+        :param int day_end: end day of last season
+        :returns: 1 if function is done
+
+        -> see get_available_data_for_leagues()
+        """
         dataset_matches = pd.DataFrame()
         dataset_results = pd.DataFrame()
         dataset_scores = pd.DataFrame()
@@ -200,15 +241,31 @@ class Crawler(object):
     #   Functions for cutting and extracting data from big DB
     #
     def get_team_dicts(self, leagues, seasons):
-        """returns 2 dictionarys, the first maps team_id to team_name, the second is vice versa"""
+        """
+        Returns 2 dictionarys, the first maps team_id to team_name, the second is vice versa.
+
+        :param int[] leagues: one or more from (1,2,3)
+        :param int[] seasons: array of seasons, format: [<YYYY>,..]
+        :returns: 2 dicts (id_to_team, team_to_id)
+        
+        -> see get_available_data_for_leagues()
+        """
         self.get_teams(leagues, seasons)
         id_to_team = pd.Series(self.teams.team_name.values,index=self.teams.team_id).to_dict()
         team_to_id = pd.Series(self.teams.team_id.values,index=self.teams.team_name).to_dict()
         return id_to_team, team_to_id
 
     def extract_matchup_history(self, team_home_id, team_guest_id):
-        """extracts all matches containing one or two teams and saves them to internal dataframe
-        does not alter original dataframe."""
+        """
+        Extracts matches/results from internally saved data where the 2 teams specified play.
+        If you want to filter only for one team, team_guest_id should be 0
+
+        :param int team_home_id: id of first team
+        :param int team_guest_id: id of second team
+        :returns: 1 if function is done
+        
+        -> see get_team_dicts(leagues, seasons)
+        """
         if team_guest_id == 0:
             self.matches = self.matches.loc[(self.matches['team_home_id'] == team_home_id) | (self.matches['team_guest_id'] == team_home_id)] 
         else:
@@ -225,11 +282,21 @@ class Crawler(object):
 
     # Function for Data grabbing for Algorithm
     def get_data_for_algo(self, leagues, seasons, day_start, day_end, team_home_id, team_guest_id):
-        """ gives back matches, results, scores DB from given leagues/seasons.
-            Cuts the data according to the parameters.
-            If team_home_id==0==team_guest_id, all matches are taken.
-            If team_home_id!=0 & team_guest_id==0, only matches were home_team participates are taken."""
-        # cutting the data on start/end-day does not work yet, in progress
+        """
+        Returns 2 pd.DataFrame matches, results for given parameters.
+
+        :param int[] leagues: one or more from (1,2,3)
+        :param int[] seasons: array of seasons, format: [<YYYY>,..]
+        :param int day_start: starting day of first season
+        :param int day_end: end day of last season
+        :param int team_home_id: id of first team
+        :param int team_guest_id: id of second team
+
+        If team_home_id==0==team_guest_id, all matches are taken.
+        If team_home_id!=0 & team_guest_id==0, only matches were home_team participates are taken.
+        
+        -> see get_available_data_for_leagues()
+        """
         self.create_dataset_from_leagues_and_seasons(leagues, seasons, day_start, day_end)
         if team_home_id != 0:
             self.extract_matchup_history(team_home_id, team_guest_id)        
@@ -251,36 +318,3 @@ if __name__ == '__main__':
 
     #id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
     #print(team_to_id["1. FC Köln"])
-
-    
-# %%
-if __name__ == '__main__':
-    api_match_content_columns = ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
-    api_results_content_columns = ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
-    api_score_content_columns = ['GoalID','ScoreTeam1','ScoreTeam2','GoalGetterID',
-                                    'GoalGetterName', 'IsOvertime', 'MatchID']
-    uniform_match_content_columns = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
-    uniform_result_content_columns = ['result_id', 'points_home', 'points_guest', 'result_type_id', 'match_id']
-
-    seasons = np.arange(2002,2021)
-    leagues = [1,2]
-
-    response = requests.get("https://www.openligadb.de/api/getmatchdata/bl{}/{}".format(1,2019))
-    matches = pd.json_normalize(response.json())
-    matches = matches[api_match_content_columns]
-    matches.columns = uniform_match_content_columns
-
-    matches = matches[matches['match_id'] == 58577]
-
-    match_results = pd.json_normalize(response.json(), record_path='MatchResults', meta='MatchID')
-    match_results = match_results[api_results_content_columns]
-    match_results.columns = uniform_result_content_columns
-    results = match_results[match_results['match_id'].isin(matches['match_id'])]
-    results
-
-
-    #match_scores = pd.json_normalize(response.json(), record_path='scores', meta='MatchID')
-    #print(match_scores)
-
-
-# %%
