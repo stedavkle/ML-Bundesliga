@@ -80,10 +80,16 @@ The following is a short overview of how a python project could be structured::
     ├── .gitignore                      lists files to be ignored by git
     │
     ├── teamproject
+    |   ├── data                        contains all match data
+    |   ├── web                         contains the gui code
+    │   │   ├──css
+    │   │   ├──js
+    │   │   └──index.html
     │   ├── __init__.py                 toplevel package variables
     │   ├── __main__.py                 invoked on `python -m teamproject`
     │   ├── crawler.py                  web-crawler / queries
-    │   ├── gui.py                      defines the gui code
+    │   ├── plotting.py                 plotting statistics
+    │   ├── core.py                     connects crawler/gui/plots
     │   └── models.py                   ML code for predictions
     │
     └── tests
