@@ -107,6 +107,7 @@ def start_training_and_get_teams(parameter):
     print(parameter)
     return None
 
+# TODO: Zwischenschritt datenübergabe, get next matchday
 
 @eel.expose
 def get_teams_from_crawler(parameter):
