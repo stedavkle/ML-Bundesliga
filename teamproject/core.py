@@ -6,6 +6,7 @@ import numpy as np
 import json
 
 import crawler
+import models
 
 ''' --- CLASS DECLARATION --- '''
 class Core:
@@ -21,6 +22,7 @@ class Core:
     sport = 0
     crawler_instance = ''
     model = 0
+    model_instance = ''
     leagues = []
     seasons = []
     first_matchday = 0
@@ -66,48 +68,42 @@ def start_crawler_get_models(leagues, seasons):
 
     Core.crawler_instance.get_matches_from_leagues_and_seasons_from_API(leagues, seasons)
 
-    # TODO: get Models
-    models = {
-        1: {'model_id': 1,
-            'model': 'trivialer Algorithmus',
-            'description': 'Einfacher Algorithmus, der Ergebnisse aller bisherigen Partieen zweier Teams vergleicht.',
-            'training': 0
-            },
-        2: {'model_id': 2,
-            'model': 'dummy Model',
-            'description': 'ML Model DUMMY',
-            'training': 1
-            }
-    };
-
-    return models
+    model = models.Models()
+    Core.model = model.get_models()
+    return Core.model
 
 
 @eel.expose
 def get_required_model_data(model):
     print("get_required_model_data(): executed successfully")
+    model = int(model)
     print(type(model))
-    Core.model = model
 
+    selected_model_data = Core.model[model]
+    selected_model = selected_model_data['run']
+    Core.model_instance = selected_model
+    parameter = selected_model.get_model_requirements()
 
-    # TODO: Rückgabe der Auswahl von trainings und analysedaten (acc. to model instance)
-
-    # Algo Instanz gibt Dict zurück mit nötigen parametern
-    parameter = {'leagues': 1,
-                 'seasons': 1,
-                 'matchdays': 1,
-                 'points': 0}
+    print(parameter)
+    print(type(Core.model_instance))
 
     return parameter
 
 
+# TODO: brauchen wir die wirklich?
 @eel.expose
 def start_training_and_get_teams(parameter):
     print("start_training(): executed successfully")
     print(parameter)
+
+    #TODO: nächsten Spieltag vom Crawler beziehen
+
     return None
 
-# TODO: Zwischenschritt datenübergabe, get next matchday
+# TODO:
+#  start_training_and_get_teams() umbauen in
+#  get_next_matchday_from_parameters(): callt Crawler für nächsten Spieltag, speichert Parameter
+#  start_training_and_get_teams(): startet training und bezieht Team List von Crawler
 
 @eel.expose
 def get_teams_from_crawler(parameter):

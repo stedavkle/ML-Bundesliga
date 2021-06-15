@@ -18,12 +18,14 @@ class Models:
             1: {'model_id': 1,
                 'model': 'trivialer Algorithmus',
                 'description': 'Einfacher Algorithmus, der Ergebnisse aller bisherigen Partieen zweier Teams vergleicht.',
-                'training': 0
+                'training': 0,
+                'run': MostWins()
                 },
             2: {'model_id': 2,
                 'model': 'dummy Model',
                 'description': 'ML Model DUMMY',
-                'training': 1
+                'training': 1,
+                'run': MostWins()
                 }
         };
         return models
@@ -42,7 +44,7 @@ class Models:
         pass
 
     @abstractmethod
-    def predict_winner(self):
+    def predict_outcome(self):
         pass
 
 # TODO: hier hört abstract auf
@@ -70,7 +72,7 @@ class MostWins(Models):
         self.end_results = self.match_results[self.match_results['ResultTypeID'] == 2]
         #print(self.end_results)
 
-    def predict_winner(self):
+    def predict_outcome(self):
         team1_wins = 0
         team2_wins = 0
         draws = 0
@@ -112,7 +114,7 @@ class ExperienceAlwaysWins:
             Counter(matches.home_team) +
             Counter(matches.guest_team))
 
-    def predict_winner(self, home_team, guest_team):
+    def predict_outcome(self, home_team, guest_team):
         """Cast prediction based on the "learned" parameters."""
         if self.num_games[home_team] >= self.num_games[guest_team]:
             return home_team
