@@ -300,7 +300,7 @@ class Crawler(object):
         self.create_dataset_from_leagues_and_seasons(leagues, seasons, day_start, day_end)
         if team_home_id != 0:
             self.extract_matchup_history(team_home_id, team_guest_id)        
-        return self.matches, self.results#, self.scores
+        return [self.matches, self.results]#, self.scores
 # %%
 if __name__ == '__main__':
     crawler = Crawler()
