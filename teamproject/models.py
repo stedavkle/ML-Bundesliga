@@ -38,6 +38,10 @@ class Models:
         pass
 
     @abstractmethod
+    def start_training(self):
+        pass
+
+    @abstractmethod
     def predict_winner(self):
         pass
 
