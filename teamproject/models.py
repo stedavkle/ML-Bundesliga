@@ -13,8 +13,20 @@ class Models:
 
     # non-abstract methods
     def get_models(self):
-        # TODO: returns object with model_id, name, description
-        return None
+        # TODO: if model added, edit models object
+        models = {
+            1: {'model_id': 1,
+                'model': 'trivialer Algorithmus',
+                'description': 'Einfacher Algorithmus, der Ergebnisse aller bisherigen Partieen zweier Teams vergleicht.',
+                'training': 0
+                },
+            2: {'model_id': 2,
+                'model': 'dummy Model',
+                'description': 'ML Model DUMMY',
+                'training': 1
+                }
+        };
+        return models
 
     # abstract methods
     @abstractmethod
