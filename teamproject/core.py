@@ -9,6 +9,8 @@ import crawler
 import models
 
 ''' --- CLASS DECLARATION --- '''
+
+
 class Core:
     """Initialize Browser Presettings"""
     my_options = {
@@ -30,10 +32,8 @@ class Core:
     points = 0
 
     def __init__(self):
-        eel.start('index.html', size=(800, 600))  # landing page of gui and window size
+        eel.start('index.html', size=(1024, 768))  # landing page of gui and window size
         print("Object of class 'Core' initialized.")
-
-
 
 
 """ FUNCTION COLLECTION """
@@ -104,10 +104,9 @@ def get_next_matchday_from_parameters(parameter):
     print(Core.leagues)
     print(Core.seasons)
 
-    #TODO: nächsten Spieltag vom Crawler beziehen
+    # TODO: nächsten Spieltag vom Crawler beziehen
     crawler_instance = Core.crawler_instance
     dummy_crawler = crawler.Crawler()
-
 
     return None
 
@@ -123,7 +122,7 @@ def start_training_and_get_teams():
     # TODO: Daten für Training an model übergeben
     model_instance = Core.model_instance
     dummy_model = models.PoissonModel
-    #model_instance.start_training()
+    # model_instance.start_training()
 
     id_to_team, team_to_id = crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
     print(id_to_team)
@@ -136,6 +135,7 @@ def get_next_opponent(id):
     print(id)
     # TODO: Crawler Call (sollte Team Id zurück geben)
     return 42
+
 
 @eel.expose
 def start_prediction(team1_id, team2_id):
@@ -153,4 +153,3 @@ def start_prediction(team1_id, team2_id):
              'guest_win': 0.7}
 
     return dummy
-

@@ -7,10 +7,10 @@
  */
 function sport_selection_render(){
     sport_selection_designer();
-    set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=create_session()>Bestätigen</button>");
+    set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"create_session()\">Bestätigen</button>");
     var html_str = "<h3>Willkommen!</h3>" +
     "<p>Wähle eine Sportart:</p>" +
-    "<select class='form-control' id='sport_selection' onchange=display('right_btn')>" +
+    "<select class=\'form-control\' id=\'sport_selection\' onchange=\"display(\'right_btn\')\">" +
     "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
 
     var sports = new Sports();
@@ -66,28 +66,40 @@ function crawler_data_render(leagues_seasons){
     set_innerHTML('1-col-1', html_str_hint);
 
     // define submit button
-    set_innerHTML('right_btn', "<button class='btn btn-danger' onclick=store_crawler_parameter()>Daten beziehen</button>");
+    set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"store_crawler_parameter()\">Daten beziehen</button>");
 
     // display league selection
     var html_str_left = "<p>Ligen:</p>" +
-        "<select multiple class='form-control' id='leagues_selection' onchange=show_data_submit()>" +
-        "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
+        "<select multiple class=\'form-control\' id=\'leagues_selection\' onchange=\"show_data_submit()\">";
 
     for (var key in leagues){
         html_str_left += "<option value=" + key + ">" + leagues[key] + "</option>";
     }
     html_str_left += "</select>";
+
+    var html_str_left_check = "<div class=\'form-check\'>" +
+        "<input type=\'checkbox\' class=\'form-check-input\' id=\'check_leagues_1\' onclick=\"multiple_select_all(\'leagues_selection\', \'check_leagues_1\'), show_data_submit()\">" +
+        "<label class=\'form-check-label\'>alles auswählen</label></div>";
+
+    html_str_left += html_str_left_check;
+
     set_innerHTML("2-col-1", html_str_left);
 
     // display season selection
     var html_str_right = "<p>Saisons:</p>" +
-        "<select multiple class='form-control' id='seasons_selection' onchange=show_data_submit()>" +
-        "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
+        "<select multiple class=\'form-control\' id=\'seasons_selection\' onchange=\"show_data_submit()\">";
 
     for (var key in seasons){
         html_str_right += "<option value=" + key + ">" + seasons[key] + "</option>";
     }
     html_str_right += "</select>";
+
+    var html_str_right_check = "<div class=\'form-check\'>" +
+        "<input type=\'checkbox\' class=\'form-check-input\' id=\'check_seasons_1\' onclick=\"multiple_select_all(\'seasons_selection\', \'check_seasons_1\'), show_data_submit()\">" +
+        "<label class=\'form-check-label\'>alles auswählen</label></div>";
+
+    html_str_right += html_str_right_check;
+
     set_innerHTML("2-col-2", html_str_right);
 }
 
@@ -102,10 +114,10 @@ function model_selection_render(models){
     set_back_button(0);
     set_session_item('models', models);
 
-    set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=set_model()>Bestätigen</button>");
+    set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"set_model()\">Bestätigen</button>");
     set_innerHTML("1-col-1", "<p>Wähle einen Algorithmus oder ein ML-Modell aus:</p>");
 
-    var html_str = "<select class='form-control' id='model_selection' onchange=show_model_description()>" +
+    var html_str = "<select class=\'form-control\' id=\'model_selection\' onchange=\"show_model_description()\">" +
     "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
 
     for (var key in models){
@@ -126,14 +138,15 @@ function training_data_render(parameter){
     set_back_button(1);
     //var model_id = get_session_item('selected_model_id');
 
-    set_innerHTML('right_btn', "<button class='btn btn-danger' onclick=store_selected_parameter()>Training starten</button>");
+    set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"store_selected_parameter()\">Training starten</button>");
 
     var html_str_leagues = "<h4>Ligen:</h4>" + create_select_of_selected('leagues');
     var html_str_seasons = "<h4>Saisons:</h4>" + create_select_of_selected('seasons');
     var html_str_matchdays_first = "<p>ab Spieltag:</p>" + create_matchday_selection('first');
     var html_str_matchdays_last = "<p>bis einschließlich Spieltag:</p>" + create_matchday_selection('last');
-    var html_str_points = "<input type='checkbox' id='points_checkbox'>" +
-        "<label for='points_checkbox'>Tore berücksichtigen</label>";
+    var html_str_points = "<div class=\'form-check\'>" +
+        "<input type=\'checkbox\' class=\'form-check-input\' id=\'points_checkbox\'>" +
+        "<label class=\'form-check-label\'>Tore berücksichtigen</label></div>";
 
 
     set_innerHTML("2-col-1", html_str_leagues);
@@ -188,7 +201,7 @@ function next_matchday_render(next_matchday){
  * @param team_list - dictionary of teams
  */
 function team_select_callback(team_list){
-    set_innerHTML('right_btn', "<button class='btn btn-danger' onclick=team_select_render()>Match wählen</button>");
+    set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"team_select_render()\">Match wählen</button>");
     set_session_item('team_list', team_list);
     display('right_btn');
 }
@@ -204,7 +217,7 @@ function team_select_render(){
     set_innerHTML("1-col-1", "<h3>Matchauswahl</h3>");
 
     var html_str = "<p>Heimteam:</p>" +
-    "<select class='form-control' id='team1_selection' onchange=set_team(1)>" +
+    "<select class=\'form-control\' id=\'team1_selection\' onchange=\"set_team(1)\">" +
     "<option value=0 selected disabled hidden>kein Team ausgewählt</option>";
 
     for (var key in team_list){
@@ -243,13 +256,13 @@ function result_screen_render(){
     var guest_win = result.guest_win;
 
     //TODO: Stages anpassen, damit man zu team_select_render springen kann
-    set_innerHTML("left_btn", "<button class='btn btn-primary' onclick=reset_stage_to(3)>anderes Match wählen</button>");
-    set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=reset_program()>zurück zur Startseite</button>");
+    set_innerHTML("left_btn", "<button class=\'btn btn-primary\' onclick=\"reset_stage_to(3)\">anderes Match wählen</button>");
+    set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"reset_program()\">zurück zur Startseite</button>");
 
     var img_home_html = "<img src=" + img_team1 + " alt=" + team1_name + "><h4>" + team1_name + "</h4>";
     var colon_html = "<div><h2>:</h2></div>";
     var img_guest_html = "<img src=" + img_team2 + " alt=" + team2_name + "><h4>" + team2_name + "</h4>";
-    var propability_table = "<table class='table'>" +
+    var propability_table = "<table class=\'table\'>" +
         "<thread><tr>" +
         "<th>Sieg " + team1_name + "</th>" +
         "<th>Unentschieden</th>" +
@@ -259,7 +272,7 @@ function result_screen_render(){
         "<th>" + draw + "</th>" +
         "<th>" + guest_win + "</th></tr></tbody></table>";
 
-    set_innerHTML("1-col-1", "<h2 class='d-flex justify-content-center'>Ergebnis:</h2>");
+    set_innerHTML("1-col-1", "<h2 class=\'d-flex justify-content-center\'>Ergebnis:</h2>");
     set_innerHTML("3-col-1", img_home_html);
     set_innerHTML("3-col-2", colon_html);
     set_innerHTML("3-col-3", img_guest_html);

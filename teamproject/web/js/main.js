@@ -7,11 +7,11 @@
  */
 function on_page_load(){
     if(get_session_item('stage') == null){
-        window.confirm("keine Session gefunden");
+        //window.confirm("keine Session gefunden");
         sport_selection_render();
     }
     else {
-        window.confirm("Session gefunden");
+        //window.confirm("Session gefunden");
         build_stage();
     }
 }
@@ -24,7 +24,7 @@ function build_stage(){
     var stage = get_session_item('stage');
     var sport = get_session_item('sport');
     var model_id = get_session_item('selected_model_id');
-    window.confirm("build_stage(): stage = " + stage);
+    //window.confirm("build_stage(): stage = " + stage);
     switch(stage){
         case 0:
             // selection of crawler data

@@ -2,6 +2,7 @@
 
 function sport_selection_designer(){
   hide("back_btn");
+  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   hide_and_reset("2-col-1");
@@ -18,6 +19,7 @@ function sport_selection_designer(){
 
 function crawler_data_designer(){
   display("back_btn");
+  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   display("2-col-1");
@@ -34,6 +36,7 @@ function crawler_data_designer(){
 
 function model_selection_designer(){
   display("back_btn");
+  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   display("2-col-1");
@@ -50,6 +53,7 @@ function model_selection_designer(){
 
 function training_data_designer(){
   display("back_btn");
+  clear_alert();
   hide('spinner_display');
   hide_and_reset("1-col-1")
   hide_and_reset("2-col-1");
@@ -66,6 +70,7 @@ function training_data_designer(){
 
 function next_matchday_designer(){
   hide("back_btn");
+  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   hide_and_reset("2-col-1");
@@ -82,6 +87,7 @@ function next_matchday_designer(){
 
 function team_select_designer(){
   display("back_btn");
+  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   display("2-col-1");
@@ -98,6 +104,7 @@ function team_select_designer(){
 
 function result_stage_switcher_designer(){
   hide("back_btn");
+  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   hide_and_reset("2-col-1");
@@ -114,6 +121,7 @@ function result_stage_switcher_designer(){
 
 function clear_page(){
   hide("back_btn");
+  clear_alert();
   hide('spinner_display');
   hide_and_reset("1-col-1")
   hide_and_reset("2-col-1");
@@ -148,4 +156,15 @@ function set_3_col_result(){
   document.getElementById('3-col-1').style.maxWidth = '49%';
   document.getElementById('3-col-2').style.maxWidth = '2';
   document.getElementById('3-col-3').style.maxWidth = '49%';
+}
+
+function create_alert(message){
+  display("alert");
+  var html_str = "<button type=\'button\' class=\'close\' onclick=\'clear_alert()\'>&times;</button>" +
+        "<strong>Fehler!</strong> " + message;
+  set_innerHTML("alert", html_str);
+}
+
+function clear_alert(){
+  hide_and_reset("alert");
 }

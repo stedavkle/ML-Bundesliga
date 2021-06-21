@@ -15,7 +15,7 @@ function set_innerHTML(id, text){
  * @param id - stage to set
  */
 function set_back_button(id){
-  var button = "<button class='btn btn-outline-danger btn-sm' onclick=reset_stage_to(" + id + ")>zurück</button>"
+  var button = "<button class=\'btn btn-outline-danger btn-sm\' onclick=\"reset_stage_to(" + id + ")\">zurück</button>"
   set_innerHTML("back_btn", button);
 }
 
@@ -80,6 +80,8 @@ function get_mult_selected(id){
  */
 function show_data_submit(){
   //window.alert("show_data_submit(): entered");
+  unselect_checkbox('leagues_selection', 'check_leagues_1');
+  unselect_checkbox('seasons_selection', 'check_seasons_1');
   if (!(get_mult_selected('leagues_selection') == 0 || get_mult_selected('seasons_selection') == 0)){
     display('right_btn');
   }
@@ -110,6 +112,7 @@ function store_crawler_parameter(){
   //window.confirm("store_crawler_parameter(): entered")
   var selected_leagues = get_mult_selected('leagues_selection');
   var possible_leagues = get_session_item('leagues_seasons_from_crawler');
+
   set_session_item('selected_leagues', selected_leagues);
   set_session_item('selected_seasons', get_mult_selected('seasons_selection'));
   var max_matchdays = 0;
@@ -150,15 +153,19 @@ function set_model(){
 function create_select_of_selected(id){
   var possible_data = get_session_item(id);
   var selected_data = get_session_item("selected_" + id);
-  var html_str = "<select multiple class='form-control' id='" + id + "_fine_selection'>" +
-        "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
+  var html_str = "<select multiple class=\'form-control\' id=\'" + id + "_fine_selection\' onchange=\"unselect_checkbox(\'" + id + "_fine_selection\', \'check_" + id + "_2\')\">";
 
   for (var i = 0; i < selected_data.length; i++){
     html_str += "<option value=" + selected_data[i] + ">" + possible_data[selected_data[i]] + "</option>";
   }
 
   html_str += "</select>";
-  return html_str;
+
+  var html_str_check = "<div class=\'form-check\'>" +
+      "<input type=\'checkbox\' class=\'form-check-input\' id=\'check_" + id + "_2\' onclick=\"multiple_select_all(\'" + id + "_fine_selection\', \'check_" + id + "_2\')\">" +
+      "<label class=\'form-check-label\'>alles auswählen</label></div>"
+
+  return html_str + html_str_check;
 }
 
 
@@ -169,7 +176,7 @@ function create_select_of_selected(id){
  */
 function create_matchday_selection(id){
   //window.alert("create_matchday_selection(): entered");
-  var html_str = "<select class='form-control' id='" + id + "_matchday'>";
+  var html_str = "<select class=\'form-control\' id=\'" + id + "_matchday\'>";
   var max_matchdays = get_session_item('max_matchday_count');
 
   if (id === 'first'){
@@ -205,28 +212,35 @@ function store_selected_parameter(){
   var last_matchday = parseInt(get_single_selected('last_matchday'));
   var points_checked = 0;
 
+
   if (selected_seasons.length == 1 && first_matchday > last_matchday)
   {
-    // TODO: ALERT TOAST implementieren
-    window.alert("FEHLER: erster Spieltag liegt nach dem letzten Spieltag!")
+    //window.alert("FEHLER: erster Spieltag liegt nach dem letzten Spieltag!")
+    create_alert("Erster Spieltag liegt nach dem letzten Spieltag!");
   }
-  else{
-    if (document.getElementById('points_checkbox').checked){
-      points_checked = 1;
-    };
+  else {
+    if (selected_leagues.length == 0 || selected_seasons.length == 0){
+      create_alert("Es muss mindestens eine Liga und Saison ausgewählt sein!");
+    }
+    else{
+      clear_alert();
+      if (document.getElementById('points_checkbox').checked){
+        points_checked = 1;
+      };
 
-    var selected_parameters = {
-      'leagues': selected_leagues,
-      'seasons': selected_seasons,
-      'first_matchday': first_matchday,
-      'last_matchday': last_matchday,
-      'points': points_checked
-    };
+      var selected_parameters = {
+        'leagues': selected_leagues,
+        'seasons': selected_seasons,
+        'first_matchday': first_matchday,
+        'last_matchday': last_matchday,
+        'points': points_checked
+      };
 
-    set_session_item('selected_parameters', selected_parameters);
-    set_session_item('stage', 3);
-    spinner_on();
-    build_stage();
+      set_session_item('selected_parameters', selected_parameters);
+      set_session_item('stage', 3);
+      spinner_on();
+      build_stage();
+    }
   }
 }
 
@@ -247,8 +261,8 @@ function set_team(sel){
     set_session_item('team1_name', team_list[selector.value]);
 
     if (get_session_item('team2_id') === 0){
-      set_innerHTML("left_btn", "<button class='btn btn-primary' onclick=eel.get_next_opponent("+ selector.value +")(show_next_opponent)>nächster Gegner</button>");
-      set_innerHTML("right_btn", "<button class='btn btn-primary' onclick=set_opponent()>Gegner wählen</button>");
+      set_innerHTML("left_btn", "<button class=\'btn btn-primary\' onclick=\"eel.get_next_opponent("+ selector.value +")(show_next_opponent)\">nächster Gegner</button>");
+      set_innerHTML("right_btn", "<button class=\'btn btn-primary\' onclick=\"set_opponent()\">Gegner wählen</button>");
       display("left_btn");
       display("right_btn");
     }
@@ -270,8 +284,8 @@ function show_next_opponent(team2_id){
   set_session_item('team2_name', team_list[team2_id]);
   set_innerHTML("2-col-2", "<h3>nächster Gegner:</h3><h4>" + team_list[team2_id] + "</h4>");
   display('2-col-2');
-  set_innerHTML("left_btn","<button class='btn btn-primary' onclick=set_opponent()>Gegner wählen</button>");
-  set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=start_prediction()>Vorhersage starten</button>");
+  set_innerHTML("left_btn","<button class=\'btn btn-primary\' onclick=\"set_opponent()\">Gegner wählen</button>");
+  set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"start_prediction()\">Vorhersage starten</button>");
 }
 
 
@@ -282,7 +296,7 @@ function set_opponent(){
   var team_list = get_session_item('team_list');
 
   var html_str = "<p>Gastteam:</p>" +
-    "<select class='form-control' id='team2_selection' onchange=set_team(2)>" +
+    "<select class=\'form-control\' id=\'team2_selection\' onchange=\"set_team(2)\">" +
     "<option value=0 selected disabled hidden>kein Team ausgewählt</option>";
 
   for (var key in team_list){
@@ -293,8 +307,8 @@ function set_opponent(){
   set_innerHTML("2-col-2", html_str);
   display('2-col-2');
   var team1_id = get_session_item('team1_id');
-  set_innerHTML("left_btn","<button class='btn btn-primary' onclick=eel.get_next_opponent("+ team1_id +")(show_next_opponent)>nächster Gegner</button>");
-  set_innerHTML("right_btn", "<button class='btn btn-danger' onclick=start_prediction()>Vorhersage starten</button>");
+  set_innerHTML("left_btn","<button class=\'btn btn-primary\' onclick=\"eel.get_next_opponent("+ team1_id +")(show_next_opponent)\">nächster Gegner</button>");
+  set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"start_prediction()\">Vorhersage starten</button>");
 }
 
 
@@ -306,18 +320,52 @@ function start_prediction(){
   var team1_id = get_session_item('team1_id');
   var team2_id = get_session_item('team2_id');
 
-  // TODO: ALERT TOAST implementieren
   if (team1_id == team2_id){
-    window.alert("start_prediction(): ERROR - Heim- und Auswärtsteam sind gleich!");
+    //window.alert("start_prediction(): ERROR - Heim- und Auswärtsteam sind gleich!");
+    create_alert("Heim- und Auswärtsteam sind gleich!");
   }
   else if (team1_id == 0 || team2_id == 0){
-    window.alert("start_prediction(): ERROR - Ein Team ist nicht ausgewählt!");
+    //window.alert("start_prediction(): ERROR - Ein Team ist nicht ausgewählt!");
+    create_alert("Ein Team ist nicht ausgewählt!");
   }
   else {
+    clear_alert();
     set_session_item('stage', 5);
     spinner_on();
     build_stage();
   }
 }
 
+
+/**
+ * unselects a checkbox when element of select is deselected
+ * @param sel_id - id of select element
+ * @param check_id - id of checkbox
+ */
+function unselect_checkbox(sel_id, check_id){
+    var sel = document.getElementById(sel_id);
+	for (var i = 0; i < sel.options.length; i++){
+		if (sel.options[i].selected == false){
+			var check = document.getElementById(check_id);
+			check.checked = false;
+		}
+	}
+}
+
+
+/**
+ * selects all elements of multiple select, if checkbox is clicked
+ * @param sel_id - id of select element
+ * @param check_id - id of checkbox
+ */
+function multiple_select_all(sel_id, check_id){
+    //window.alert("multiple_select_all(): executed");
+    var check = document.getElementById(check_id);
+	var sel = document.getElementById(sel_id);
+	if (check.checked){
+		for (var i = 0; i < sel.options.length; i++){
+			sel.options[i].selected = true;
+		}
+	}
+}
 
