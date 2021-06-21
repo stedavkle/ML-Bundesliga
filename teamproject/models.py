@@ -97,10 +97,11 @@ class MostWins(Models):
         return [self.team1, self.team2, (team1_wins / total_matches)*100, (draws / total_matches)*100, (team2_wins / total_matches)*100]
 
 class PoissonModel(Models):
-    parameter_dict = {'leagues': 1,
-                    'seasons': 1,
-                    'matchdays': 1,
-                    'points': 0}
+    parameter_dict = {  'leagues': 1,
+                        'seasons': 1,
+                        'matchdays': 1,
+                        'points': 0
+                      }
     matches_index = 0
     results_index = 1
     max_goals = 10

@@ -105,6 +105,9 @@ def get_next_matchday_from_parameters(parameter):
     print(Core.seasons)
 
     #TODO: nächsten Spieltag vom Crawler beziehen
+    crawler_instance = Core.crawler_instance
+    dummy_crawler = crawler.Crawler()
+
 
     return None
 
@@ -114,9 +117,15 @@ def start_training_and_get_teams():
     print("start_training_and_get_teams(): executed successfully")
     print()
 
-    # TODO: Parameter abspeichern, Crawler Call get teams
+    # TODO: Daten für Training vom Crawler beziehen
+    crawler_instance = Core.crawler_instance
 
-    id_to_team, team_to_id = Core.crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
+    # TODO: Daten für Training an model übergeben
+    model_instance = Core.model_instance
+    dummy_model = models.PoissonModel
+    #model_instance.start_training()
+
+    id_to_team, team_to_id = crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
     print(id_to_team)
     return id_to_team
 
