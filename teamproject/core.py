@@ -90,24 +90,9 @@ def get_required_model_data(model):
     return parameter
 
 
-# TODO: brauchen wir die wirklich?
 @eel.expose
-def start_training_and_get_teams(parameter):
-    print("start_training(): executed successfully")
-    print(parameter)
-
-    #TODO: nächsten Spieltag vom Crawler beziehen
-
-    return None
-
-# TODO:
-#  start_training_and_get_teams() umbauen in
-#  get_next_matchday_from_parameters(): callt Crawler für nächsten Spieltag, speichert Parameter
-#  start_training_and_get_teams(): startet training und bezieht Team List von Crawler
-
-@eel.expose
-def get_teams_from_crawler(parameter):
-    print("get_teams(): executed successfully")
+def get_next_matchday_from_parameters(parameter):
+    print("get_next_matchday_from_parameters(): executed successfully")
     print(parameter)
 
     Core.leagues = [int(i) for i in parameter['leagues']]
@@ -119,11 +104,22 @@ def get_teams_from_crawler(parameter):
     print(Core.leagues)
     print(Core.seasons)
 
+    #TODO: nächsten Spieltag vom Crawler beziehen
+
+    return None
+
+
+@eel.expose
+def start_training_and_get_teams():
+    print("start_training_and_get_teams(): executed successfully")
+    print()
+
     # TODO: Parameter abspeichern, Crawler Call get teams
 
     id_to_team, team_to_id = Core.crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
     print(id_to_team)
     return id_to_team
+
 
 @eel.expose
 def get_next_opponent(id):

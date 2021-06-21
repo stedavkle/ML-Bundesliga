@@ -22,13 +22,11 @@ class Models:
             1: {'model_id': 1,
                 'model': 'trivialer Algorithmus',
                 'description': 'Einfacher Algorithmus, der Ergebnisse aller bisherigen Partieen zweier Teams vergleicht.',
-                'training': 0,
                 'run': MostWins()
                 },
             2: {'model_id': 2,
                 'model': 'Poisson Model',
                 'description': 'Berechnet mithilfe der Poissonverteilung den Ausgang eines Matches zwischen 2 Teams',
-                'training': 1,
                 'run': PoissonModel()
                 }
         };
@@ -53,11 +51,6 @@ class Models:
 
 # TODO: hier hört abstract auf
 
-
-#def Model_Handler(team1, team2, seasons, leagues, algo_id):
-#    if algo_id == 1:
-#        model = MostWins(team1, team2)
-#        return model.predict_winner()
 
 class MostWins(Models):
     def get_model_requirements(self):

@@ -34,7 +34,6 @@ function open_session(sport){
     set_session_item('team_list',{});
     set_session_item('selected_model_id', 0);
     set_session_item('models', {});
-    set_session_item('training', 0);
     set_session_item('selected_leagues', []);
     set_session_item('selected_seasons', []);
     set_session_item('selected_parameters', {});

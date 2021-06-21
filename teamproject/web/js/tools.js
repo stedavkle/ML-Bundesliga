@@ -133,10 +133,9 @@ function store_crawler_parameter(){
  */
 function set_model(){
   //window.alert("set_model(): entered");
-  var model = get_session_item('models');
+  //var model = get_session_item('models');
   var selected_model_id = get_single_selected('model_selection');
   set_session_item('selected_model_id', selected_model_id);
-  set_session_item('training', model[selected_model_id].training);
   set_session_item('stage', 2);
   spinner_on();
   build_stage();
@@ -199,7 +198,7 @@ function create_matchday_selection(id){
  * writes selected data parameters to an object
  * @param stage - number of next stage
  */
-function store_selected_parameter(stage){
+function store_selected_parameter(){
   var selected_leagues = get_mult_selected('leagues_fine_selection');
   var selected_seasons = get_mult_selected('seasons_fine_selection');
   var first_matchday = parseInt(get_single_selected('first_matchday'));
@@ -225,7 +224,7 @@ function store_selected_parameter(stage){
     };
 
     set_session_item('selected_parameters', selected_parameters);
-    set_session_item('stage', stage);
+    set_session_item('stage', 3);
     spinner_on();
     build_stage();
   }

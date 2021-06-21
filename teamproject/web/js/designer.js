@@ -64,6 +64,22 @@ function training_data_designer(){
   set_3_col_standard();
 }
 
+function next_matchday_designer(){
+  hide("back_btn");
+  hide('spinner_display');
+  display("1-col-1")
+  hide_and_reset("2-col-1");
+  hide_and_reset("2-col-2");
+  hide_and_reset("3-col-1");
+  hide_and_reset("3-col-2");
+  hide_and_reset("3-col-3");
+  hide_and_reset("5-col-1");
+  hide("left_btn");
+  hide("right_btn");
+
+  set_3_col_standard();
+}
+
 function team_select_designer(){
   display("back_btn");
   hide('spinner_display');

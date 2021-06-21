@@ -125,14 +125,8 @@ function training_data_render(parameter){
     training_data_designer();
     set_back_button(1);
     //var model_id = get_session_item('selected_model_id');
-    var training = get_session_item('training');
 
-    if (training == 1){
-        set_innerHTML('right_btn', "<button class='btn btn-danger' onclick=store_selected_parameter(4)>Training starten</button>");
-    }
-    else {
-        set_innerHTML('right_btn', "<button class='btn btn-danger' onclick=store_selected_parameter(3)>Daten festlegen</button>");
-    }
+    set_innerHTML('right_btn', "<button class='btn btn-danger' onclick=store_selected_parameter()>Training starten</button>");
 
     var html_str_leagues = "<h4>Ligen:</h4>" + create_select_of_selected('leagues');
     var html_str_seasons = "<h4>Saisons:</h4>" + create_select_of_selected('seasons');
@@ -175,13 +169,38 @@ function training_data_render(parameter){
 
 
 /**
+ * displays next matchday, waiting screen for training
+ * @param next_matchday - dictionary of matches
+ */
+function next_matchday_render(next_matchday){
+    next_matchday_designer();
+
+    // TODO: Render Ansicht vom nächsten Spieltag
+    set_innerHTML("1-col-1", "<p>Hier kommt dann die Tabelle mit dem nächsten Spieltag hin.</p>");
+
+    set_session_item('stage', 4);
+    build_stage();
+}
+
+
+/**
+ * callback function after training is finished
+ * @param team_list - dictionary of teams
+ */
+function team_select_callback(team_list){
+    set_innerHTML('right_btn', "<button class='btn btn-danger' onclick=team_select_render()>Match wählen</button>");
+    set_session_item('team_list', team_list);
+    display('right_btn');
+}
+
+/**
  * displays team selection
  * @param team_list - dictionary of teams
  */
-function team_select_render(team_list){
+function team_select_render(){
     team_select_designer();
     set_back_button(2);
-    set_session_item('team_list', team_list);
+    var team_list = get_session_item('team_list');
     set_innerHTML("1-col-1", "<h3>Matchauswahl</h3>");
 
     var html_str = "<p>Heimteam:</p>" +

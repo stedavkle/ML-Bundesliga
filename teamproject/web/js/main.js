@@ -42,18 +42,15 @@ function build_stage(){
             eel.get_required_model_data(model_id)(training_data_render);
             break;
         case 3:
-
-            // TODO: Training ersetzen durch Next Matchday Anzeige
-
-            // TODO: send Analysedaten Auswahl, get matches
+            // send selected parameters to core, get matches of next matchday
             var algo_data_parameter = get_session_item('selected_parameters');
-            eel.get_teams_from_crawler(algo_data_parameter)(team_select_render);
+            eel.get_next_matchday_from_parameters(algo_data_parameter)(next_matchday_render);
             break;
         case 4:
             // TODO: send Trainingdata, training progress, get matches
-            var model_data_parameter = get_session_item('selected_parameters');
-            progress_spinner_render();
-            eel.start_training_and_get_teams(model_data_parameter)(team_select_render);
+            //var model_data_parameter = get_session_item('selected_parameters');
+            //progress_spinner_render();
+            eel.start_training_and_get_teams()(team_select_callback);
             break;
         case 5:
             // TODO: start prediction
