@@ -159,11 +159,17 @@ class PoissonModel(Models):
         home_win = np.sum(np.tril(self.simulation, -1))
         draw = np.sum(np.diag(self.simulation))
         guest_win = np.sum(np.triu(self.simulation, 1))
+        # TODO: return as dict
         return [home_win, draw, guest_win]
     def predict_score(self):
         index = np.argmax(self.simulation)
-        home_goals, guest_goals = divmod(index, self.max_goals+1)
-        return [home_goals, guest_goals]
+        home_points, guest_points = divmod(index, self.max_goals+1)
+        # TODO: return as dict
+        return [home_points, guest_points]
+    def predict(self, home_id, guest_id):
+        # TODO: call sim.match, pred.outcome, pred.score. concatenate and return results in dict 
+        return {}
+
 
 class ExperienceAlwaysWins():
 
