@@ -105,7 +105,9 @@ def get_next_matchday_from_parameters(parameter):
     print(Core.seasons)
 
     crawler_instance = Core.crawler_instance
-    matchday = crawler_instance.get_next_matchday()
+
+    # TODO: einkommentieren, sobald irgendwas tut
+    # matchday = crawler_instance.get_next_matchday()
 
     match = {'team_home_name': 'Bayern München',
              'team_home_id': 40,
@@ -169,7 +171,8 @@ def start_prediction(team1_id, team2_id):
     print(team2_id)
 
     model_instance = Core.model_instance
-    result = model_instance.predict(int(team1_id), int(team2_id))
+    # TODO: einkommentieren, sobald irgendwas tut
+    # result = model_instance.predict(int(team1_id), int(team2_id))
 
     # TODO: wenn score nicht da: score: -1
     result = {'outcome': {'home_win': 0.2,
