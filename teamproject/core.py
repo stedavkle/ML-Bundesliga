@@ -104,11 +104,29 @@ def get_next_matchday_from_parameters(parameter):
     print(Core.leagues)
     print(Core.seasons)
 
-    # TODO: nächsten Spieltag vom Crawler beziehen
     crawler_instance = Core.crawler_instance
-    dummy_crawler = crawler.Crawler()
+    matchday = crawler_instance.get_next_matchday()
 
-    return None
+    match = {'team_home_name': 'Bayern München',
+             'team_home_id': 40,
+             'team_guest_name': 'Eintracht Frankfurt',
+             'team_guest_id': 91,
+             'points_home': 4,
+             'points_guest': 2,
+             'is_finished': 1,
+             'date': '2021-05-22',
+             'time': '15:30:00',
+             'location': 'Allianz Arena'}
+
+    matchday = {1: {978 : match,
+                    567 : match},
+                2: {234 : match,
+                    567 : match},
+                3: {568 : match,
+                    123 : match}
+                }
+
+    return {key: matchday[key] for key in Core.leagues}
 
 
 @eel.expose
@@ -116,13 +134,12 @@ def start_training_and_get_teams():
     print("start_training_and_get_teams(): executed successfully")
     print()
 
-    # TODO: Daten für Training vom Crawler beziehen
     crawler_instance = Core.crawler_instance
+    training_data = crawler_instance.get_data_for_algo(Core.leagues, Core.seasons, Core.first_matchday, Core.last_matchday, 0, 0)
 
-    # TODO: Daten für Training an model übergeben
     model_instance = Core.model_instance
-    dummy_model = models.PoissonModel
-    # model_instance.start_training()
+    model_instance.set_data(training_data)
+    model_instance.start_training()
 
     id_to_team, team_to_id = crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
     print(id_to_team)
@@ -133,8 +150,15 @@ def start_training_and_get_teams():
 def get_next_opponent(id):
     print("get_next_opponent(): executed successfully")
     print(id)
-    # TODO: Crawler Call (sollte Team Id zurück geben)
-    return 42
+    # TODO: Crawler Call (sollte Team Id zurück geben, falls kein next Match, gebe 0 zurück)
+
+    crawler_instance = Core.crawler_instance
+    opponent_id = crawler_instance.get_next_opponent(int(id))
+
+    # dummy
+    opponent_id = 42
+
+    return opponent_id
 
 
 @eel.expose
@@ -143,6 +167,20 @@ def start_prediction(team1_id, team2_id):
     # TODO: get Icons and start Prediction
     print(team1_id)
     print(team2_id)
+
+    model_instance = Core.model_instance
+    result = model_instance.predict(int(team1_id), int(team2_id))
+
+    # TODO: wenn score nicht da: score: -1
+    result = {'outcome': {'home_win': 0.2,
+                         'draw': 0.1,
+                         'guest_win': 0.7},
+             'score': {1: {'home_points': 4,
+                           'guest_points': 2,
+                           'probability': 0.2}
+                       }
+             }
+
 
     dummy = {'home': team1_id,
              'guest': team2_id,
