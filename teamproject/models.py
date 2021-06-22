@@ -162,16 +162,17 @@ class PoissonModel(Models):
         home_win = np.sum(np.tril(self.simulation, -1))
         draw = np.sum(np.diag(self.simulation))
         guest_win = np.sum(np.triu(self.simulation, 1))
-        # TODO: return as dict
-        return [home_win, draw, guest_win]
+        return {'home_win' : home_win, 'draw' : draw, 'guest_win' : guest_win}
     def predict_score(self):
         index = np.argmax(self.simulation)
         home_points, guest_points = divmod(index, self.max_goals+1)
-        # TODO: return as dict
-        return [home_points, guest_points]
+        return {'home_points' : home_points, 'guest_points' : guest_points, 'probab' : self.simulation[home_points, guest_points]}
     def predict(self, home_id, guest_id):
-        # TODO: call sim.match, pred.outcome, pred.score. concatenate and return results in dict 
-        return {}
+        self.simulate_match(home_id, guest_id)
+        outcome = self.predict_outcome()
+        result = self.predict_score()
+        dict = {'outcome' : outcome, 'score' : result}
+        return dict
 
 
 class ExperienceAlwaysWins():
@@ -207,18 +208,21 @@ if __name__ == '__main__':
     #algo_trivial = Model_Handler(6, 16, 0, 0, 1)
     #print(algo_trivial)
 
-    # POISSON TESTING
-    # crwlr = crawler.Crawler()
-    # data = crwlr.get_data_for_algo([1],[2020], 1, 34, 0, 0)
-    # algo = PoissonModel()
-    # algo.set_data(data)
-    # algo.start_training()
-    # max_goals=4
-    # algo.simulate_match(16,1635)
-    # #print(algo.predict_outcome())
+    #POISSON TESTING
+    crwlr = crawler.Crawler()
+    data = crwlr.get_data_for_algo([1],[2020], 1, 34, 0, 0)
+    algo = PoissonModel()
+    algo.set_data(data)
+    algo.start_training()
+    max_goals=4
+    algo.simulate_match(16,1635)
+    print(algo.predict(16,87))
+    #print(algo.predict_outcome())
     # sim = algo.simulation
     # print(sim)
     # index = np.argmax(sim)
     # print(index)
     # home_goals, guest_goals = divmod(index, max_goals+1)
     # print(home_goals, guest_goals)
+
+# %%
