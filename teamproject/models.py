@@ -3,6 +3,8 @@ This module contains code for a prediction models.
 """
 # %%
 from abc import ABCMeta, abstractmethod
+
+from numpy.core.numeric import outer
 import crawler
 from collections import Counter
 import pandas as pd
@@ -106,35 +108,31 @@ class MostWins(Models):
         return None
 
     def predict(self, team1, team2):
-        # TODO: Daten irgendwie aufbereiten, dass ich was damit anfangen kann
+        team1 = str(team1)
+        team2 = str(team2)
 
-        team1_wins = 0
-        team2_wins = 0
-        draws = 0
+        outcome = {team1 : 0, 'draw' : 0, team2 : 0}
 
-        for key in self.end_results.index:
-            team = self.end_results.loc[key, "Team1.TeamId"]
-            result = self.end_results.loc[key, "PointsTeam1"] - self.end_results.loc[key, "PointsTeam2"]
+        data_2_teams = self.data[(self.data['team_home_id'] == team1) & (self.data['team_guest_id'] == team2)
+                                    | (self.data['team_home_id'] == team2) & (self.data['team_guest_id'] == team1)]
+        data_2_teams['result'] = data_2_teams['points_home'] - data_2_teams['points_guest']
 
-            if team == self.team1:
-                if result > 0:
-                    team1_wins += 1
-                elif result < 0:
-                    team2_wins += 1
-                else:
-                    draws += 1
-            else:
-                if result < 0:
-                    team1_wins += 1
-                elif result > 0:
-                    team2_wins += 1
-                else:
-                    draws += 1
+        total_matches = data_2_teams.shape[0]
 
-        total_matches = team1_wins + team2_wins + draws
-        return [self.team1, self.team2, (team1_wins / total_matches) * 100, (draws / total_matches) * 100,
-                (team2_wins / total_matches) * 100]
-
+        for index in data_2_teams.index:
+            result = data_2_teams.loc[index,'result']
+            home_team = data_2_teams.loc[index,'team_home_id']
+            guest_team = data_2_teams.loc[index,'team_guest_id']
+            if result == 0:
+                outcome['draw'] = outcome['draw'] + 1
+            elif result > 0:
+                outcome[home_team] = outcome[home_team] + 1
+            elif result < 0:
+                outcome[guest_team] = outcome[guest_team] + 1
+        print(outcome)
+        return [round((outcome[team1]/total_matches*100),2),
+                round((outcome['draw']/total_matches*100),2),
+                round((outcome[team2]/total_matches*100),2)]
 
 class PoissonModel(Models):
     parameter_dict = {'leagues': 1,
@@ -152,13 +150,6 @@ class PoissonModel(Models):
         return self.parameter_dict
 
     def set_data(self, data):
-        #matches = data[self.MATCHES_INDEX]
-        #results = data[self.MATCH_CONTENT]
-        #ids_in_match = matches[self.MATCH_CONTENT]
-        #end_results = results[results['result_type_id'] == self.END_RESULT]
-        #data = ids_in_match.merge(end_results, on='match_id')
-        #data[self.TEAM_ID_COLUMNS] = data[self.TEAM_ID_COLUMNS].astype(str)
-
         self.data = self.prepare_data(data)
 
         goal_model_data = pd.concat([data[self.HOME_TEAM_WITH_GOALS].assign(home=1).rename(
@@ -244,21 +235,29 @@ if __name__ == '__main__':
     # algo_trivial = Model_Handler(6, 16, 0, 0, 1)
     # print(algo_trivial)
 
-    # POISSON TESTING
+    # MOSTWINS TESTING
     crwlr = crawler.Crawler()
-    data = crwlr.get_data_for_algo([1], [2020], 1, 34, 0, 0)
-    algo = PoissonModel()
-    algo.set_data(data)
-    algo.start_training()
-    max_goals = 4
-    algo.simulate_match(16, 1635)
-    print(algo.predict(16, 87))
-    # print(algo.predict_outcome())
-    # sim = algo.simulation
-    # print(sim)
-    # index = np.argmax(sim)
-    # print(index)
-    # home_goals, guest_goals = divmod(index, max_goals+1)
-    # print(home_goals, guest_goals)
+    data = crwlr.get_data_for_algo([1], [2020,2019,2018,2017], 1, 34, 0, 0)
+    model = MostWins()
+    model.set_data(data)
+    
+    data = model.data
+    #print(data.head(5))
+    # data_2_teams = data.loc[(data['team_home_id'] == '16')]
+    #                                 | (data['team_home_id'] == team2) & (data['team_guest_id'] == team1)]
+    #print(data[(data['team_home_id'] == '16') & (data['team_guest_id'] == '112')].head(5))
+    #print(data[['points_home', 'points_guest']].subtract(axis=1))
+
+    print(model.predict(16,112))
+
+    # POISSON TESTING
+    # crwlr = crawler.Crawler()
+    # data = crwlr.get_data_for_algo([1], [2020], 1, 34, 0, 0)
+    # algo = PoissonModel()
+    # algo.set_data(data)
+    # algo.start_training()
+    # max_goals = 4
+    # algo.simulate_match(16, 1635)
+    # print(algo.predict(16, 87))
 
 # %%
