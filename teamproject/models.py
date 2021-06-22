@@ -46,7 +46,7 @@ class Models:
         pass
 
     @abstractmethod
-    def predict_outcome(self):
+    def predict(self):
         pass
 
 # TODO: hier hört abstract auf
@@ -69,7 +69,10 @@ class MostWins(Models):
         self.end_results = self.match_results[self.match_results['ResultTypeID'] == 2]
         #print(self.end_results)
 
-    def predict_outcome(self):
+    def start_training(self):
+        return None
+
+    def predict(self, team1, team2):
         team1_wins = 0
         team2_wins = 0
         draws = 0
