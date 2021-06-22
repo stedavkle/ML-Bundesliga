@@ -15,6 +15,18 @@ import statsmodels.formula.api as smf
 class Models:
     __metaclass__ = ABCMeta
 
+    MATCHES_INDEX = 0
+    RESULTS_INDEX = 1
+    MAX_GOALS = 10
+    MATCH_CONTENT = ['match_id', 'team_home_id', 'team_guest_id']
+    RESULT_CONTENT = ['match_id', 'points_home', 'points_guest']
+    TEAM_ID_COLUMNS = ['team_home_id', 'team_guest_id']
+    HOME_TEAM_WITH_GOALS = ['team_home_id', 'team_guest_id', 'points_home']
+    GUEST_TEAM_WITH_GOALS = ['team_guest_id', 'team_home_id', 'points_guest']
+
+    # TODO: Was dat?
+    END_RESULT = 1
+
     # non-abstract methods
     def get_models(self):
         # TODO: if model added, edit models object
@@ -53,26 +65,40 @@ class Models:
 
 
 class MostWins(Models):
+    parameter = {'leagues': 1,
+                 'seasons': 1,
+                 'matchdays': 0,
+                 'points': 0}
+
+    def __init__(self):
+        self.data = ''
+
     def get_model_requirements(self):
-        parameter = {'leagues': 1,
-                     'seasons': 1,
-                     'matchdays': 0,
-                     'points': 0}
+        return self.parameter
 
-        return parameter
-
-    def set_data(self, team1, team2):
+    def set_data(self, data):
         # TODO: umschreiben für Core
-        self.team1 = team1
+        matches = data[self.MATCHES_INDEX]
+        results = data[self.RESULTS_INDEX]
+        ids_in_match = matches[self.MATCH_CONTENT]
+        end_results = results[results['result_type_id'] == self.END_RESULT]
+        data = ids_in_match.merge(end_results, on='match_id')
+        data[self.TEAM_ID_COLUMNS] = data[self.TEAM_ID_COLUMNS].astype(str)
+        self.data = data
+
+        """self.team1 = team1
         self.team2 = team2
         #self.matches, self.match_results, self.match_goals = getMatchupHistoryFromAPI(team1, team2)
         self.end_results = self.match_results[self.match_results['ResultTypeID'] == 2]
-        #print(self.end_results)
+        #print(self.end_results)"""
 
     def start_training(self):
         return None
 
     def predict(self, team1, team2):
+
+
+
         team1_wins = 0
         team2_wins = 0
         draws = 0
