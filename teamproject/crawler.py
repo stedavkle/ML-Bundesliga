@@ -54,6 +54,7 @@ class Crawler(object):
         #self.scores = pd.DataFrame()
 
         self.available_leagues = [1,2,3]
+        self.bl_leagues_ids = {1 : 4442, 2 : 4443, 3 : 4444}
         if(datetime.datetime.now().month >= 7):
             year = datetime.datetime.now().year+1
         else:
@@ -159,6 +160,17 @@ class Crawler(object):
             except Exception:
                 continue
         return 1
+    def get_matchday_from_API(self):
+        response = requests.get('https://www.openligadb.de/api/getmatchdata/bl3')
+        matchday = pd.json_normalize(response.json())
+        return None
+
+    def get_league_of_team(self, team_id):
+        # TODO: get recent team DB and check in wich league the team is
+        current_season = datetime.datetime.now().year-1
+        for league in self.available_leagues:
+            teams = self.get_teams
+        return None
 
     #   
     #   PUBLIC FUNCTIONS BELOW
@@ -180,13 +192,12 @@ class Crawler(object):
                     new_teams = pd.read_csv(teams_path)
                 else: 
                     new_teams = self.get_teams_from_API(league, season)
+                    
                 teams = pd.concat([teams, new_teams])
                 teams = teams.drop_duplicates(['team_id'])
         self.teams = teams
         self.get_team_icons_from_wiki()
         return 1
-
-
 
     def create_dataset_from_leagues_and_seasons(self, leagues, seasons, day_start, day_end):
         """
@@ -275,6 +286,15 @@ class Crawler(object):
         #self.scores = self.scores[self.scores['match_id'].isin(self.matches['match_id'])]  
         return 1
 
+    def get_next_matchday(self):
+        # TODO:
+        return None
+    
+    def get_next_opponent(self, home_id):
+        # TODO: Check in wich league the team is and return id of opponent
+        match = self.get_next_match_from_API(league_id, home_id)
+        return 1
+
     # Function for Data grabbing for Model
     def get_data_for_model(self, leagues, seasons, matchdays):
         # TODO:
@@ -291,6 +311,7 @@ class Crawler(object):
         :param int day_end: end day of last season
         :param int team_home_id: id of first team
         :param int team_guest_id: id of second team
+        :returns: pd.DF[]: DataPacket for Algo
 
         If team_home_id==0==team_guest_id, all matches are taken.
         If team_home_id!=0 & team_guest_id==0, only matches were home_team participates are taken.
@@ -310,11 +331,17 @@ if __name__ == '__main__':
     #                                                         team_home_id, team_guest_id)
     leagues = [1]
     seasons = np.arange(2009,2020)
-    matches, results = crawler.get_data_for_algo([1,2,3],[2020,2019,2018],2,30,0,0)
-    print(matches)
+    #matches, results = crawler.get_data_for_algo([1,2,3],[2020,2019,2018],2,30,0,0)
+    #print(matches)
 
-    # teams = crawler.get_teams(leagues, seasons).sort_values(['team_id'])
+    # teams = crawler.get_teams(leagues, seasons)
     # print(teams)
+
+    response = requests.get('https://www.openligadb.de/api/getmatchdata/bl3')
+    matchday = pd.json_normalize(response.json())#[['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']]
+    print(matchday.head(5))
 
     #id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
     #print(team_to_id["1. FC Köln"])
+
+# %%
