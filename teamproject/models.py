@@ -109,7 +109,7 @@ class MostWins(Models):
         :param pd.DF: DB containing matches and the results in Uniformat
         """
         self.data = self.prepare_data(data)
- 
+
     def start_training(self):
         """No training necessary for this algorithm.
         SKIP"""
@@ -127,26 +127,32 @@ class MostWins(Models):
         team1 = str(team1)
         team2 = str(team2)
 
-        outcome = {team1 : 0, 'draw' : 0, team2 : 0}
+        outcome = {team1: 0, 'draw': 0, team2: 0}
         # extract the matchup history from the given teams
         data_2_teams = self.data[(self.data['team_home_id'] == team1) & (self.data['team_guest_id'] == team2)
-                                    | (self.data['team_home_id'] == team2) & (self.data['team_guest_id'] == team1)]
+                                 | (self.data['team_home_id'] == team2) & (self.data['team_guest_id'] == team1)]
         # subtract the goals and create new column
         data_2_teams['result'] = data_2_teams['points_home'] - data_2_teams['points_guest']
 
         total_matches = data_2_teams.shape[0]
         # look wich team scored more and sum the wins/draws
         for index in data_2_teams.index:
-            result = data_2_teams.loc[index,'result']
-            home_team = data_2_teams.loc[index,'team_home_id']
-            guest_team = data_2_teams.loc[index,'team_guest_id']
+            result = data_2_teams.loc[index, 'result']
+            home_team = data_2_teams.loc[index, 'team_home_id']
+            guest_team = data_2_teams.loc[index, 'team_guest_id']
             if result == 0:
                 outcome['draw'] = outcome['draw'] + 1
             elif result > 0:
                 outcome[home_team] = outcome[home_team] + 1
             elif result < 0:
                 outcome[guest_team] = outcome[guest_team] + 1
-        return {'home_win': round((outcome[team1]/total_matches*100),2), 'draw': round((outcome['draw']/total_matches*100),2), 'guest_win': round((outcome[team2]/total_matches*100),2)}
+        return {'outcome': {'home_win': round((outcome[team1] / total_matches * 100), 2),
+                            'draw': round((outcome['draw'] / total_matches * 100), 2),
+                            'guest_win': round((outcome[team2] / total_matches * 100), 2)
+                            },
+                'score': -1
+                }
+
 
 class PoissonModel(Models):
     parameter_dict = {'leagues': 1,
@@ -251,6 +257,7 @@ class PoissonModel(Models):
         dict = {'outcome': outcome, 'score': result}
         return dict
 
+
 # %%
 # for testing inside the script
 if __name__ == '__main__':
@@ -264,18 +271,18 @@ if __name__ == '__main__':
 
     # MOSTWINS TESTING
     crwlr = crawler.Crawler()
-    data = crwlr.get_data_for_algo([1], [2020,2019,2018,2017], 1, 34, 0, 0)
+    data = crwlr.get_data_for_algo([1], [2020, 2019, 2018, 2017], 1, 34, 0, 0)
     model = MostWins()
     model.set_data(data)
-    
+
     data = model.data
-    #print(data.head(5))
+    # print(data.head(5))
     # data_2_teams = data.loc[(data['team_home_id'] == '16')]
     #                                 | (data['team_home_id'] == team2) & (data['team_guest_id'] == team1)]
-    #print(data[(data['team_home_id'] == '16') & (data['team_guest_id'] == '112')].head(5))
-    #print(data[['points_home', 'points_guest']].subtract(axis=1))
+    # print(data[(data['team_home_id'] == '16') & (data['team_guest_id'] == '112')].head(5))
+    # print(data[['points_home', 'points_guest']].subtract(axis=1))
 
-    print(model.predict(16,112))
+    print(model.predict(16, 112))
 
     # POISSON TESTING
     # crwlr = crawler.Crawler()

@@ -255,13 +255,19 @@ function result_screen_render(){
     var draw = result.draw;
     var guest_win = result.guest_win;
 
+    alert("result.home: " + result.home);
+    alert(typeof result.home);
+    alert("<img src=\'../icons/" + result.home + ".png\' alt=" + team1_name + ">");
+
     //TODO: Stages anpassen, damit man zu team_select_render springen kann
     set_innerHTML("left_btn", "<button class=\'btn btn-primary\' onclick=\"reset_stage_to(3)\">anderes Match wählen</button>");
     set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"reset_program()\">zurück zur Startseite</button>");
 
-    var img_home_html = "<img src=" + img_team1 + " alt=" + team1_name + "><h4>" + team1_name + "</h4>";
+    var test_img = "<img src=\'img/6.png\' width=\'45%\'><h4>" + team1_name + "</h4>"
+
+    var img_home_html = "<img src=\'../icons/" + result.home + ".png\' alt=" + team1_name + "width=\'50%\'><h4>" + team1_name + "</h4>";
     var colon_html = "<div><h2>:</h2></div>";
-    var img_guest_html = "<img src=" + img_team2 + " alt=" + team2_name + "><h4>" + team2_name + "</h4>";
+    var img_guest_html = "<img src=\'../icons/" + result.guest + ".png\' alt=" + team2_name + "width=\'50%\'><h4>" + team2_name + "</h4>";
     var propability_table = "<table class=\'table\'>" +
         "<thread><tr>" +
         "<th>Sieg " + team1_name + "</th>" +
@@ -273,7 +279,8 @@ function result_screen_render(){
         "<th>" + guest_win + "</th></tr></tbody></table>";
 
     set_innerHTML("1-col-1", "<h2 class=\'d-flex justify-content-center\'>Ergebnis:</h2>");
-    set_innerHTML("3-col-1", img_home_html);
+    //set_innerHTML("3-col-1", img_home_html);
+    set_innerHTML("3-col-1", test_img);
     set_innerHTML("3-col-2", colon_html);
     set_innerHTML("3-col-3", img_guest_html);
     set_innerHTML('5-col-1', propability_table);
