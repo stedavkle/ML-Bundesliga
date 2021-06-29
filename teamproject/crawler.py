@@ -23,7 +23,7 @@ class Crawler(object):
     #                                 'scorer_name', 'is_overtime', 'match_id']
 
     #PATHs for miscellaneous Data
-    ICONS_PATH = r'./icons/{}.png'
+    ICONS_PATH = r'./teamproject/web/img/{}.png'
     TABLE_DB_PATH = r'./data/table_bl{}_{}.csv'
 
     # URLs for OpenLigaDB API
@@ -331,7 +331,7 @@ if __name__ == '__main__':
     #                                                         team_home_id, team_guest_id)
     leagues = [1]
     seasons = np.arange(2009,2020)
-    #matches, results = crawler.get_data_for_algo([1,2,3],[2020,2019,2018],2,30,0,0)
+    matches, results = crawler.get_data_for_algo([1,2,3],[2020,2019,2018],1,34,0,0)
     #print(matches)
 
     # teams = crawler.get_teams(leagues, seasons)
