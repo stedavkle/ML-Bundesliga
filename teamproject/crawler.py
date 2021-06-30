@@ -121,6 +121,10 @@ class Crawler(object):
 
                 match_results = pd.json_normalize(data_json, record_path='MatchResults', meta=self.API_META_DATA)[self.API_RESULT_CONTENT_COLUMNS]
                 match_results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
+                # TODO: refactor magic numbers
+                if (league in [1,2]) & (season in range(2015,2020)) | (league == 3) & (season in range(2016,2020)):
+                    print('changing')
+                    match_results['result_type_id'] = match_results['result_type_id'].apply(lambda x: x%2+1)
                 # # TODO: concatenate score_home and score_guest to a tuple (score_home, score_guest) in one column 'temp_score'
                 # # TODO: handle score_db not present
                 # match_scores = pd.json_normalize(data_json, record_path='Goals', meta=self.API_META_DATA)[self.api_score_content_columns]
@@ -387,7 +391,8 @@ if __name__ == '__main__':
     #                                                         team_home_id, team_guest_id)
     leagues = [1]
     seasons = np.arange(2009,2020)
-    matches, results = crawler.get_data_for_algo([3],[2020,2019,2018],1,34,0,0)
+    #matches, results = crawler.get_data_for_algo([3],[2020,2019,2018],1,34,0,0)
+    crawler.get_matches_from_leagues_and_seasons_from_API([1],[2018])
     #print(crawler.get_team_dicts([3],[2020]))
     #print(matches.head())
     print(crawler.get_next_match_day(1))
