@@ -258,7 +258,6 @@ class Crawler(object):
         if return_bool == 1:
             return teams
         self.teams = teams
-        self.get_team_icons_from_wiki()
 
     def create_dataset_from_leagues_and_seasons(self, leagues, seasons, day_start, day_end):
         """

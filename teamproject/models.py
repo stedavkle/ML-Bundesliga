@@ -183,7 +183,7 @@ class PoissonModel(Models):
 
         :param pd.DF: DB containing matches and the results in Uniformat
         """
-        self.data = self.prepare_data(data)
+        data = self.prepare_data(data)
         # rename columns for algo
         goal_model_data = pd.concat([data[self.HOME_TEAM_WITH_GOALS].assign(home=1).rename(
             columns={'team_home_id': 'team', 'team_guest_id': 'opponent', 'points_home': 'goals'}),
@@ -261,7 +261,6 @@ class PoissonModel(Models):
 # %%
 # for testing inside the script
 if __name__ == '__main__':
-    None
     # matches, match_results, match_goals = getMatchupHistoryFromAPI(16,87)
     # algo = SumMostGoalsIsWinner(match_results)
     # print(algo.predict_winner())
@@ -271,8 +270,8 @@ if __name__ == '__main__':
 
     # MOSTWINS TESTING
     crwlr = crawler.Crawler()
-    data = crwlr.get_data_for_algo([1], [2020, 2019, 2018, 2017], 1, 34, 0, 0)
-    model = MostWins()
+    data = crwlr.get_data_for_algo([1,2,3], [2020, 2019, 2018, 2017, 2016, 2015, 2014], 1, 34, 0, 0)
+    model = PoissonModel()
     model.set_data(data)
 
     data = model.data
@@ -282,7 +281,7 @@ if __name__ == '__main__':
     # print(data[(data['team_home_id'] == '16') & (data['team_guest_id'] == '112')].head(5))
     # print(data[['points_home', 'points_guest']].subtract(axis=1))
 
-    print(model.predict(16, 112))
+    print(model.predict(16, 1635))
 
     # POISSON TESTING
     # crwlr = crawler.Crawler()
