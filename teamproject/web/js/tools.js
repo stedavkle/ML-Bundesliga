@@ -172,7 +172,7 @@ function display_outcome(outcome, home, guest){
  * @param guest - name of guest team
  */
 function display_score(score, home, guest){
-  var NO_SCORE = 0;
+  var NO_SCORE = -1;
   if (score == NO_SCORE){
     hide('6-col-1');
   }
@@ -207,11 +207,11 @@ function display_score(score, home, guest){
  */
 function display_league_pagination(){
   //window.alert("display_league_pagination(): entered");
-  var matchday = get_session_item('next_matchday');
+  var leagues = get_session_item('final_leagues');
   var button_group = "<div class=\'btn-group\'>";
-  for (var key in matchday){
-    button_group += "<button type=\'button\' id=\'league_" + key + "\' class=\'btn btn-outline-light\' onclick=\"next_matchday_table(" + key + ")\">" +
-        + key + ". Liga</button>";
+  for (var i = 0; i < leagues.length; i++){
+    button_group += "<button type=\'button\' id=\'league_" + leagues[i] + "\' class=\'btn btn-outline-light\' onclick=\"next_matchday_table(" + leagues[i] + ")\">" +
+        + leagues[i] + ". Liga</button>";
   }
   button_group += "</div>";
   set_innerHTML('left_btn', button_group);
@@ -462,15 +462,25 @@ function set_team(sel){
  * @param next_match - object with next match information
  */
 function show_next_opponent(next_match){
-  show_match_information();
-  /*
-  var team_list = get_session_item('team_list');
-  set_session_item('team2_id', team2_id);
-  set_session_item('team2_name', team_list[team2_id]);
-  set_innerHTML("2-col-2", "<h3>nächster Gegner:</h3><h4>" + team_list[team2_id] + "</h4>");
-  display('2-col-2');*/
-  set_innerHTML("left_btn","<button class=\'btn btn-primary\' onclick=\"set_opponent()\">Gegner wählen</button>");
-  set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"start_prediction()\">Vorhersage starten</button>");
+  var team_string = '';
+  if (next_match == 0){
+    create_alert("Es konnte kein nächster Gegner ermittelt werden!");
+    set_opponent();
+  }
+  else {
+    team_string = "<div class=\'card\'>" +
+      "<div class=\'card-body\'>" +
+      "<h5 class=\'card-text\'>nächster Gegner:</h5>" +
+      "<h3 class=\'card-title\'>" + next_match.opponent_name + "</h3>" +
+      "<p class=\'card-text\'>Spielort: " + next_match.location + "</p>" +
+      "<p class=\'card-text\'>Anpfiff: " + next_match.date + ", " + next_match.time + " Uhr</p>" +
+      "</div></div>";
+    set_session_item('team2_id', next_match.opponent_id);
+    set_innerHTML('2-col-2', team_string);
+    display('2-col-2');
+    set_innerHTML("left_btn","<button class=\'btn btn-primary\' onclick=\"set_opponent()\">Gegner wählen</button>");
+    set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"start_prediction()\">Vorhersage starten</button>");
+  }
 }
 
 
@@ -504,7 +514,7 @@ function set_opponent(){
  * @param team2_id
  */
 function set_next_match(team1_id, team2_id){
-  window.alert("set_next_match(): entered");
+  //window.alert("set_next_match(): entered");
   set_session_item('team1_id', team1_id);
   set_session_item('team2_id', team2_id);
   set_session_item('stage', 6);

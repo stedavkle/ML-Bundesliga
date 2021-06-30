@@ -134,7 +134,7 @@ def get_next_matchday_from_parameters(parameter):
     crawler_instance = Core.crawler_instance
 
     # TODO: einkommentieren, sobald irgendwas tut
-    # matchday = crawler_instance.get_next_matchday()#
+    matchday = crawler_instance.get_next_matchday()
 
     match = {'team_home_name': 'Bayern München',
              'team_home_id': 40,
@@ -154,8 +154,8 @@ def get_next_matchday_from_parameters(parameter):
                 3: {568: match,
                     123: match}
                 }
-
-    return {key: matchday[key] for key in Core.leagues}
+    #print(matchday[1][58877])
+    return matchday #{key: matchday[key] for key in Core.leagues}
 
 
 @eel.expose
@@ -176,6 +176,7 @@ def start_training_and_get_teams():
     model_instance.start_training()
 
     id_to_team, team_to_id = crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
+    crawler_instance.get_team_icons_from_wiki()
     print(id_to_team)
     return id_to_team
 
@@ -195,6 +196,8 @@ def get_next_opponent(id):
     # TODO: einkommentieren, wenns geht
     #match = crawler_instance.get_next_opponent(int(id))
 
+    #print(match)
+
     match = {'team_home_name': 'Bayern München',
              'team_home_id': 40,
              'team_guest_name': 'Eintracht Frankfurt',
@@ -206,7 +209,15 @@ def get_next_opponent(id):
              'time': '15:30:00',
              'location': 'Allianz Arena'}
 
-    return match
+    # TODO: team id gegenchecken und gegner umschreiben in opponent
+    # --> neue Struktur:
+    new = {'opponent_id': 6,
+           'opponent_name': 'Bayer Leverkusen',
+           'date': '2021-05-22',
+           'time': '15:30:00',
+           'location': 'Allianz Arena'}
+
+    return 0
 
 
 @eel.expose
@@ -227,7 +238,7 @@ def start_prediction(team1_id, team2_id):
     print(result)
 
     # TODO: wenn score nicht da: score: -1
-    result = {
+    test = {
         'outcome': {
             'home_win': 0.2,
             'draw': 0.1,
@@ -253,10 +264,5 @@ def start_prediction(team1_id, team2_id):
         'score': result['score']
     }
 
-    dummy = {'home': team1_id,
-             'guest': team2_id,
-             'outcome': result['outcome'],
-             'score': result['score']
-             }
 
-    return dummy
+    return result_dict
