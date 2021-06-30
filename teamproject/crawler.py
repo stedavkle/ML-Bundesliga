@@ -21,7 +21,7 @@ class Crawler(object):
     #                                 'scorer_name', 'is_overtime', 'match_id']
 
     # PATHs for miscellaneous Data
-    ICONS_PATH = r'./teamproject/web/img/{}.png'
+    ICONS_PATH = r'./web/img/{}.png'
     TABLE_DB_PATH = r'./data/table_bl{}_{}.csv'
 
     # URLs for OpenLigaDB API
@@ -399,13 +399,13 @@ if __name__ == '__main__':
     leagues = [1]
     seasons = np.arange(2009,2020)
     #matches, results = crawler.get_data_for_algo([3],[2020,2019,2018],1,34,0,0)
-    print(crawler.available_leagues)
-    dict = crawler.get_next_matchday()
-    print(dict)
+    #print(crawler.available_leagues)
+    #dict = crawler.get_next_matchday()
+    #print(dict)
     #print(crawler.get_team_dicts([3],[2020]))
     #print(matches.head())
     #print(crawler.get_next_match_day(1))
-    # teams = crawler.get_teams(leagues, seasons, 0)
+    teams = crawler.get_teams(leagues, seasons, 0)
     # print(teams)
 
     # response = requests.get('https://www.openligadb.de/api/getmatchdata/bl3')
