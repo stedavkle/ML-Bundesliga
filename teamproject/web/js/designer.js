@@ -58,7 +58,7 @@ function training_data_designer(){
   display("back_btn");
   clear_alert();
   hide('spinner_display');
-  hide_and_reset("1-col-1")
+  hide_and_reset("1-col-1");
   hide_and_reset("2-col-1");
   hide_and_reset("2-col-2");
   hide_and_reset("3-col-1");
@@ -82,9 +82,9 @@ function next_matchday_designer(){
   hide_and_reset("3-col-1");
   hide_and_reset("3-col-2");
   hide_and_reset("3-col-3");
-  hide_and_reset("5-col-1");
+  display("5-col-1");
   hide_and_reset("6-col-1");
-  hide("left_btn");
+  display("left_btn");
   display("right_btn");
 
   //set_3_col_standard();
@@ -176,4 +176,11 @@ function create_alert(message){
 
 function clear_alert(){
   hide_and_reset("alert");
+}
+
+function spinner_button(){
+  // spinner at button position
+  var spinner = "<button class=\'btn btn-danger\' disabled>" +
+      "<span class=\'spinner-border spinner-border-sm\'></span>\tTraining</button>";
+  set_innerHTML('right_btn', spinner);
 }

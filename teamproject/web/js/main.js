@@ -50,6 +50,12 @@ function build_stage(){
             // TODO: send Trainingdata, training progress, get matches
             //var model_data_parameter = get_session_item('selected_parameters');
             //progress_spinner_render();
+            next_matchday_designer();
+            spinner_button();
+            var final_leagues = get_session_item('final_leagues');
+            display_league_pagination();
+            next_matchday_table(final_leagues[0]);
+
             eel.start_training_and_get_teams()(team_select_callback);
             break;
         case 5:

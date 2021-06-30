@@ -38,14 +38,14 @@ function open_session(sport){
     set_session_item('selected_seasons', []);
     set_session_item('selected_parameters', {});
     set_session_item('max_matchday_count', 0);
-    set_session_item('first_matchday', 0);
-    set_session_item('last_matchday', 0);
-    set_session_item('selected_matchdays', [])
+    set_session_item('final_leagues', 0);
     set_session_item('team1_id', 0);
     set_session_item('team2_id', 0);
     set_session_item('team1_name', "");
     set_session_item('team2_name', "");
     set_session_item('result', {});
+    set_session_item('next_matchday', {});
+    set_session_item('training_complete', false);
 }
 
 /**

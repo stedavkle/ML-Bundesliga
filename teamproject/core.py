@@ -12,6 +12,8 @@ import models
 
 
 class Core:
+    """Build Instance of Core: initialize GUI framework"""
+
     """Initialize Browser Presettings"""
     my_options = {
         'host': 'localhost',
@@ -39,12 +41,18 @@ class Core:
 """ FUNCTION COLLECTION """
 
 
-# TODO: Crawler Call Docstring
 @eel.expose
 def get_crawler_data(sport):
+    """
+    calls crawler for data
+    :param sport: id of selected sport
+    :return: dictionary of leagues and seasons
+    """
+    print("get_crawler_data(): executed successfully")
     sport = int(sport)
     Core.sport = sport
 
+    # TODO: Crawler auf abstrakte Klasse umschreiben
     if sport == 1:
         Core.crawler_instance = crawler.Crawler()
 
@@ -59,6 +67,13 @@ def get_crawler_data(sport):
 
 @eel.expose
 def start_crawler_get_models(leagues, seasons):
+    """
+    league and season values casted to int and send to crawler
+    calls models.py for available models
+    :param leagues: list of league id
+    :param seasons: list of seasons
+    :return: dictionary of available models
+    """
     print("start_crawler(): executed successfully")
 
     leagues = [int(i) for i in leagues]
@@ -69,12 +84,18 @@ def start_crawler_get_models(leagues, seasons):
     Core.crawler_instance.get_matches_from_leagues_and_seasons_from_API(leagues, seasons)
 
     model = models.Models()
+    print(model)
     Core.model = model.get_models()
     return Core.model
 
 
 @eel.expose
 def get_required_model_data(model):
+    """
+    get required data for model from crawler
+    :param model: id of model
+    :return: dictionary with parameter options
+    """
     print("get_required_model_data(): executed successfully")
     model = int(model)
     print(type(model))
@@ -92,6 +113,12 @@ def get_required_model_data(model):
 
 @eel.expose
 def get_next_matchday_from_parameters(parameter):
+    """
+    stores selected parameters
+    calls crawler for dictionary of next matchday
+    :param parameter: dictionary of selected parameters
+    :return: dictionary of matchdays
+    """
     print("get_next_matchday_from_parameters(): executed successfully")
     print(parameter)
 
@@ -115,7 +142,7 @@ def get_next_matchday_from_parameters(parameter):
              'team_guest_id': 91,
              'points_home': 4,
              'points_guest': 2,
-             'is_finished': 1,
+             'is_finished': 0,
              'date': '2021-05-22',
              'time': '15:30:00',
              'location': 'Allianz Arena'}
@@ -133,8 +160,12 @@ def get_next_matchday_from_parameters(parameter):
 
 @eel.expose
 def start_training_and_get_teams():
+    """
+    gets training data from crawler, calls model for training
+    gets list of available teams from crawler
+    :return: dictionary of teams
+    """
     print("start_training_and_get_teams(): executed successfully")
-    print()
 
     crawler_instance = Core.crawler_instance
     training_data = crawler_instance.get_data_for_algo(Core.leagues, Core.seasons, Core.first_matchday,
@@ -151,28 +182,46 @@ def start_training_and_get_teams():
 
 @eel.expose
 def get_next_opponent(id):
+    """
+    calls crawler for next opponent, depending on given team id
+    :param id: team id
+    :return: dictionary of next match
+    """
     print("get_next_opponent(): executed successfully")
     print(id)
     # TODO: Crawler Call (sollte Team Id zurück geben, falls kein next Match, gebe 0 zurück)
 
     crawler_instance = Core.crawler_instance
-    opponent_id = crawler_instance.get_next_opponent(int(id))
+    # TODO: einkommentieren, wenns geht
+    #match = crawler_instance.get_next_opponent(int(id))
 
-    # dummy
-    opponent_id = 42
+    match = {'team_home_name': 'Bayern München',
+             'team_home_id': 40,
+             'team_guest_name': 'Eintracht Frankfurt',
+             'team_guest_id': 91,
+             'points_home': 4,
+             'points_guest': 2,
+             'is_finished': 0,
+             'date': '2021-05-22',
+             'time': '15:30:00',
+             'location': 'Allianz Arena'}
 
-    return opponent_id
+    return match
 
 
 @eel.expose
 def start_prediction(team1_id, team2_id):
+    """
+    calls model to start prediction on two given team ids
+    :param team1_id: home team id
+    :param team2_id: guest team id
+    :return: dictionary with results
+    """
     print("start_prediction(): executed successfully")
-    # TODO: get Icons and start Prediction
     print(team1_id)
     print(team2_id)
 
     model_instance = Core.model_instance
-    # TODO: einkommentieren, sobald irgendwas tut
     result = model_instance.predict(int(team1_id), int(team2_id))
 
     print(result)

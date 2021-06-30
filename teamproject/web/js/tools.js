@@ -194,7 +194,94 @@ function display_score(score, home, guest){
       set_innerHTML('6-col-1', scores);
       display('6-col-1');
   }
+}
 
+
+
+
+// TODO: write DOCSTRING!
+/**
+ *
+ * @param next_matchday
+ * @returns {string}
+ */
+function display_league_pagination(){
+  //window.alert("display_league_pagination(): entered");
+  var matchday = get_session_item('next_matchday');
+  var button_group = "<div class=\'btn-group\'>";
+  for (var key in matchday){
+    button_group += "<button type=\'button\' id=\'league_" + key + "\' class=\'btn btn-outline-light\' onclick=\"next_matchday_table(" + key + ")\">" +
+        + key + ". Liga</button>";
+  }
+  button_group += "</div>";
+  set_innerHTML('left_btn', button_group);
+}
+
+
+//TODO: DOCSTRING nachtragen
+/**
+ *
+ * @param id
+ * @param next_matchday
+ */
+function set_pagination_design(id){
+  //window.alert("set_pagination_design(): entered");
+  var selected_leagues = get_session_item('final_leagues');
+  for (var i = 0; i < selected_leagues.length; i++){
+    var id_str = 'league_' + selected_leagues[i];
+    var button = document.getElementById(id_str);
+    if (selected_leagues[i] == id){
+      button.classList.remove('btn-outline-light');
+      button.classList.add('btn-light');
+    }
+    else {
+      button.classList.add('btn-outline-light');
+      button.classList.remove('btn-light');
+    }
+  }
+}
+
+
+// TODO: write DOCSTRING!
+/**
+ *
+ * @param matchday
+ */
+function next_matchday_table(league){
+  //window.alert("next_matchday_table(): entered");
+  set_pagination_design(league);
+  var table_str = "<h3>" + league + ". Liga</h3>" +
+      "<table class=\'table table-hover\'><thead class=\'thead-dark\'><tr>" +
+      "<th>Heim</th>" +
+      "<th>Gast</th>" +
+      "<th>Spielstand</th>" +
+      "<th>Spielort</th>" +
+      "<th>Anpfiff</th>" +
+      "<th></th></tr></thead><tbody>";
+
+  var all_leagues_matchday = get_session_item('next_matchday');
+  var matchday = all_leagues_matchday[league];
+  for (var match in matchday){
+    table_str += "<tr><th><small>" + matchday[match].team_home_name + "</small></th>" +
+        "<th><small>" + matchday[match].team_guest_name + "</small></th>";
+
+    if (matchday[match].is_finished == 0){
+      table_str += "<th><small>- : -</small></th>";
+    }
+    else {
+      table_str += "<th><small>" + matchday[match].points_home + " : " + matchday[match].points_guest + "</small></th>";
+    }
+
+    table_str += "<th><small>" + matchday[match].location + "</small></th>" +
+        "<th><small>" + matchday[match].date + ", " + matchday[match].time + " Uhr</small></th>" +
+        "<th><button id=\'predictable\' class=\'btn btn-primary btn-sm\' onclick=\'set_next_match(" + matchday[match].team_home_id + ", " + matchday[match].team_guest_id + ")\' disabled>" +
+        "<small>Match vorhersagen</small></button></th></tr>";
+  }
+  table_str += "</tbody></table>";
+  set_innerHTML('1-col-1', table_str);
+  if(get_session_item('training_complete')){
+    enable_button();
+  }
 }
 
 // --------------------------------- tool-functions ---------------------------------
@@ -306,10 +393,7 @@ function store_selected_parameter(){
   var last_matchday = parseInt(get_single_selected('last_matchday'));
   var points_checked = 0;
 
-  // spinner at button position
-  var spinner = "<button class=\'btn btn-danger\' disabled>" +
-      "<span class=\'spinner-border spinner-border-sm\'></span>\tTraining</button>";
-  set_innerHTML('right_btn', spinner);
+  spinner_button();
 
   if (selected_seasons.length == 1 && first_matchday > last_matchday)
   {
@@ -334,6 +418,7 @@ function store_selected_parameter(){
         'points': points_checked
       };
 
+      set_session_item('final_leagues', selected_leagues);
       set_session_item('selected_parameters', selected_parameters);
       set_session_item('stage', 3);
       spinner_on();
@@ -374,14 +459,16 @@ function set_team(sel){
 
 /**
  * displays next opponent
- * @param team2_id - id of team 2
+ * @param next_match - object with next match information
  */
-function show_next_opponent(team2_id){
+function show_next_opponent(next_match){
+  show_match_information();
+  /*
   var team_list = get_session_item('team_list');
   set_session_item('team2_id', team2_id);
   set_session_item('team2_name', team_list[team2_id]);
   set_innerHTML("2-col-2", "<h3>nächster Gegner:</h3><h4>" + team_list[team2_id] + "</h4>");
-  display('2-col-2');
+  display('2-col-2');*/
   set_innerHTML("left_btn","<button class=\'btn btn-primary\' onclick=\"set_opponent()\">Gegner wählen</button>");
   set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"start_prediction()\">Vorhersage starten</button>");
 }
@@ -407,6 +494,22 @@ function set_opponent(){
   var team1_id = get_session_item('team1_id');
   set_innerHTML("left_btn","<button class=\'btn btn-primary\' onclick=\"eel.get_next_opponent("+ team1_id +")(show_next_opponent)\">nächster Gegner</button>");
   set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"start_prediction()\">Vorhersage starten</button>");
+}
+
+
+// TODO: write DOCSTRING!
+/**
+ *
+ * @param team1_id
+ * @param team2_id
+ */
+function set_next_match(team1_id, team2_id){
+  window.alert("set_next_match(): entered");
+  set_session_item('team1_id', team1_id);
+  set_session_item('team2_id', team2_id);
+  set_session_item('stage', 6);
+  spinner_on();
+  build_stage();
 }
 
 
@@ -467,3 +570,14 @@ function multiple_select_all(sel_id, check_id){
 	}
 }
 
+
+// TODO: write DOCSTRINGS!
+/**
+ *
+ */
+function enable_button(){
+    var elements = document.querySelectorAll('[id=predictable]');
+    for (var key in elements){
+        elements[key].disabled = false;
+    }
+}

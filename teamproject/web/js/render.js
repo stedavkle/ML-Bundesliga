@@ -21,8 +21,8 @@ function sport_selection_render(){
     html_str += "</select>";
 
     // maintenance
-    var html_btn = "<button onclick=\'maintenence_stage()\'>zur Stage</button>";
-    html_str += html_btn;
+    //var html_btn = "<button onclick=\'maintenence_stage()\'>zur Stage</button>";
+    //html_str += html_btn;
 
     set_innerHTML("1-col-1", html_str);
 }
@@ -190,10 +190,11 @@ function training_data_render(parameter){
  * @param next_matchday - dictionary of matches
  */
 function next_matchday_render(next_matchday){
+    //window.alert("next_matchday_render(): entered");
     next_matchday_designer();
-
-    // TODO: Render Ansicht vom nächsten Spieltag
-    set_innerHTML("1-col-1", "<p>Hier kommt dann die Tabelle mit dem nächsten Spieltag hin.</p>");
+    var all_leagues_matchday = next_matchday;
+    set_session_item('next_matchday', all_leagues_matchday);
+    document.body.style.overflowY = 'scroll';
 
     set_session_item('stage', 4);
     build_stage();
@@ -205,6 +206,8 @@ function next_matchday_render(next_matchday){
  * @param team_list - dictionary of teams
  */
 function team_select_callback(team_list){
+    enable_button();
+    set_session_item('training_complete', true);
     set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"team_select_render()\">Match wählen</button>");
     set_session_item('team_list', team_list);
     display('right_btn');
@@ -219,7 +222,7 @@ function team_select_render(){
     clear_page();
     team_select_designer();
     set_back_button(2);
-
+    document.body.style.overflowY = 'hidden';
     set_session_item('stage', 5);
     var team_list = get_session_item('team_list');
     set_innerHTML("1-col-1", "<h3>Matchauswahl</h3>");
