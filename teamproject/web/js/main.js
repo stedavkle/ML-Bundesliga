@@ -53,12 +53,18 @@ function build_stage(){
             eel.start_training_and_get_teams()(team_select_callback);
             break;
         case 5:
+            // return to match selection after result displayed
+            set_session_item('team1_id', 0);
+            set_session_item('team2_id', 0);
+            team_select_render();
+            break;
+        case 6:
             // TODO: start prediction
             var team1_id = get_session_item('team1_id');
             var team2_id = get_session_item('team2_id');
             eel.start_prediction(team1_id, team2_id)(result_stage_switcher_render);
             break;
-        case 6:
+        case 7:
             // TODO: result
             result_screen_render();
             break;

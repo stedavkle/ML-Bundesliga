@@ -44,6 +44,28 @@ function hide_and_reset(id){
 
 
 /**
+ * removes html element from DOM
+ * @param id - id of html element
+ */
+function display_none(id){
+  var selected = document.getElementById(id);
+  selected.style.display = 'none';
+  selected.style.position = 'absolute';
+}
+
+
+/**
+ * inserts html element to DOM
+ * @param id - id of html element
+ */
+function display_block(id){
+  var selected = document.getElementById(id);
+  selected.style.display = 'block';
+  selected.style.position = 'static';
+}
+
+
+/**
  * returns value of selected element of html select
  * @param id - id of html select
  * @returns {*}
@@ -102,6 +124,78 @@ function show_model_description(){
 }
 
 
+/**
+ * grid for result screen, containing team icons and names
+ * will be placed in '1-col-1' div
+ * @param home_id - id of team 1
+ * @param home - name of team 1
+ * @param guest_id - id of team 2
+ * @param guest - name of team 2
+ */
+function display_result_icons(home_id, home, guest_id, guest){
+  var html_str = "<div class=\'result-container\'>" +
+      "<img class=\'result-element, result-img\' src=\'img/" + home_id + ".png\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\">" +
+      "<img class=\'result-element, result-img\' src=\'img/colon.png\'>" +
+      "<img class=\'result-element, result-img\' src=\'img/" + guest_id + ".png\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\">" +
+      "<div class=\'result-element\'><h4>" + home + "</h4></div>" +
+      "<div class=\'result-element\'></div>" +
+      "<div class=\'result-element\'><h4>" + guest + "</h4></div></div>";
+  set_innerHTML('1-col-1', html_str);
+}
+
+
+/**
+ * probable outcome displayed in a table
+ * @param outcome - object of win probabilities
+ * @param home - home team name
+ * @param guest - guest team name
+ */
+function display_outcome(outcome, home, guest){
+  var propability_table = "<h4>Ergebniswahrscheinlichkeit</h4>" +
+      "<table class=\'table\'>" +
+        "<thead class=\'thead-dark\'><tr>" +
+        "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Sieg</span> " + home + "</th>" +
+        "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Unentschieden</span></th>" +
+        "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Sieg</span> " + guest + "</th></tr></thead>" +
+        "<tbody><tr>" +
+        "<th style=\'width: 33.3%\'>" + outcome.home_win + "</th>" +
+        "<th style=\'width: 33.3%\'>" + outcome.draw + "</th>" +
+        "<th style=\'width: 33.3%\'>" + outcome.guest_win + "</th></tr></tbody></table>";
+  set_innerHTML("5-col-1", propability_table);
+}
+
+
+/**
+ * if scores exist, function displays possible scores with probability
+ * @param score - object with scores
+ * @param home - name of home team
+ * @param guest - name of guest team
+ */
+function display_score(score, home, guest){
+  var NO_SCORE = 0;
+  if (score == NO_SCORE){
+    hide('6-col-1');
+  }
+  else {
+      var scores = "<h4>wahrscheinliche Endergebnisse</h4>" +
+        "<table class=\'table\'>" +
+        "<thead class=\'thead-dark\'><tr>" +
+        "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Wahrscheinlichkeit</span></th>" +
+        "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Tore</span> " + home + "</th>" +
+        "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Tore</span> " + guest + "</th>" +
+        "</tr></thead><tbody>";
+
+      for (var key in score){
+        scores += "<tr><th style=\'width: 33.3%\'>" + score[key].probability + "</th>" +
+            "<th style=\'width: 33.3%\'>" + scor[key].home_points + "</th>" +
+            "<th style=\'width: 33.3%\'>" + scor[key].guest_points + "</th></tr>";
+      }
+      scores += "</tbody></table>";
+      set_innerHTML('6-col-1', scores);
+      display('6-col-1');
+  }
+
+}
 
 // --------------------------------- tool-functions ---------------------------------
 /**
@@ -212,6 +306,10 @@ function store_selected_parameter(){
   var last_matchday = parseInt(get_single_selected('last_matchday'));
   var points_checked = 0;
 
+  // spinner at button position
+  var spinner = "<button class=\'btn btn-danger\' disabled>" +
+      "<span class=\'spinner-border spinner-border-sm\'></span>\tTraining</button>";
+  set_innerHTML('right_btn', spinner);
 
   if (selected_seasons.length == 1 && first_matchday > last_matchday)
   {
@@ -295,7 +393,7 @@ function show_next_opponent(team2_id){
 function set_opponent(){
   var team_list = get_session_item('team_list');
 
-  var html_str = "<p>Gastteam:</p>" +
+  var html_str = "<h5>Gastteam:</h5>" +
     "<select class=\'form-control\' id=\'team2_selection\' onchange=\"set_team(2)\">" +
     "<option value=0 selected disabled hidden>kein Team ausgewählt</option>";
 
@@ -330,7 +428,7 @@ function start_prediction(){
   }
   else {
     clear_alert();
-    set_session_item('stage', 5);
+    set_session_item('stage', 6);
     spinner_on();
     build_stage();
   }

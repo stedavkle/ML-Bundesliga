@@ -20,6 +20,10 @@ function sport_selection_render(){
     }
     html_str += "</select>";
 
+    // maintenance
+    var html_btn = "<button onclick=\'maintenence_stage()\'>zur Stage</button>";
+    html_str += html_btn;
+
     set_innerHTML("1-col-1", html_str);
 }
 
@@ -62,14 +66,14 @@ function crawler_data_render(leagues_seasons){
 
     // TODO: Multi Select schöner machen
     // display hint
-    var html_str_hint = "<p>Für Mehrfachauswahl \'Strg'\, bzw. 'Umschalt' gedrückt halten.</p>";
+    var html_str_hint = "<p>Für Mehrfachauswahl <kbd>Strg</kbd> bzw. <kbd>Umschalt</kbd> gedrückt halten.</p>";
     set_innerHTML('1-col-1', html_str_hint);
 
     // define submit button
     set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"store_crawler_parameter()\">Daten beziehen</button>");
 
     // display league selection
-    var html_str_left = "<p>Ligen:</p>" +
+    var html_str_left = "<h5>Ligen:</h5>" +
         "<select multiple class=\'form-control\' id=\'leagues_selection\' onchange=\"show_data_submit()\">";
 
     for (var key in leagues){
@@ -86,7 +90,7 @@ function crawler_data_render(leagues_seasons){
     set_innerHTML("2-col-1", html_str_left);
 
     // display season selection
-    var html_str_right = "<p>Saisons:</p>" +
+    var html_str_right = "<h5>Saisons:</h5>" +
         "<select multiple class=\'form-control\' id=\'seasons_selection\' onchange=\"show_data_submit()\">";
 
     for (var key in seasons){
@@ -115,7 +119,7 @@ function model_selection_render(models){
     set_session_item('models', models);
 
     set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"set_model()\">Bestätigen</button>");
-    set_innerHTML("1-col-1", "<p>Wähle einen Algorithmus oder ein ML-Modell aus:</p>");
+    set_innerHTML("1-col-1", "<h5>Wähle einen Algorithmus oder ein ML-Modell aus:</h5>");
 
     var html_str = "<select class=\'form-control\' id=\'model_selection\' onchange=\"show_model_description()\">" +
     "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
@@ -140,8 +144,8 @@ function training_data_render(parameter){
 
     set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"store_selected_parameter()\">Training starten</button>");
 
-    var html_str_leagues = "<h4>Ligen:</h4>" + create_select_of_selected('leagues');
-    var html_str_seasons = "<h4>Saisons:</h4>" + create_select_of_selected('seasons');
+    var html_str_leagues = "<h5>Ligen:</h5>" + create_select_of_selected('leagues');
+    var html_str_seasons = "<h5>Saisons:</h5>" + create_select_of_selected('seasons');
     var html_str_matchdays_first = "<p>ab Spieltag:</p>" + create_matchday_selection('first');
     var html_str_matchdays_last = "<p>bis einschließlich Spieltag:</p>" + create_matchday_selection('last');
     var html_str_points = "<div class=\'form-check\'>" +
@@ -211,12 +215,16 @@ function team_select_callback(team_list){
  * @param team_list - dictionary of teams
  */
 function team_select_render(){
+    //window.alert("team_select_render(): entered");
+    clear_page();
     team_select_designer();
     set_back_button(2);
+
+    set_session_item('stage', 5);
     var team_list = get_session_item('team_list');
     set_innerHTML("1-col-1", "<h3>Matchauswahl</h3>");
 
-    var html_str = "<p>Heimteam:</p>" +
+    var html_str = "<h5>Heimteam:</h5>" +
     "<select class=\'form-control\' id=\'team1_selection\' onchange=\"set_team(1)\">" +
     "<option value=0 selected disabled hidden>kein Team ausgewählt</option>";
 
@@ -234,7 +242,7 @@ function team_select_render(){
  */
 function result_stage_switcher_render(result){
     set_session_item('result', result);
-    set_session_item('stage', 6);
+    set_session_item('stage', 7);
     build_stage();
 }
 
@@ -247,41 +255,25 @@ function result_screen_render(){
     var result = get_session_item('result');
     var team_list = get_session_item('team_list');
 
-    var team1_name = team_list[result.home];
-    var team2_name = team_list[result.guest];
-    var img_team1 = result.img_home;
-    var img_team2 = result.img_guest;
-    var home_win = result.home_win;
-    var draw = result.draw;
-    var guest_win = result.guest_win;
+    var home_id = result.home;
+    var guest_id = result.guest;
+    var outcome = result.outcome;
+    var score = result.score;
 
-    alert("result.home: " + result.home);
-    alert(typeof result.home);
-    alert("<img src=\'../icons/" + result.home + ".png\' alt=" + team1_name + ">");
+    var home_name = team_list[home_id];
+    var guest_name = team_list[guest_id];
+
+    //alert("result.home: " + result.home);
+    //alert(typeof result.home);
+    //alert("<img src=\'../icons/" + result.home + ".png\' alt=" + team1_name + ">");
 
     //TODO: Stages anpassen, damit man zu team_select_render springen kann
-    set_innerHTML("left_btn", "<button class=\'btn btn-primary\' onclick=\"reset_stage_to(3)\">anderes Match wählen</button>");
+    set_innerHTML("left_btn", "<button class=\'btn btn-primary\' onclick=\"set_session_item(\'stage\', 5), build_stage()\">anderes Match wählen</button>");
     set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"reset_program()\">zurück zur Startseite</button>");
 
-    var test_img = "<img src=\'img/6.png\' width=\'45%\'><h4>" + team1_name + "</h4>"
+    display_result_icons(home_id, home_name, guest_id, guest_name);
+    display_outcome(outcome, home_name, guest_name);
+    display_score(score, home_name, guest_name);
 
-    var img_home_html = "<img src=\'../icons/" + result.home + ".png\' alt=" + team1_name + "width=\'50%\'><h4>" + team1_name + "</h4>";
-    var colon_html = "<div><h2>:</h2></div>";
-    var img_guest_html = "<img src=\'../icons/" + result.guest + ".png\' alt=" + team2_name + "width=\'50%\'><h4>" + team2_name + "</h4>";
-    var propability_table = "<table class=\'table\'>" +
-        "<thread><tr>" +
-        "<th>Sieg " + team1_name + "</th>" +
-        "<th>Unentschieden</th>" +
-        "<th>Sieg " + team2_name + "</th></tr></thread>" +
-        "<tbody><tr>" +
-        "<th>" + home_win + "</th>" +
-        "<th>" + draw + "</th>" +
-        "<th>" + guest_win + "</th></tr></tbody></table>";
-
-    set_innerHTML("1-col-1", "<h2 class=\'d-flex justify-content-center\'>Ergebnis:</h2>");
-    //set_innerHTML("3-col-1", img_home_html);
-    set_innerHTML("3-col-1", test_img);
-    set_innerHTML("3-col-2", colon_html);
-    set_innerHTML("3-col-3", img_guest_html);
-    set_innerHTML('5-col-1', propability_table);
+    //set_innerHTML("1-col-1", "<h2 class=\'d-flex justify-content-center\'>Ergebnis:</h2>");
 }
