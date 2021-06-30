@@ -204,6 +204,7 @@ class Crawler(object):
     
     def get_next_matchday(self):
         all_matches_of_the_day = {1 : {}, 2 : {}, 3 : {}}
+        # TODO: dont use teamdicts or skip downloading icons
         id_to_team, team_to_id = self.get_team_dicts(self.available_leagues, [self.current_season])
         for league in self.available_leagues:
             matches, results = self.get_next_matchday_from_API(league)
@@ -221,8 +222,8 @@ class Crawler(object):
 
                 if matches.loc[index, 'is_finished'] == 1:
                     match['is_finished'] = 1
-                    match['points_home'] = result['points_home']
-                    match['points_guest'] = result['points_guest']
+                    match['points_home'] = result.iloc[0]['points_home']
+                    match['points_guest'] = result.iloc[0]['points_guest']
 
                 utc_string = matches.loc[index, 'match_date_time_utc']
                 
@@ -400,12 +401,14 @@ if __name__ == '__main__':
     seasons = np.arange(2009,2020)
     #matches, results = crawler.get_data_for_algo([3],[2020,2019,2018],1,34,0,0)
     #print(crawler.available_leagues)
-    #dict = crawler.get_next_matchday()
-    #print(dict)
+    dict = crawler.get_next_matchday()
+    print(dict[1][58877].keys())
+    for key in dict[1][58877].keys():
+        print(str(key) + '  :  ' + str(dict[1][58877][key]))
     #print(crawler.get_team_dicts([3],[2020]))
     #print(matches.head())
     #print(crawler.get_next_match_day(1))
-    teams = crawler.get_teams(leagues, seasons, 0)
+    #teams = crawler.get_teams(leagues, seasons, 0)
     # print(teams)
 
     # response = requests.get('https://www.openligadb.de/api/getmatchdata/bl3')
