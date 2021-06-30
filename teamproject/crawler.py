@@ -16,9 +16,7 @@ class Crawler(object):
     #uniform_season_scores_db_path = r'./data/bl{}_{}_scores_unif.csv'
 
     #COLUMNNAMES for uniform Data
-    UNIFORM_TEAMS_COLUMNS = ['team_id', 'team_name', 'team_icon_url']
-    UNIFORM_MATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
-    UNIFORM_RESULT_CONTENT_COLUMNS = ['result_id', 'points_home', 'points_guest', 'result_type_id', 'match_id']
+    
     #uniform_score_content_columns = ['goal_id','scores_home','scores_guest','scorer_id',
     #                                 'scorer_name', 'is_overtime', 'match_id']
 
@@ -32,21 +30,28 @@ class Crawler(object):
     API_MATCHUP_URL = "https://www.openligadb.de/api/getmatchdata/{}/{}"
     API_NEXTMATCH_LEAGUE_TEAM_URL = "https://www.openligadb.de/api/getnextmatchbyleagueteam/{}/{}"
     API_TABLE_LEAGUE_YEAR_URL = "https://www.openligadb.de/api/getbltable/bl{}/{}"
-    API_NEXT_MATCH_DAY = "https://www.openligadb.de/api/getmatchdata/bl{}"
+    API_NEXT_MATCH_DAY_URL = "https://www.openligadb.de/api/getmatchdata/bl{}"
     API_GET_SINGLE_MATCH_URL ="https://www.openligadb.de/api/getmatchdata/{}"
     
     # COLUMNNAMES for OpenLigaDB API
     API_TEAMS_CONTENT_COLUMNS = ['TeamId', 'TeamName', 'TeamIconUrl']
-    API_MATCH_CONTENT_COLUMNS = ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
-    API_NEXTMATCH_CONTENT_COLUMNS = ['MatchID', 'MatchDateTimeUTC', 'Group', 'Team1', 'Team2']
+    UNIFORM_TEAMS_COLUMNS =     ['team_id', 'team_name', 'team_icon_url']
+
+    API_MATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
+    UNIFORM_MATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
     
-    API_RESULT_CONTENT_COLUMNS = ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
+    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team2.TeamId', 'Location.LocationStadium']
+    UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
+    
+    API_RESULT_CONTENT_COLUMNS =        ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
+    UNIFORM_RESULT_CONTENT_COLUMNS =    ['result_id', 'points_home', 'points_guest', 'result_type_id', 'match_id']
     #api_score_content_columns = ['GoalID','ScoreTeam1','ScoreTeam2','GoalGetterID',
     #                            'GoalGetterName', 'IsOvertime', 'MatchID']
 
     # METADATA for OpenLigaDB API
     API_META_DATA = "MatchID"
     NO_MATCH = -1
+    END_RESULT = 1
 
     # CONSTRUCTOR
 
@@ -61,12 +66,12 @@ class Crawler(object):
         self.available_leagues = [1,2,3]
         self.bl_leagues_ids = {1 : 4442, 2 : 4443, 3 : 4444}
         if(datetime.datetime.now().month >= 7):
-            year = datetime.datetime.now().year+1
+            self.current_season = datetime.datetime.now().year
         else:
-            year = datetime.datetime.now().year
-        self.first_league_available_seasons = list(range(2002, year))
-        self.second_league_available_seasons = list(range(2006,year))
-        self.third_league_available_seasons = list(range(2008,year))
+            self.current_season = datetime.datetime.now().year-1
+        self.first_league_available_seasons = list(range(2002, self.current_season+1))
+        self.second_league_available_seasons = list(range(2006, self.current_season+1))
+        self.third_league_available_seasons = list(range(2008, self.current_season+1))
 
     def get_available_data_for_leagues(self):
         """
@@ -123,7 +128,6 @@ class Crawler(object):
                 match_results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
                 # TODO: refactor magic numbers
                 if (league in [1,2]) & (season in range(2015,2020)) | (league == 3) & (season in range(2016,2020)):
-                    print('changing')
                     match_results['result_type_id'] = match_results['result_type_id'].apply(lambda x: x%2+1)
                 # # TODO: concatenate score_home and score_guest to a tuple (score_home, score_guest) in one column 'temp_score'
                 # # TODO: handle score_db not present
@@ -144,7 +148,6 @@ class Crawler(object):
         
         example ids: <BundesLiga, Saison, LeagueID> 1 2020 4442; 2 2020 4443; 3 2020 4444
         """
-        
         response = requests.get(self.API_NEXTMATCH_LEAGUE_TEAM_URL.format(league_id, team_id))
         # TODO: proper errorcode
         if response.status_code != 200:
@@ -169,10 +172,19 @@ class Crawler(object):
             except Exception:
                 continue
         return 1
-    def get_matchday_from_API(self):
-        response = requests.get('https://www.openligadb.de/api/getmatchdata/bl3')
-        matchday = pd.json_normalize(response.json())
-        return None
+    def get_next_matchday_from_API(self, league):
+        response = requests.get(self.API_NEXT_MATCH_DAY_URL.format(league))
+        if response.status_code != 200:
+            raise Exception
+        matches = pd.json_normalize(response.json())
+        # extract necessary data
+        if not('Location.LocationStadium' in matches.columns):
+            matches['Location.LocationStadium'] = 'Unbekannt'
+        matches = matches[self.API_NEXTMATCH_CONTENT_COLUMNS]
+        matches.columns = self.UNIFORM_NEXTMATCH_CONTENT_COLUMNS
+        results = pd.json_normalize(response.json(), record_path='MatchResults', meta=self.API_META_DATA)[self.API_RESULT_CONTENT_COLUMNS]
+        results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
+        return matches, results
 
     def get_league_of_team(self, team_id):
         current_season = datetime.datetime.now().year-1
@@ -181,48 +193,47 @@ class Crawler(object):
             if not(teams[teams['team_id'].isin([team_id])].empty):
                 return league
         return 0
-
+    def split_utc(self, utc_string):
+        utc_split = utc_string.split('T')
+        date = utc_split[0]
+        time = utc_split[1].split('Z')[0]
+        return date, time
     #   
     #   PUBLIC FUNCTIONS BELOW
     #
     
-    def get_next_match_day(self, league):
-        all_matches_of_the_day = {1 : {},2 : {},3 : {}}
-        response = requests.get(self.API_NEXT_MATCH_DAY.format(league))
-        if response.status_code != 200:
-            raise Exception
-        #TODO Match results leer abfangen
-        match_results = pd.json_normalize(response.json(),
-                            record_path='MatchResults',
-                            meta=self.API_META_DATA)[self.API_RESULT_CONTENT_COLUMNS]
-        match_results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
-        end_results = match_results[match_results['result_type_id'] == 1] #todo magic number replace
-        matchday = pd.json_normalize(response.json())[['MatchID','MatchDateTimeUTC','MatchResults',
-                            'Team1.TeamId','Team1.TeamName',
-                            'Team1.TeamId','Team1.TeamName',
-                            'Location.LocationStadium']]
-        matchday.columns = ['match_id','match_date_time_utc','match_result',
-                            'team_home_id','team_home_name',
-                            'team_guest_id','team_guest_name',
-                            'location_stadium_name']
-                          
-        for index in matchday.index:
-            
-            utc_split = matchday.loc[index, 'match_date_time_utc'].split('T')
-            date = utc_split[0]
-            time = utc_split[1].split('Z')[0]
-            match_result = end_results[end_results['match_id'] == matchday.loc[index, 'match_id']]
-            match = {'team_home_name': matchday.loc[index, 'team_home_name'],
-                'team_home_id': matchday.loc[index, 'team_home_id'],
-                'team_guest_name': matchday.loc[index, 'team_guest_name'],
-                'team_guest_id': matchday.loc[index, 'team_guest_id'],
-                'points_home': match_results['points_home'],
-                'points_guest': match_results['points_guest'],
-                'is_finished': 1, #todo implement 
-                'date': date,
-                'time': time,
-                'location': matchday.loc[index, 'location_stadium_name']}
-        return matchday
+    def get_next_matchday(self):
+        all_matches_of_the_day = {1 : {}, 2 : {}, 3 : {}}
+        id_to_team, team_to_id = self.get_team_dicts(self.available_leagues, [self.current_season])
+        for league in self.available_leagues:
+            matches, results = self.get_next_matchday_from_API(league)
+            endresults = results[results['result_type_id'] == self.END_RESULT]
+            for index in matches.index:
+                match = {'team_home_id': 0, 'team_home_name': 0, 'team_guest_id': 0, 'team_guest_name': 0,
+                    'is_finished': 0, 'points_home': 0, 'points_guest': 0,
+                    'date': 0, 'time': 0, 'location': 0}
+                result = endresults[endresults['match_id'] == matches.loc[index, 'match_id']]
+
+                match['team_home_id'] = matches.loc[index, 'team_home_id']
+                match['team_home_name'] = id_to_team[match['team_home_id']]
+                match['team_guest_id'] = matches.loc[index, 'team_guest_id']
+                match['team_guest_name'] = id_to_team[match['team_guest_id']]
+
+                if matches.loc[index, 'is_finished'] == 1:
+                    match['is_finished'] = 1
+                    match['points_home'] = result['points_home']
+                    match['points_guest'] = result['points_guest']
+
+                utc_string = matches.loc[index, 'match_date_time_utc']
+                
+                date, time = self.split_utc(utc_string)
+                match['date'] = date
+                match['time'] = time
+
+                match['location'] = matches.loc[index, 'location_arena']
+
+                all_matches_of_the_day[league][matches.loc[index, 'match_id']] = match
+        return all_matches_of_the_day
 
     def get_teams(self, leagues, seasons, return_bool):
         """
@@ -334,10 +345,6 @@ class Crawler(object):
         self.results = self.results[self.results['match_id'].isin(self.matches['match_id'])]
         #self.scores = self.scores[self.scores['match_id'].isin(self.matches['match_id'])]  
         return 1
-
-    def get_next_matchday(self):
-        # TODO:
-        return None
     
     def get_next_opponent(self, team_id):
         """
@@ -392,10 +399,12 @@ if __name__ == '__main__':
     leagues = [1]
     seasons = np.arange(2009,2020)
     #matches, results = crawler.get_data_for_algo([3],[2020,2019,2018],1,34,0,0)
-    crawler.get_matches_from_leagues_and_seasons_from_API([1],[2018])
+    print(crawler.available_leagues)
+    dict = crawler.get_next_matchday()
+    print(dict)
     #print(crawler.get_team_dicts([3],[2020]))
     #print(matches.head())
-    print(crawler.get_next_match_day(1))
+    #print(crawler.get_next_match_day(1))
     # teams = crawler.get_teams(leagues, seasons, 0)
     # print(teams)
 
