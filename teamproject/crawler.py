@@ -22,7 +22,7 @@ class Crawler(object):
     #uniform_score_content_columns = ['goal_id','scores_home','scores_guest','scorer_id',
     #                                 'scorer_name', 'is_overtime', 'match_id']
 
-    #PATHs for miscellaneous Data
+    # PATHs for miscellaneous Data
     ICONS_PATH = r'./teamproject/web/img/{}.png'
     TABLE_DB_PATH = r'./data/table_bl{}_{}.csv'
 
@@ -32,16 +32,21 @@ class Crawler(object):
     API_MATCHUP_URL = "https://www.openligadb.de/api/getmatchdata/{}/{}"
     API_NEXTMATCH_LEAGUE_TEAM_URL = "https://www.openligadb.de/api/getnextmatchbyleagueteam/{}/{}"
     API_TABLE_LEAGUE_YEAR_URL = "https://www.openligadb.de/api/getbltable/bl{}/{}"
+    API_NEXT_MATCH_DAY = "https://www.openligadb.de/api/getmatchdata/bl{}"
+    API_GET_SINGLE_MATCH_URL ="https://www.openligadb.de/api/getmatchdata/{}"
     
     # COLUMNNAMES for OpenLigaDB API
     API_TEAMS_CONTENT_COLUMNS = ['TeamId', 'TeamName', 'TeamIconUrl']
     API_MATCH_CONTENT_COLUMNS = ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
+    API_NEXTMATCH_CONTENT_COLUMNS = ['MatchID', 'MatchDateTimeUTC', 'Group', 'Team1', 'Team2']
+    
     API_RESULT_CONTENT_COLUMNS = ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
     #api_score_content_columns = ['GoalID','ScoreTeam1','ScoreTeam2','GoalGetterID',
     #                            'GoalGetterName', 'IsOvertime', 'MatchID']
 
     # METADATA for OpenLigaDB API
     API_META_DATA = "MatchID"
+    NO_MATCH = -1
 
     # CONSTRUCTOR
 
@@ -142,7 +147,7 @@ class Crawler(object):
             raise Exception
         match = pd.json_normalize(response.json())
         # extract necessary data
-        match = match[self.API_MATCH_CONTENT_COLUMNS]
+        match = match[self.API_NEXTMATCH_CONTENT_COLUMNS]
         match.columns = self.UNIFORM_MATCH_CONTENT_COLUMNS
         return match
 
@@ -166,17 +171,56 @@ class Crawler(object):
         return None
 
     def get_league_of_team(self, team_id):
-        # TODO: get recent team DB and check in wich league the team is
         current_season = datetime.datetime.now().year-1
         for league in self.available_leagues:
-            teams = self.get_teams
-        return None
+            teams = self.get_teams([league], [current_season], 1)
+            if not(teams[teams['team_id'].isin([team_id])].empty):
+                return league
+        return 0
 
     #   
     #   PUBLIC FUNCTIONS BELOW
     #
+    
+    def get_next_match_day(self, league):
+        all_matches_of_the_day = {1 : {},2 : {},3 : {}}
+        response = requests.get(self.API_NEXT_MATCH_DAY.format(league))
+        if response.status_code != 200:
+            raise Exception
+        #TODO Match results leer abfangen
+        match_results = pd.json_normalize(response.json(),
+                            record_path='MatchResults',
+                            meta=self.API_META_DATA)[self.API_RESULT_CONTENT_COLUMNS]
+        match_results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
+        end_results = match_results[match_results['result_type_id'] == 1] #todo magic number replace
+        matchday = pd.json_normalize(response.json())[['MatchID','MatchDateTimeUTC','MatchResults',
+                            'Team1.TeamId','Team1.TeamName',
+                            'Team1.TeamId','Team1.TeamName',
+                            'Location.LocationStadium']]
+        matchday.columns = ['match_id','match_date_time_utc','match_result',
+                            'team_home_id','team_home_name',
+                            'team_guest_id','team_guest_name',
+                            'location_stadium_name']
+                          
+        for index in matchday.index:
+            
+            utc_split = matchday.loc[index, 'match_date_time_utc'].split('T')
+            date = utc_split[0]
+            time = utc_split[1].split('Z')[0]
+            match_result = end_results[end_results['match_id'] == matchday.loc[index, 'match_id']]
+            match = {'team_home_name': matchday.loc[index, 'team_home_name'],
+                'team_home_id': matchday.loc[index, 'team_home_id'],
+                'team_guest_name': matchday.loc[index, 'team_guest_name'],
+                'team_guest_id': matchday.loc[index, 'team_guest_id'],
+                'points_home': match_results['points_home'],
+                'points_guest': match_results['points_guest'],
+                'is_finished': 1, #todo implement 
+                'date': date,
+                'time': time,
+                'location': matchday.loc[index, 'location_stadium_name']}
+        return matchday
 
-    def get_teams(self, leagues, seasons):
+    def get_teams(self, leagues, seasons, return_bool):
         """
         Gets all unique teams from the specified leagues/seasons from API or DB and saves them to self.teams.
         Then gets all team icons.
@@ -195,9 +239,10 @@ class Crawler(object):
                     
                 teams = pd.concat([teams, new_teams])
                 teams = teams.drop_duplicates(['team_id'])
+        if return_bool == 1:
+            return teams
         self.teams = teams
         self.get_team_icons_from_wiki()
-        return 1
 
     def create_dataset_from_leagues_and_seasons(self, leagues, seasons, day_start, day_end):
         """
@@ -261,7 +306,7 @@ class Crawler(object):
         
         -> see get_available_data_for_leagues()
         """
-        self.get_teams(leagues, seasons)
+        self.get_teams(leagues, seasons, 0)
         id_to_team = pd.Series(self.teams.team_name.values,index=self.teams.team_id).to_dict()
         team_to_id = pd.Series(self.teams.team_id.values,index=self.teams.team_name).to_dict()
         return id_to_team, team_to_id
@@ -290,10 +335,21 @@ class Crawler(object):
         # TODO:
         return None
     
-    def get_next_opponent(self, home_id):
-        # TODO: Check in wich league the team is and return id of opponent
-        match = self.get_next_match_from_API(league_id, home_id)
-        return 1
+    def get_next_opponent(self, team_id):
+        """
+        Returns the teams playing in upcoming match of given team_id.
+
+        :param int team_id: id of a team
+        :returns: 0 if no upcoming match otherwise dict containing ids of teams.
+        """
+        league = self.get_league_of_team(team_id)
+        league_id = self.bl_leagues_ids[league]
+        match = self.get_next_match_from_API(league_id, team_id)
+        dict = {'team_home_id' : match.iloc[0]['team_home_id'],
+                'team_guest_id' : match.iloc[0]['team_guest_id']}
+        if (match['match_id'] == self.NO_MATCH).bool():
+            return 0
+        return dict
 
     # Function for Data grabbing for Model
     def get_data_for_model(self, leagues, seasons, matchdays):
@@ -331,17 +387,17 @@ if __name__ == '__main__':
     #                                                         team_home_id, team_guest_id)
     leagues = [1]
     seasons = np.arange(2009,2020)
-    matches, results = crawler.get_data_for_algo([1,2,3],[2020,2019,2018],1,34,0,0)
-    #print(matches)
-
-    # teams = crawler.get_teams(leagues, seasons)
+    matches, results = crawler.get_data_for_algo([3],[2020,2019,2018],1,34,0,0)
+    #print(crawler.get_team_dicts([3],[2020]))
+    #print(matches.head())
+    print(crawler.get_next_match_day(1))
+    # teams = crawler.get_teams(leagues, seasons, 0)
     # print(teams)
 
-    response = requests.get('https://www.openligadb.de/api/getmatchdata/bl3')
-    matchday = pd.json_normalize(response.json())#[['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']]
-    print(matchday.head(5))
+    # response = requests.get('https://www.openligadb.de/api/getmatchdata/bl3')
+    # matchday = pd.json_normalize(response.json())#[['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']]
+    # print(matchday.head(5))
 
     #id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
     #print(team_to_id["1. FC Köln"])
-
 # %%

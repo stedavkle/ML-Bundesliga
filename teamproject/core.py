@@ -107,7 +107,7 @@ def get_next_matchday_from_parameters(parameter):
     crawler_instance = Core.crawler_instance
 
     # TODO: einkommentieren, sobald irgendwas tut
-    #matchday = crawler_instance.get_next_matchday()#
+    # matchday = crawler_instance.get_next_matchday()#
 
     match = {'team_home_name': 'Bayern München',
              'team_home_id': 40,
@@ -120,12 +120,12 @@ def get_next_matchday_from_parameters(parameter):
              'time': '15:30:00',
              'location': 'Allianz Arena'}
 
-    matchday = {1: {978 : match,
-                    567 : match},
-                2: {234 : match,
-                    567 : match},
-                3: {568 : match,
-                    123 : match}
+    matchday = {1: {978: match,
+                    567: match},
+                2: {234: match,
+                    567: match},
+                3: {568: match,
+                    123: match}
                 }
 
     return {key: matchday[key] for key in Core.leagues}
@@ -137,7 +137,8 @@ def start_training_and_get_teams():
     print()
 
     crawler_instance = Core.crawler_instance
-    training_data = crawler_instance.get_data_for_algo(Core.leagues, Core.seasons, Core.first_matchday, Core.last_matchday, 0, 0)
+    training_data = crawler_instance.get_data_for_algo(Core.leagues, Core.seasons, Core.first_matchday,
+                                                       Core.last_matchday, 0, 0)
 
     model_instance = Core.model_instance
     model_instance.set_data(training_data)
@@ -177,22 +178,36 @@ def start_prediction(team1_id, team2_id):
     print(result)
 
     # TODO: wenn score nicht da: score: -1
-    result = {'outcome': {'home_win': 0.2,
-                         'draw': 0.1,
-                         'guest_win': 0.7},
-             'score': {1: {'home_points': 4,
-                           'guest_points': 2,
-                           'probability': 0.2}
-                       }
-             }
+    result = {
+        'outcome': {
+            'home_win': 0.2,
+            'draw': 0.1,
+            'guest_win': 0.7
+        },
+        'score': {
+            1: {
+                'home_points': 4,
+                'guest_points': 2,
+                'probability': 0.2}
+        },
+        2: {
+            'home_points': 0,
+            'guest_points': 1,
+            'probability': 0.9
+        }
+    }
 
+    result_dict = {
+        'home': team1_id,
+        'guest': team2_id,
+        'outcome': result['outcome'],
+        'score': result['score']
+    }
 
     dummy = {'home': team1_id,
              'guest': team2_id,
-             'img_home': "link zu Bild Team1",
-             'img_guest': "link zu Bild Team1",
-             'home_win': 0.2,
-             'draw': 0.1,
-             'guest_win': 0.7}
+             'outcome': result['outcome'],
+             'score': result['score']
+             }
 
     return dummy
