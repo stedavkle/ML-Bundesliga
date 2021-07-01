@@ -165,9 +165,9 @@ class PoissonModel(Models):
         """
         Classconstructor, initializes 3 internal empty dicts.
         """
-        self.data = ''
-        self.model = ''
-        self.simulation = ''
+        #self.data
+        #self.model
+        #self.simulation
 
     def get_model_requirements(self):
         """
@@ -231,7 +231,7 @@ class PoissonModel(Models):
         home_win = np.sum(np.tril(self.simulation, -1))
         draw = np.sum(np.diag(self.simulation))
         guest_win = np.sum(np.triu(self.simulation, 1))
-        return {'home_win': home_win, 'draw': draw, 'guest_win': guest_win}
+        return {'home_win': round(home_win,2), 'draw': round(draw,2), 'guest_win': round(guest_win,2)}
 
     def predict_score(self):
         """
@@ -241,9 +241,9 @@ class PoissonModel(Models):
         index = np.argmax(self.simulation)
         # argmax gives back the 1 dim. index from maximum in matrix
         # index mod rows = x + (remainer)y
-        home_points, guest_points = divmod(index, self.max_goals + 1)
-        return {'home_points': home_points, 'guest_points': guest_points,
-                'probability': self.simulation[home_points, guest_points]}
+        home_points, guest_points = divmod(index, self.MAX_GOALS + 1)
+        return {1 : {'home_points': home_points, 'guest_points': guest_points,
+                'probability': round(self.simulation[home_points, guest_points],2)}}
 
     def predict(self, home_id, guest_id):
         """
@@ -251,6 +251,7 @@ class PoissonModel(Models):
 
         :returns: dict: 2 dicts in Uniformat
         """
+
         self.simulate_match(home_id, guest_id)
         outcome = self.predict_outcome()
         result = self.predict_score()
@@ -270,17 +271,16 @@ if __name__ == '__main__':
 
     # MOSTWINS TESTING
     crwlr = crawler.Crawler()
-    data = crwlr.get_data_for_algo([1,2,3], [2020, 2019, 2018, 2017, 2016, 2015, 2014], 1, 34, 0, 0)
+    data = crwlr.get_data_for_algo([1,2,3], [2020, 2019], 1, 34, 0, 0)
     model = PoissonModel()
     model.set_data(data)
 
-    data = model.data
+    model.start_training()
     # print(data.head(5))
     # data_2_teams = data.loc[(data['team_home_id'] == '16')]
     #                                 | (data['team_home_id'] == team2) & (data['team_guest_id'] == team1)]
     # print(data[(data['team_home_id'] == '16') & (data['team_guest_id'] == '112')].head(5))
     # print(data[['points_home', 'points_guest']].subtract(axis=1))
-
     print(model.predict(16, 1635))
 
     # POISSON TESTING
