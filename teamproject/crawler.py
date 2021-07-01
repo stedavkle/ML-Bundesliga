@@ -268,9 +268,9 @@ class Crawler(object):
         if (os.path.isfile(matches_path)) & (os.path.isfile(results_path)): # & (os.path.isfile(scores_path)
             matches = pd.read_csv(matches_path)
             results = pd.read_csv(results_path)
-            return matches, results
+            return matches, results, True
         else:
-            return -1, -1
+            return -1, -1, False
     def cut_start_day(self, matches, results, day):
         if day != self.FIRST_DAY:
             matches = matches.loc[matches['matchday'] >= day]
@@ -293,34 +293,36 @@ class Crawler(object):
 
         -> see get_available_data_for_leagues()
         """
+        # print(seasons)
         if len(leagues) == 0:
             return pd.DataFrame(), pd.DataFrame()
-
         if len(seasons) == 0:
             leagues.pop(0)
+            seasons = list(self.seasons_backup)
             return self.create_dataset_recursive_helper(leagues, seasons, day_start, day_end)
-        
-        if len(leagues) == 1 & len(seasons) == 1:
-            LAST_DATASET = True
-        else:
-            LAST_DATASET = False
-
         league = leagues[0]
         season = seasons.pop(0)
-
-        self.matches, self.results = self.load_season(league, season)
-        if self.matches.equals(-1) | self.results.equals(-1):
+        # print(league, season)
+        matches, results, LOADED = self.load_season(league, season)
+        if not(LOADED):
             matches, results = self.get_matches_from_leagues_and_seasons_from_API([league], [season])
+        # print('MATCHES SHAPE')
+        # print(matches.shape)
+        matches, results = self.cut_start_day(matches, results, day_start)
 
-        self.matches, self.results = self.cut_start_day(self.matches, self.results, day_start)
-
-        if LAST_DATASET:
-            self.matches, self.results = self.cut_end_day(self.matches, self.results, day_end)
+        if len(seasons) == 1:
+            None
+            matches, results = self.cut_end_day(matches, results, day_end)
 
         next_matches, next_results = self.create_dataset_recursive_helper(leagues, seasons, self.FIRST_DAY, day_end)
-        self.matches = pd.concat([self.matches, next_matches])
-        self.results = pd.concat([self.results, next_results])
-        return self.matches, self.results
+        # print('MATCHES SIZE')
+        # print(matches.shape)
+        matches = pd.concat([matches, next_matches])
+        # print('MATCHES SIZE AFTER CONCAT')
+        # print(matches.shape)
+        results = pd.concat([results, next_results])
+        # print('recursion done')
+        return matches, results
 
 
 
@@ -455,23 +457,37 @@ class Crawler(object):
         -> see get_available_data_for_leagues()
         """
         # self.create_dataset_from_leagues_and_seasons(leagues, seasons, day_start, day_end)
+        self.seasons_backup = list(seasons)
         self.create_dataset_recursive_helper(leagues, seasons, day_start, day_end)
         if team_home_id != 0:
             self.extract_matchup_history(team_home_id, team_guest_id)        
         return [self.matches, self.results]#, self.scores
 # %%
 if __name__ == '__main__':
+    import time
     crawler = Crawler()
 
     # matches, results, scores = crawler.get_data_for_algo(leagues, seasons,
     #                                                         day_start, day_end,
     #                                                         team_home_id, team_guest_id)
-    leagues = [1]
-    seasons = [2020]#np.arange(2009,2020)
+    leagues = [1,2,3]
+    seasons = [2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010]
+    crawler.seasons_backup = list(seasons)
+    print('LEAGUES')
+    print(leagues)
+    print('SEASONS')
+    print(seasons)
+    total_elapsed = 0
+    for i in [0,1,2,3,4,5,6,7,8,9,]:
+        start = time.time()
+        #matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
+        crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
+        elapsed = time.time()
+        total_elapsed = total_elapsed + elapsed - start
+    #print('RECURSIVE Function took: ' + str(total_elapsed/10))
+    print('ITERATIVE Function took: ' + str(total_elapsed/10))
+    
 
-    matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
-    print(matches.shape)
-    print(results.shape)
     # crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
     # print(crawler.matches.shape)
     # print(crawler.results.shape)
