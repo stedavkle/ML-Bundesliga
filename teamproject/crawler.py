@@ -40,7 +40,7 @@ class Crawler(object):
     API_MATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
     UNIFORM_MATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
     
-    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team2.TeamId', 'Location.LocationStadium']
+    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1', 'Team2', 'Location']
     UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
     
     API_RESULT_CONTENT_COLUMNS =        ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
@@ -52,6 +52,7 @@ class Crawler(object):
     API_META_DATA = "MatchID"
     NO_MATCH = -1
     END_RESULT = 1
+    FIRST_DAY = 1
 
     # CONSTRUCTOR
 
@@ -155,7 +156,7 @@ class Crawler(object):
         match = pd.json_normalize(response.json())
         # extract necessary data
         match = match[self.API_NEXTMATCH_CONTENT_COLUMNS]
-        match.columns = self.UNIFORM_MATCH_CONTENT_COLUMNS
+        match.columns = [self.UNIFORM_NEXTMATCH_CONTENT_COLUMNS]
         return match
 
     def get_team_icons_from_wiki(self):
@@ -258,6 +259,74 @@ class Crawler(object):
         if return_bool == 1:
             return teams
         self.teams = teams
+
+
+
+    def load_season(self, league, season):
+        matches_path = self.UNIFORM_SEASON_MATCHES_DB_PATH.format(league,season)
+        results_path = self.UNIFORM_SEASON_RESULTS_DB_PATH.format(league,season)
+        if (os.path.isfile(matches_path)) & (os.path.isfile(results_path)): # & (os.path.isfile(scores_path)
+            matches = pd.read_csv(matches_path)
+            results = pd.read_csv(results_path)
+            return matches, results
+        else:
+            return -1, -1
+    def cut_start_day(self, matches, results, day):
+        if day != self.FIRST_DAY:
+            matches = matches.loc[matches['matchday'] >= day]
+            results = results[results['match_id'].isin(matches['match_id'])]
+        return matches, results
+    def cut_end_day(self, matches, results, day):
+        matches = matches.loc[matches['matchday'] <= day]
+        results = results[results['match_id'].isin(matches['match_id'])]
+        return matches, results
+
+    def create_dataset_recursive_helper(self, leagues, seasons, day_start, day_end):
+        """
+        Extracts the desired matches and results from specified leagues/seasons and saves them internaly.
+        
+        :param int[] leagues: one or more from (1,2,3)
+        :param int[] seasons: array of seasons, format: [<YYYY>,..]
+        :param int day_start: starting day of first season
+        :param int day_end: end day of last season
+        :returns: 1 if function is done
+
+        -> see get_available_data_for_leagues()
+        """
+        if len(leagues) == 0:
+            return pd.DataFrame(), pd.DataFrame()
+
+        if len(seasons) == 0:
+            leagues.pop(0)
+            return self.create_dataset_recursive_helper(leagues, seasons, day_start, day_end)
+        
+        if len(leagues) == 1 & len(seasons) == 1:
+            LAST_DATASET = True
+        else:
+            LAST_DATASET = False
+
+        league = leagues[0]
+        season = seasons.pop(0)
+
+        self.matches, self.results = self.load_season(league, season)
+        if self.matches.equals(-1) | self.results.equals(-1):
+            matches, results = self.get_matches_from_leagues_and_seasons_from_API([league], [season])
+
+        self.matches, self.results = self.cut_start_day(self.matches, self.results, day_start)
+
+        if LAST_DATASET:
+            self.matches, self.results = self.cut_end_day(self.matches, self.results, day_end)
+
+        next_matches, next_results = self.create_dataset_recursive_helper(leagues, seasons, self.FIRST_DAY, day_end)
+        self.matches = pd.concat([self.matches, next_matches])
+        self.results = pd.concat([self.results, next_results])
+        return self.matches, self.results
+
+
+
+
+
+
 
     def create_dataset_from_leagues_and_seasons(self, leagues, seasons, day_start, day_end):
         """
@@ -385,7 +454,8 @@ class Crawler(object):
         
         -> see get_available_data_for_leagues()
         """
-        self.create_dataset_from_leagues_and_seasons(leagues, seasons, day_start, day_end)
+        # self.create_dataset_from_leagues_and_seasons(leagues, seasons, day_start, day_end)
+        self.create_dataset_recursive_helper(leagues, seasons, day_start, day_end)
         if team_home_id != 0:
             self.extract_matchup_history(team_home_id, team_guest_id)        
         return [self.matches, self.results]#, self.scores
@@ -397,13 +467,20 @@ if __name__ == '__main__':
     #                                                         day_start, day_end,
     #                                                         team_home_id, team_guest_id)
     leagues = [1]
-    seasons = np.arange(2009,2020)
+    seasons = [2020]#np.arange(2009,2020)
+
+    matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
+    print(matches.shape)
+    print(results.shape)
+    # crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
+    # print(crawler.matches.shape)
+    # print(crawler.results.shape)
+    
     #matches, results = crawler.get_data_for_algo([3],[2020,2019,2018],1,34,0,0)
     #print(crawler.available_leagues)
-    dict = crawler.get_next_matchday()
-    print(dict[1][58877].keys())
-    for key in dict[1][58877].keys():
-        print(str(key) + '  :  ' + str(dict[1][58877][key]))
+    #dict = crawler.get_team_dicts([1],[2020])
+    #data = crawler.get_next_opponent(16)
+    #print(data)
     #print(crawler.get_team_dicts([3],[2020]))
     #print(matches.head())
     #print(crawler.get_next_match_day(1))
