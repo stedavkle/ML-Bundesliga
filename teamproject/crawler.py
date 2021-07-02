@@ -216,15 +216,15 @@ class Crawler(object):
                     'date': 0, 'time': 0, 'location': 0}
                 result = endresults[endresults['match_id'] == matches.loc[index, 'match_id']]
 
-                match['team_home_id'] = matches.loc[index, 'team_home_id']
+                match['team_home_id'] = int(matches.loc[index, 'team_home_id'])
                 match['team_home_name'] = id_to_team[match['team_home_id']]
-                match['team_guest_id'] = matches.loc[index, 'team_guest_id']
+                match['team_guest_id'] = int(matches.loc[index, 'team_guest_id'])
                 match['team_guest_name'] = id_to_team[match['team_guest_id']]
 
                 if matches.loc[index, 'is_finished'] == 1:
                     match['is_finished'] = 1
-                    match['points_home'] = result.iloc[0]['points_home']
-                    match['points_guest'] = result.iloc[0]['points_guest']
+                    match['points_home'] = int(result.iloc[0]['points_home'])
+                    match['points_guest'] = int(result.iloc[0]['points_guest'])
 
                 utc_string = matches.loc[index, 'match_date_time_utc']
                 
@@ -479,16 +479,9 @@ if __name__ == '__main__':
     #matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
     #crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
     dict = crawler.get_next_matchday()
-    # print(crawler.matches.shape)
-    # print(crawler.results.shape)
-    
-    data = crawler.get_data_for_algo([1,2,3], [2020, 2019, 2018, 2017, 2016, 2015], 2, 33, 0, 0)
-    print(data[0].shape)
-    print(data[1].shape)
-    
-    #print(crawler.available_leagues)
-    dict = crawler.get_team_dicts([1,2,3],[2020, 2019, 2018, 2017, 2016, 2015,2014,2013,2012,2011,2010])
-    print(dict)
+    for key in dict[1][58877].keys():
+        print(key)
+        print(type(dict[1][58877][key]))
 
 
     #data = crawler.get_next_opponent(16)
