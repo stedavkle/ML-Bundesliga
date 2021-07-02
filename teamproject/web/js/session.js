@@ -1,25 +1,10 @@
-// TODO: evtl Sports in Core schieben?
+// TODO: edit new sports here (- may be moved to core in later version -)
 class Sports {
     sports = {
         1: 'Fussball Deutschland'
     };
 }
 
-/*
-class Models {
-    models = {
-        1: {'model_id': 1,
-            'model': 'trivialer Algorithmus',
-            'description': 'Einfacher Algorithmus, der Ergebnisse aller bisherigen Partieen zweier Teams vergleicht.',
-            'training': false
-        },
-        2: {'model_id': 2,
-            'model': 'dummy Model',
-            'description': 'ML Model DUMMY',
-            'training': true
-        }
-    };
-}*/
 
 /**
  * set inital states of session storage
@@ -106,42 +91,4 @@ function reset_stage_to(id){
  */
 function close_session(){
     window.sessionStorage.clear();
-}
-
-
-function maintenence_stage(){
-    var team_list = {
-        65: '1. FC Köln',
-        80: '1. FC Union Berlin',
-        81: '1. FSV Mainz 05',
-        83: 'Arminia Bielefeld',
-        6: 'Bayer Leverkusen',
-        87: 'Borussia Mönchengladbach',
-        7: 'BV Borussia Dortmund 09',
-        91: 'Eintracht Frankfurt',
-        95: 'FC Augsburg',
-        40: 'FC Bayern München',
-        9: 'FC Schalke 04',
-        54: 'Hertha BSC',
-        1635: 'RB Leipzig',
-        112: 'SC Freiburg',
-        175: 'TSG 1899 Hoffenheim',
-        16: 'VfB Stuttgart',
-        131: 'VfL Wolfsburg',
-        134: 'Werder Bremen'
-    };
-
-    var result = {
-        'home': 6,
-        'guest': 134,
-        'home_win': 0.2,
-        'draw': 0.1,
-        'guest_win': 0.7
-    };
-
-    set_session_item('stage', 6);
-    set_session_item('team_list',team_list);
-    set_session_item('result', result);
-
-    build_stage();
 }

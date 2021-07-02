@@ -7,11 +7,9 @@
  */
 function on_page_load(){
     if(get_session_item('stage') == null){
-        //window.confirm("keine Session gefunden");
         sport_selection_render();
     }
     else {
-        //window.confirm("Session gefunden");
         build_stage();
     }
 }
@@ -47,15 +45,12 @@ function build_stage(){
             eel.get_next_matchday_from_parameters(algo_data_parameter)(next_matchday_render);
             break;
         case 4:
-            // TODO: send Trainingdata, training progress, get matches
-            //var model_data_parameter = get_session_item('selected_parameters');
-            //progress_spinner_render();
+            // displays next matchday and calls core.py to start training and get teams
             next_matchday_designer();
             spinner_button();
             var final_leagues = get_session_item('final_leagues');
             display_league_pagination();
             next_matchday_table(final_leagues[0]);
-
             eel.start_training_and_get_teams()(team_select_callback);
             break;
         case 5:
@@ -65,13 +60,13 @@ function build_stage(){
             team_select_render();
             break;
         case 6:
-            // TODO: start prediction
+            // calls core.py to start prediction
             var team1_id = get_session_item('team1_id');
             var team2_id = get_session_item('team2_id');
             eel.start_prediction(team1_id, team2_id)(result_stage_switcher_render);
             break;
         case 7:
-            // TODO: result
+            // calls render function to display result
             result_screen_render();
             break;
         default:
@@ -79,7 +74,7 @@ function build_stage(){
     }
 }
 
-// TODO: Oder zur Crawler Daten Auswahl zurück springen???
+
 /**
  * set program back to initial state
  */

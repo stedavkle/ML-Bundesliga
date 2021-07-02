@@ -19,6 +19,11 @@ function set_back_button(id){
   set_innerHTML("back_btn", button);
 }
 
+
+/**
+ * makes html element visible
+ * @param id - id of html element
+ */
 function display(id){
   document.getElementById(id).style.visibility = 'visible';
 }
@@ -151,7 +156,7 @@ function display_result_icons(home_id, home, guest_id, guest){
  * @param guest - guest team name
  */
 function display_outcome(outcome, home, guest){
-  var propability_table = "<h4>Ergebniswahrscheinlichkeit</h4>" +
+  var propability_table = "<h4 class=\'text-danger text-center\'>Ergebniswahrscheinlichkeit</h4>" +
       "<table class=\'table\'>" +
         "<thead class=\'thead-dark\'><tr>" +
         "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Sieg</span> " + home + "</th>" +
@@ -173,12 +178,11 @@ function display_outcome(outcome, home, guest){
  */
 function display_score(score, home, guest){
   var NO_SCORE = -1;
-  alert(typeof score);
   if (score == NO_SCORE){
     hide('6-col-1');
   }
   else {
-      var scores = "<h4>wahrscheinliche Endergebnisse</h4>" +
+      var scores = "<h4 class=\'text-danger text-center\'>wahrscheinliche Endergebnisse</h4>" +
         "<table class=\'table\'>" +
         "<thead class=\'thead-dark\'><tr>" +
         "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Wahrscheinlichkeit</span></th>" +
@@ -191,19 +195,15 @@ function display_score(score, home, guest){
             "<th style=\'width: 33.3%\'>" + score[key].guest_points + "</th></tr>";
       }
       scores += "</tbody></table>";
-      set_innerHTML('6-col-1', scores);
+      display_block('6-row');
       display('6-col-1');
+      set_innerHTML('6-col-1', scores);
   }
 }
 
 
-
-
-// TODO: write DOCSTRING!
 /**
- *
- * @param next_matchday
- * @returns {string}
+ * displays pagination for next matchday
  */
 function display_league_pagination(){
   //window.alert("display_league_pagination(): entered");
@@ -218,11 +218,9 @@ function display_league_pagination(){
 }
 
 
-//TODO: DOCSTRING nachtragen
 /**
- *
+ * sets buttons for pagination
  * @param id
- * @param next_matchday
  */
 function set_pagination_design(id){
   //window.alert("set_pagination_design(): entered");
@@ -242,10 +240,9 @@ function set_pagination_design(id){
 }
 
 
-// TODO: write DOCSTRING!
 /**
- *
- * @param matchday
+ * creates table with matches of next matchday
+ * @param league - dictionary of next matchdays
  */
 function next_matchday_table(league){
   //window.alert("next_matchday_table(): entered");
@@ -317,7 +314,6 @@ function store_crawler_parameter(){
  */
 function set_model(){
   //window.alert("set_model(): entered");
-  //var model = get_session_item('models');
   var selected_model_id = get_single_selected('model_selection');
   set_session_item('selected_model_id', selected_model_id);
   set_session_item('stage', 2);
@@ -395,7 +391,6 @@ function store_selected_parameter(){
 
   if (selected_seasons.length == 1 && first_matchday > last_matchday)
   {
-    //window.alert("FEHLER: erster Spieltag liegt nach dem letzten Spieltag!")
     create_alert("Erster Spieltag liegt nach dem letzten Spieltag!");
   }
   else {
@@ -506,11 +501,10 @@ function set_opponent(){
 }
 
 
-// TODO: write DOCSTRING!
 /**
- *
- * @param team1_id
- * @param team2_id
+ * set parameters and redirects to result stage
+ * @param team1_id - id of home team
+ * @param team2_id - id of guest team
  */
 function set_next_match(team1_id, team2_id){
   //window.alert("set_next_match(): entered");
@@ -531,11 +525,9 @@ function start_prediction(){
   var team2_id = get_session_item('team2_id');
 
   if (team1_id == team2_id){
-    //window.alert("start_prediction(): ERROR - Heim- und Auswärtsteam sind gleich!");
     create_alert("Heim- und Auswärtsteam sind gleich!");
   }
   else if (team1_id == 0 || team2_id == 0){
-    //window.alert("start_prediction(): ERROR - Ein Team ist nicht ausgewählt!");
     create_alert("Ein Team ist nicht ausgewählt!");
   }
   else {
@@ -580,9 +572,8 @@ function multiple_select_all(sel_id, check_id){
 }
 
 
-// TODO: write DOCSTRINGS!
 /**
- *
+ *  enables each button of next matchday table
  */
 function enable_button(){
     var elements = document.querySelectorAll('[id=predictable]');

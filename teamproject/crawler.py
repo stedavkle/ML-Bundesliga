@@ -187,6 +187,7 @@ class Crawler(object):
             matches['Location.LocationStadium'] = 'Unbekannt'
         matches = matches[self.API_NEXTMATCHDAY_CONTENT_COLUMNS]
         matches.columns = self.UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS
+        matches['location_arena'] = matches['location_arena'].fillna('unbekannt')
         results = pd.json_normalize(response.json(), record_path='MatchResults', meta=self.API_META_DATA)[self.API_RESULT_CONTENT_COLUMNS]
         results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
         return matches, results
@@ -238,7 +239,7 @@ class Crawler(object):
 
                 match['location'] = matches.loc[index, 'location_arena']
 
-                all_matches_of_the_day[league][matches.loc[index, 'match_id']] = match
+                all_matches_of_the_day[league][int(matches.loc[index, 'match_id'])] = match
         return all_matches_of_the_day
 
     def get_teams(self, leagues, seasons, return_bool):

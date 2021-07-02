@@ -20,10 +20,6 @@ function sport_selection_render(){
     }
     html_str += "</select>";
 
-    // maintenance
-    //var html_btn = "<button onclick=\'maintenence_stage()\'>zur Stage</button>";
-    //html_str += html_btn;
-
     set_innerHTML("1-col-1", html_str);
 }
 
@@ -36,7 +32,7 @@ function sport_selection_render(){
 function crawler_data_render(leagues_seasons){
     crawler_data_designer();
     set_back_button(-1);
-    //set_innerHTML("back_btn", "<button class='btn btn-outline-danger btn-sm' onclick='welcome_page()'>zurück</button>");
+
     var leagues = {};
     var seasons = {};
     var biggest_league_size = 0;
@@ -64,12 +60,9 @@ function crawler_data_render(leagues_seasons){
     set_session_item('seasons', seasons);
     set_session_item('leagues_seasons_from_crawler', leagues_seasons);
 
-    // TODO: Multi Select schöner machen
-    // display hint
     var html_str_hint = "<p>Für Mehrfachauswahl <kbd>Strg</kbd> bzw. <kbd>Umschalt</kbd> gedrückt halten.</p>";
     set_innerHTML('1-col-1', html_str_hint);
 
-    // define submit button
     set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"store_crawler_parameter()\">Daten beziehen</button>");
 
     // display league selection
@@ -140,7 +133,6 @@ function model_selection_render(models){
 function training_data_render(parameter){
     training_data_designer();
     set_back_button(1);
-    //var model_id = get_session_item('selected_model_id');
 
     set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"store_selected_parameter()\">Training starten</button>");
 
@@ -263,22 +255,13 @@ function result_screen_render(){
     var outcome = result.outcome;
     var score = result.score;
 
-    alert(score);
-
     var home_name = team_list[home_id];
     var guest_name = team_list[guest_id];
 
-    //alert("result.home: " + result.home);
-    //alert(typeof result.home);
-    //alert("<img src=\'../icons/" + result.home + ".png\' alt=" + team1_name + ">");
-
-    //TODO: Stages anpassen, damit man zu team_select_render springen kann
     set_innerHTML("left_btn", "<button class=\'btn btn-primary\' onclick=\"set_session_item(\'stage\', 5), build_stage()\">anderes Match wählen</button>");
     set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"reset_program()\">zurück zur Startseite</button>");
 
     display_result_icons(home_id, home_name, guest_id, guest_name);
     display_outcome(outcome, home_name, guest_name);
     display_score(score, home_name, guest_name);
-
-    //set_innerHTML("1-col-1", "<h2 class=\'d-flex justify-content-center\'>Ergebnis:</h2>");
 }

@@ -1,8 +1,8 @@
 // designer functions for pages
 
 function sport_selection_designer(){
+  document.body.style.overflowY = 'hidden';
   hide("back_btn");
-  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   hide_and_reset("2-col-1");
@@ -15,12 +15,13 @@ function sport_selection_designer(){
   hide("left_btn");
   hide("right_btn");
 
+  clear_alert();
   set_3_col_standard();
 }
 
 function crawler_data_designer(){
   display("back_btn");
-  clear_alert();
+
   hide('spinner_display');
   display("1-col-1")
   display("2-col-1");
@@ -33,12 +34,11 @@ function crawler_data_designer(){
   hide("left_btn");
   hide("right_btn");
 
-  //set_3_col_standard();
+  clear_alert();
 }
 
 function model_selection_designer(){
   display("back_btn");
-  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   display("2-col-1");
@@ -51,12 +51,16 @@ function model_selection_designer(){
   hide("left_btn");
   hide("right_btn");
 
-  //set_3_col_standard();
+  clear_alert();
 }
 
 function training_data_designer(){
+  display_block('2-row');
+  display_block('3-row');
+  display_block('5-row');
+  display_block('6-row');
+
   display("back_btn");
-  clear_alert();
   hide('spinner_display');
   hide_and_reset("1-col-1");
   hide_and_reset("2-col-1");
@@ -69,12 +73,16 @@ function training_data_designer(){
   hide("left_btn");
   display("right_btn");
 
-  //set_3_col_standard();
+  clear_alert();
 }
 
 function next_matchday_designer(){
+  display_none('2-row');
+  display_none('3-row');
+  display_none('5-row');
+  display_none('6-row');
+
   hide("back_btn");
-  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   hide_and_reset("2-col-1");
@@ -87,16 +95,16 @@ function next_matchday_designer(){
   display("left_btn");
   display("right_btn");
 
-  //set_3_col_standard();
+  clear_alert();
 }
 
 function team_select_designer(){
-  display("back_btn");
-  clear_alert();
-  hide('spinner_display');
-  display("1-col-1")
   display_block("2-row");
   display_block("3-row");
+
+  display("back_btn");
+  hide('spinner_display');
+  display("1-col-1")
   display("2-col-1");
   hide_and_reset("2-col-2");
   hide_and_reset("3-col-1");
@@ -107,20 +115,19 @@ function team_select_designer(){
   hide("left_btn");
   hide("right_btn");
 
-  //set_3_col_standard();
+  clear_alert();
 }
 
-
-// TODO: da fehlen hide elemente
 function result_stage_switcher_designer(){
+  display_none("2-row");
+  display_none("3-row");
+  display_block('5-row');
+
   hide("back_btn");
-  clear_alert();
   hide('spinner_display');
   display("1-col-1")
   hide("2-col-1");
   hide("2-col-2");
-  display_none("2-row");
-  display_none("3-row");
   hide_and_reset("3-col-1");
   hide_and_reset("3-col-2");
   hide_and_reset("3-col-3");
@@ -128,15 +135,17 @@ function result_stage_switcher_designer(){
   hide("6-col-1");
   display("left_btn");
   display("right_btn");
+
+  clear_alert();
 }
 
 function clear_page(){
-  hide("back_btn");
-  clear_alert();
-  hide('spinner_display');
-  hide_and_reset("1-col-1")
   display_block("2-row");
   display_block("3-row");
+
+  hide("back_btn");
+  hide('spinner_display');
+  hide_and_reset("1-col-1")
   hide_and_reset("2-col-1");
   hide_and_reset("2-col-2");
   hide_and_reset("3-col-1");
@@ -147,7 +156,7 @@ function clear_page(){
   hide_and_reset("left_btn");
   hide_and_reset("right_btn");
 
-  //set_3_col_standard();
+  clear_alert();
 }
 
 function spinner_on(){
@@ -168,6 +177,7 @@ function set_3_col_standard(){
 
 
 function create_alert(message){
+  display_block('alert');
   display("alert");
   var html_str = "<button type=\'button\' class=\'close\' onclick=\'clear_alert()\'>&times;</button>" +
         "<strong>Fehler!</strong> " + message;
@@ -175,11 +185,11 @@ function create_alert(message){
 }
 
 function clear_alert(){
+  display_none('alert');
   hide_and_reset("alert");
 }
 
 function spinner_button(){
-  // spinner at button position
   var spinner = "<button class=\'btn btn-danger\' disabled>" +
       "<span class=\'spinner-border spinner-border-sm\'></span>\tTraining</button>";
   set_innerHTML('right_btn', spinner);
