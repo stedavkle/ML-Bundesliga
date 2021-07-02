@@ -55,6 +55,7 @@ class Models:
         """
         matches = data[self.MATCHES_INDEX]
         results = data[self.RESULTS_INDEX]
+        print(matches.head())
         ids_in_match = matches[self.MATCH_CONTENT]
         end_results = results[results['result_type_id'] == self.END_RESULT]
         data = ids_in_match.merge(end_results, on='match_id')
@@ -165,9 +166,6 @@ class PoissonModel(Models):
         """
         Classconstructor, initializes 3 internal empty dicts.
         """
-        #self.data
-        #self.model
-        #self.simulation
 
     def get_model_requirements(self):
         """
@@ -238,6 +236,7 @@ class PoissonModel(Models):
         Extracts the most likely outcome with goals using the simulation done in advance.
         :returns dict: homePoints:x, guestPoints:y, probab:z
         """
+        # TODO: second, third likely score?
         index = np.argmax(self.simulation)
         # argmax gives back the 1 dim. index from maximum in matrix
         # index mod rows = x + (remainer)y
@@ -251,7 +250,6 @@ class PoissonModel(Models):
 
         :returns: dict: 2 dicts in Uniformat
         """
-
         self.simulate_match(home_id, guest_id)
         outcome = self.predict_outcome()
         result = self.predict_score()
@@ -271,7 +269,7 @@ if __name__ == '__main__':
 
     # MOSTWINS TESTING
     crwlr = crawler.Crawler()
-    data = crwlr.get_data_for_algo([1,2,3], [2020, 2019], 1, 34, 0, 0)
+    data = crwlr.get_data_for_algo([1,2,3], [2020, 2019, 2018, 2017, 2016, 2015], 2, 33, 0, 0)
     model = PoissonModel()
     model.set_data(data)
 
