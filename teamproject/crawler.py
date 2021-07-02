@@ -40,7 +40,7 @@ class Crawler(object):
     API_MATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
     UNIFORM_MATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
     
-    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1', 'Team2', 'Location']
+    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team2.TeamId', 'Location.LocationStadium']
     UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
     
     API_RESULT_CONTENT_COLUMNS =        ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
@@ -66,7 +66,7 @@ class Crawler(object):
 
         self.available_leagues = [1,2,3]
         self.bl_leagues_ids = {1 : 4442, 2 : 4443, 3 : 4444}
-        if(datetime.datetime.now().month >= 7):
+        if(datetime.datetime.now().month >= 8):
             self.current_season = datetime.datetime.now().year
         else:
             self.current_season = datetime.datetime.now().year-1
@@ -322,6 +322,8 @@ class Crawler(object):
         # print(matches.shape)
         results = pd.concat([results, next_results])
         # print('recursion done')
+        self.matches = matches
+        self.results = results
         return matches, results
 
 
@@ -471,30 +473,24 @@ if __name__ == '__main__':
     #                                                         day_start, day_end,
     #                                                         team_home_id, team_guest_id)
     leagues = [1,2,3]
-    seasons = [2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010]
-    crawler.seasons_backup = list(seasons)
-    print('LEAGUES')
-    print(leagues)
-    print('SEASONS')
-    print(seasons)
-    total_elapsed = 0
-    for i in [0,1,2,3,4,5,6,7,8,9,]:
-        start = time.time()
-        #matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
-        crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
-        elapsed = time.time()
-        total_elapsed = total_elapsed + elapsed - start
-    #print('RECURSIVE Function took: ' + str(total_elapsed/10))
-    print('ITERATIVE Function took: ' + str(total_elapsed/10))
+    seasons = [2020]
     
 
-    # crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
+    #matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
+    #crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
+    dict = crawler.get_next_matchday()
     # print(crawler.matches.shape)
     # print(crawler.results.shape)
     
-    #matches, results = crawler.get_data_for_algo([3],[2020,2019,2018],1,34,0,0)
+    data = crawler.get_data_for_algo([1,2,3], [2020, 2019, 2018, 2017, 2016, 2015], 2, 33, 0, 0)
+    print(data[0].shape)
+    print(data[1].shape)
+    
     #print(crawler.available_leagues)
-    #dict = crawler.get_team_dicts([1],[2020])
+    dict = crawler.get_team_dicts([1,2,3],[2020, 2019, 2018, 2017, 2016, 2015,2014,2013,2012,2011,2010])
+    print(dict)
+
+
     #data = crawler.get_next_opponent(16)
     #print(data)
     #print(crawler.get_team_dicts([3],[2020]))
