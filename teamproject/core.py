@@ -134,7 +134,7 @@ def get_next_matchday_from_parameters(parameter):
     crawler_instance = Core.crawler_instance
 
     # TODO: einkommentieren, sobald irgendwas tut
-    matchday = crawler_instance.get_next_matchday()
+    #matchday = crawler_instance.get_next_matchday()
 
     match = {'team_home_name': 'Bayern München',
              'team_home_id': 40,
@@ -147,7 +147,7 @@ def get_next_matchday_from_parameters(parameter):
              'time': '15:30:00',
              'location': 'Allianz Arena'}
 
-    matchday = {1: {978: match,
+    dummy = {1: {978: match,
                     567: match},
                 2: {234: match,
                     567: match},
@@ -155,7 +155,7 @@ def get_next_matchday_from_parameters(parameter):
                     123: match}
                 }
     #print(matchday[1][58877])
-    return matchday #{key: matchday[key] for key in Core.leagues}
+    return dummy #{key: matchday[key] for key in Core.leagues}
 
 
 @eel.expose
@@ -167,6 +167,9 @@ def start_training_and_get_teams():
     """
     print("start_training_and_get_teams(): executed successfully")
 
+    #leagues = list(Core.leagues)
+    #seasons = list(Core.seasons)
+
     crawler_instance = Core.crawler_instance
     training_data = crawler_instance.get_data_for_algo(Core.leagues, Core.seasons, Core.first_matchday,
                                                        Core.last_matchday, 0, 0)
@@ -174,6 +177,11 @@ def start_training_and_get_teams():
     model_instance = Core.model_instance
     model_instance.set_data(training_data)
     model_instance.start_training()
+
+    #print(leagues)
+    #print(seasons)
+    #print(Core.leagues)
+    #print(Core.seasons)
 
     id_to_team, team_to_id = crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
     crawler_instance.get_team_icons_from_wiki()
@@ -198,7 +206,7 @@ def get_next_opponent(id):
 
     #print(match)
 
-    match = {'team_home_name': 'Bayern München',
+    dummy = {'team_home_name': 'Bayern München',
              'team_home_id': 40,
              'team_guest_name': 'Eintracht Frankfurt',
              'team_guest_id': 91,
@@ -217,7 +225,7 @@ def get_next_opponent(id):
            'time': '15:30:00',
            'location': 'Allianz Arena'}
 
-    return 0
+    return new
 
 
 @eel.expose
@@ -248,12 +256,13 @@ def start_prediction(team1_id, team2_id):
             1: {
                 'home_points': 4,
                 'guest_points': 2,
-                'probability': 0.2}
-        },
-        2: {
-            'home_points': 0,
-            'guest_points': 1,
-            'probability': 0.9
+                'probability': 0.2
+            },
+            2: {
+                'home_points': 0,
+                'guest_points': 1,
+                'probability': 0.9
+            }
         }
     }
 

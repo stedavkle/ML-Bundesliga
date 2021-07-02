@@ -173,6 +173,7 @@ function display_outcome(outcome, home, guest){
  */
 function display_score(score, home, guest){
   var NO_SCORE = -1;
+  alert(typeof score);
   if (score == NO_SCORE){
     hide('6-col-1');
   }
@@ -184,11 +185,10 @@ function display_score(score, home, guest){
         "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Tore</span> " + home + "</th>" +
         "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Tore</span> " + guest + "</th>" +
         "</tr></thead><tbody>";
-
       for (var key in score){
         scores += "<tr><th style=\'width: 33.3%\'>" + score[key].probability + "</th>" +
-            "<th style=\'width: 33.3%\'>" + scor[key].home_points + "</th>" +
-            "<th style=\'width: 33.3%\'>" + scor[key].guest_points + "</th></tr>";
+            "<th style=\'width: 33.3%\'>" + score[key].home_points + "</th>" +
+            "<th style=\'width: 33.3%\'>" + score[key].guest_points + "</th></tr>";
       }
       scores += "</tbody></table>";
       set_innerHTML('6-col-1', scores);
@@ -393,8 +393,6 @@ function store_selected_parameter(){
   var last_matchday = parseInt(get_single_selected('last_matchday'));
   var points_checked = 0;
 
-  spinner_button();
-
   if (selected_seasons.length == 1 && first_matchday > last_matchday)
   {
     //window.alert("FEHLER: erster Spieltag liegt nach dem letzten Spieltag!")
@@ -406,6 +404,7 @@ function store_selected_parameter(){
     }
     else{
       clear_alert();
+      spinner_button();
       if (document.getElementById('points_checkbox').checked){
         points_checked = 1;
       };

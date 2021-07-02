@@ -263,6 +263,8 @@ function result_screen_render(){
     var outcome = result.outcome;
     var score = result.score;
 
+    alert(score);
+
     var home_name = team_list[home_id];
     var guest_name = team_list[guest_id];
 

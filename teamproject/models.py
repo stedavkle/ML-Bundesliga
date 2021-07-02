@@ -241,7 +241,7 @@ class PoissonModel(Models):
         # argmax gives back the 1 dim. index from maximum in matrix
         # index mod rows = x + (remainer)y
         home_points, guest_points = divmod(index, self.MAX_GOALS + 1)
-        return {1 : {'home_points': home_points, 'guest_points': guest_points,
+        return {1 : {'home_points': int(home_points), 'guest_points': int(guest_points),
                 'probability': round(self.simulation[home_points, guest_points],2)}}
 
     def predict(self, home_id, guest_id):
