@@ -40,11 +40,11 @@ class Crawler(object):
     API_MATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
     UNIFORM_MATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
     
-    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team2.TeamId', 'Location.LocationStadium']
-    UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
-    
-    API_NEXTMATCHDAY_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1', 'Team2', 'Location']
+    API_NEXTMATCHDAY_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team2.TeamId', 'Location.LocationStadium']
     UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
+    
+    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1', 'Team2', 'Location']
+    UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
     
 
     API_RESULT_CONTENT_COLUMNS =        ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
@@ -483,10 +483,9 @@ if __name__ == '__main__':
     #matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
     #crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
     dict = crawler.get_next_matchday()
-    for key in dict[1][58877].keys():
-        print(key)
-        print(type(dict[1][58877][key]))
-
+    print(type(dict))
+    match = crawler.get_next_opponent(16)
+    print(match)
 
     #data = crawler.get_next_opponent(16)
     #print(data)
