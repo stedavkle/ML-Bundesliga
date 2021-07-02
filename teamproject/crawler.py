@@ -216,15 +216,15 @@ class Crawler(object):
                     'date': 0, 'time': 0, 'location': 0}
                 result = endresults[endresults['match_id'] == matches.loc[index, 'match_id']]
 
-                match['team_home_id'] = int(matches.loc[index, 'team_home_id'])
+                match['team_home_id'] = matches.loc[index, 'team_home_id'].item()
                 match['team_home_name'] = id_to_team[match['team_home_id']]
-                match['team_guest_id'] = int(matches.loc[index, 'team_guest_id'])
+                match['team_guest_id'] = matches.loc[index, 'team_guest_id'].item()
                 match['team_guest_name'] = id_to_team[match['team_guest_id']]
 
                 if matches.loc[index, 'is_finished'] == 1:
                     match['is_finished'] = 1
-                    match['points_home'] = int(result.iloc[0]['points_home'])
-                    match['points_guest'] = int(result.iloc[0]['points_guest'])
+                    match['points_home'] = result.iloc[0]['points_home'].item()
+                    match['points_guest'] = result.iloc[0]['points_guest'].item()
 
                 utc_string = matches.loc[index, 'match_date_time_utc']
                 
@@ -460,7 +460,7 @@ class Crawler(object):
         """
         # self.create_dataset_from_leagues_and_seasons(leagues, seasons, day_start, day_end)
         self.seasons_backup = list(seasons)
-        self.create_dataset_recursive_helper(leagues, seasons, day_start, day_end)
+        self.create_dataset_recursive_helper(list(leagues), list(seasons), day_start, day_end)
         if team_home_id != 0:
             self.extract_matchup_history(team_home_id, team_guest_id)        
         return [self.matches, self.results]#, self.scores
