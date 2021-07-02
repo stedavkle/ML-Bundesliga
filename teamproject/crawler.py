@@ -43,6 +43,10 @@ class Crawler(object):
     API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team2.TeamId', 'Location.LocationStadium']
     UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
     
+    API_NEXTMATCHDAY_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1', 'Team2', 'Location']
+    UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
+    
+
     API_RESULT_CONTENT_COLUMNS =        ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
     UNIFORM_RESULT_CONTENT_COLUMNS =    ['result_id', 'points_home', 'points_guest', 'result_type_id', 'match_id']
     #api_score_content_columns = ['GoalID','ScoreTeam1','ScoreTeam2','GoalGetterID',
@@ -181,8 +185,8 @@ class Crawler(object):
         # extract necessary data
         if not('Location.LocationStadium' in matches.columns):
             matches['Location.LocationStadium'] = 'Unbekannt'
-        matches = matches[self.API_NEXTMATCH_CONTENT_COLUMNS]
-        matches.columns = self.UNIFORM_NEXTMATCH_CONTENT_COLUMNS
+        matches = matches[self.API_NEXTMATCHDAY_CONTENT_COLUMNS]
+        matches.columns = self.UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS
         results = pd.json_normalize(response.json(), record_path='MatchResults', meta=self.API_META_DATA)[self.API_RESULT_CONTENT_COLUMNS]
         results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
         return matches, results
