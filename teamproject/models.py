@@ -2,7 +2,7 @@
 This module contains code for a prediction models.
 """
 # %%
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, ABC
 
 from numpy.core.numeric import outer
 import crawler
@@ -12,6 +12,9 @@ import numpy as np
 from scipy.stats import poisson, skellam
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.utils.validation import check_is_fitted
 
 
 # TODO: Hier fängt abstract an
@@ -26,8 +29,6 @@ class Models:
     TEAM_ID_COLUMNS = ['team_home_id', 'team_guest_id']
     HOME_TEAM_WITH_GOALS = ['team_home_id', 'team_guest_id', 'points_home']
     GUEST_TEAM_WITH_GOALS = ['team_guest_id', 'team_home_id', 'points_guest']
-
-    # TODO: Was dat?
     END_RESULT = 1
 
     # non-abstract methods
@@ -35,16 +36,21 @@ class Models:
         # TODO: if model added, edit models object
         models = {
             1: {'model_id': 1,
-                'model': 'trivialer Algorithmus',
-                'description': 'Einfacher Algorithmus, der Ergebnisse aller bisherigen Partieen zweier Teams vergleicht.',
+                'model': 'Most Wins',
+                'description': 'Einfacher Algorithmus, der Ergebnisse aller Partieen zweier Teams im ausgewählen Datensatz vergleicht.',
                 'run': MostWins()
                 },
             2: {'model_id': 2,
                 'model': 'Poisson Model',
                 'description': 'Berechnet mithilfe der Poissonverteilung den Ausgang eines Matches zwischen 2 Teams',
                 'run': PoissonModel()
+                },
+            3: {'model_id': 3,
+                'model': 'Logistic Regression Model',
+                'description': 'Berechnet mithilfe logistischer Regression den Ausgang eines Matches zwischen 2 Teams',
+                'run': LogisticRegModel()
                 }
-        };
+        }
         return models
 
     def prepare_data(self, data):
@@ -84,7 +90,7 @@ class Models:
 
 
 class MostWins(Models):
-    parameter = {'leagues': 1,
+    parameter_dict = {'leagues': 1,
                  'seasons': 1,
                  'matchdays': 0,
                  'points': 0}
@@ -100,7 +106,7 @@ class MostWins(Models):
         Returns a dict with bools indicating what can be tuned for this Algorithm.
         :returns: dict parameter_dict
         """
-        return self.parameter
+        return self.parameter_dict
 
     def set_data(self, data):
         """
@@ -109,6 +115,7 @@ class MostWins(Models):
 
         :param pd.DF: DB containing matches and the results in Uniformat
         """
+
         self.data = self.prepare_data(data)
 
     def start_training(self):
@@ -257,6 +264,118 @@ class PoissonModel(Models):
         return dict
 
 
+class LogisticRegModel(Models):
+    parameter_dict = {'leagues': 1,
+                      'seasons': 1,
+                      'matchdays': 1,
+                      'points': 0
+                      }
+
+    def __init__(self):
+        self.home_teams = ''
+        self.away_teams = ''
+        self.home_scores = ''
+        self.away_scores = ''
+        self.model_ = ''
+
+    def get_model_requirements(self):
+        """
+        Returns a dict with bools indicating what can be tuned for this Algorithm.
+        :returns: dict parameter_dict
+        """
+        return self.parameter_dict
+
+    def set_data(self, data):
+        """
+        Takes match and result data in Uniformat and prepares it for the Algo.
+        Saves the Data in self.data.
+
+        :param pd.DF: DB containing matches and the results in Uniformat
+        """
+        prepared_data = self.prepare_data(data)
+        self.home_teams = prepared_data['team_home_id'].tolist()
+        self.away_teams = prepared_data['team_guest_id'].tolist()
+        self.home_scores = prepared_data['points_home'].tolist()
+        self.away_scores = prepared_data['points_guest'].tolist()
+
+    def start_training(self):
+        """
+            Creates a model and corrects the algorithms parameters using the given data.
+        """
+        home_team_name = self.home_teams
+        away_team_name = self.away_teams
+        home_score = self.home_scores
+        away_score = self.away_scores
+
+        home_team_name, away_team_name, home_score, away_score = [
+            np.array(x)
+            for x in [home_team_name, away_team_name, home_score, away_score]
+        ]
+
+        team_names = np.array(list(home_team_name) + list(away_team_name)).reshape(-1, 1)
+
+        self.team_encoding_ = OneHotEncoder(sparse=False).fit(team_names)
+
+        home_dummies = self.team_encoding_.transform(home_team_name.reshape(-1, 1))
+        away_dummies = self.team_encoding_.transform(away_team_name.reshape(-1, 1))
+
+        X = np.concatenate([home_dummies, away_dummies], 1)
+        y = np.sign(home_score - away_score)
+
+        # start training
+        model = LogisticRegression(
+            penalty="l2", fit_intercept=False, multi_class="ovr", C=1
+        )
+        model.fit(X, y)
+        self.model_ = model
+
+    def check_teams(self, home_team_name, away_team_name):
+        """Check if team are encoded."""
+        assert (
+                home_team_name in self.team_encoding_.categories_[0]
+        ), f"{home_team_name} is recognized. It was not in the training data."
+        assert (
+                away_team_name in self.team_encoding_.categories_[0]
+        ), f"{away_team_name} is recognized. It was not in the training data."
+
+    def predict(self, home_team_name, away_team_name):
+        """
+        Predict the probabilities of draw and win for each team..
+
+        Parameters
+        ----------
+        home_team_name: str
+            Home team name.
+
+        away_team_name: str
+            Away team name.
+
+        Returns
+        -------
+        A dataframe with the probabilities.
+
+        """
+        home_team_name = str(home_team_name)
+        away_team_name = str(away_team_name)
+        check_is_fitted(self.model_)
+        self.check_teams(home_team_name, away_team_name)
+        home_team_name = np.array(home_team_name)
+        away_team_name = np.array(away_team_name)
+        home_dummies = self.team_encoding_.transform(home_team_name.reshape(-1, 1))
+        away_dummies = self.team_encoding_.transform(away_team_name.reshape(-1, 1))
+        X = np.concatenate([home_dummies, away_dummies], 1)
+
+        outcome = self.model_.predict_proba(X)[0]
+        guest_win = outcome[0]
+        draw = outcome[1]
+        home_win = outcome[2]
+
+        return {'outcome': {'home_win': round(home_win, 2),
+                            'draw': round(draw, 2),
+                            'guest_win': round(guest_win, 2)},
+                'score': -1
+                }
+
 # %%
 # for testing inside the script
 if __name__ == '__main__':
@@ -268,18 +387,22 @@ if __name__ == '__main__':
     # print(algo_trivial)
 
     # MOSTWINS TESTING
-    crwlr = crawler.Crawler()
-    data = crwlr.get_data_for_algo([1,2,3], [2020, 2019, 2018, 2017, 2016, 2015], 2, 33, 0, 0)
-    model = PoissonModel()
-    model.set_data(data)
+    #crwlr = crawler.Crawler()
+    #data = crwlr.get_data_for_algo([1], [2020, 2019, 2018, 2017, 2016, 2015], 2, 33, 0, 0)
+    #model = MostWins()
 
-    model.start_training()
+
+    #model = PoissonModel()
+    #model.set_data(data)
+
+
+    #model.start_training()
     # print(data.head(5))
     # data_2_teams = data.loc[(data['team_home_id'] == '16')]
     #                                 | (data['team_home_id'] == team2) & (data['team_guest_id'] == team1)]
     # print(data[(data['team_home_id'] == '16') & (data['team_guest_id'] == '112')].head(5))
     # print(data[['points_home', 'points_guest']].subtract(axis=1))
-    print(model.predict(16, 1635))
+    #print(model.predict(16, 1635))
 
     # POISSON TESTING
     # crwlr = crawler.Crawler()
@@ -290,5 +413,16 @@ if __name__ == '__main__':
     # max_goals = 4
     # algo.simulate_match(16, 1635)
     # print(algo.predict(16, 87))
+
+    # REGRESSION Testing
+    crawler = crawler.Crawler()
+    dataset = crawler.get_data_for_algo([1], [2020, 2019, 2018], 2, 33, 0, 0)
+
+    model = LogisticRegModel()
+    model.set_data(dataset)
+    model.start_training()
+    outcome = model.predict(str(40), str(9))
+
+    print(outcome)
 
 # %%
