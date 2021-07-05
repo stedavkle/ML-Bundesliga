@@ -139,9 +139,9 @@ function show_model_description(){
  */
 function display_result_icons(home_id, home, guest_id, guest){
   var html_str = "<div class=\'result-container\'>" +
-      "<img class=\'result-element, result-img\' src=\'img/" + home_id + ".png\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\">" +
+      "<img class=\'result-element, result-img\' src=\'img/" + home_id + ".png\' alt=\'Logo " + home + "\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\">" +
       "<img class=\'result-element, result-img\' src=\'img/colon.png\'>" +
-      "<img class=\'result-element, result-img\' src=\'img/" + guest_id + ".png\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\">" +
+      "<img class=\'result-element, result-img\' src=\'img/" + guest_id + ".png\' alt=\'Logo " + guest + "\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\">" +
       "<div class=\'result-element\'><h4>" + home + "</h4></div>" +
       "<div class=\'result-element\'></div>" +
       "<div class=\'result-element\'><h4>" + guest + "</h4></div></div>";
@@ -156,7 +156,12 @@ function display_result_icons(home_id, home, guest_id, guest){
  * @param guest - guest team name
  */
 function display_outcome(outcome, home, guest){
-  var propability_table = "<h4 class=\'text-danger text-center\'>Ergebniswahrscheinlichkeit</h4>" +
+  var NO_RESULT = -1;
+  if (outcome == NO_RESULT){
+    create_alert("Match konnte anhand der Daten nicht vorhergesagt werden. Versuche eine andere Paarung!");
+  }
+  else {
+    var propability_table = "<h4 class=\'text-danger text-center\'>Ergebniswahrscheinlichkeit</h4>" +
       "<table class=\'table\'>" +
         "<thead class=\'thead-dark\'><tr>" +
         "<th style=\'width: 33.3%\'><span class=\'font-weight-normal\'>Sieg</span> " + home + "</th>" +
@@ -166,7 +171,8 @@ function display_outcome(outcome, home, guest){
         "<th style=\'width: 33.3%\'>" + outcome.home_win + "</th>" +
         "<th style=\'width: 33.3%\'>" + outcome.draw + "</th>" +
         "<th style=\'width: 33.3%\'>" + outcome.guest_win + "</th></tr></tbody></table>";
-  set_innerHTML("5-col-1", propability_table);
+    set_innerHTML("5-col-1", propability_table);
+  }
 }
 
 
@@ -247,7 +253,7 @@ function set_pagination_design(id){
 function next_matchday_table(league){
   //window.alert("next_matchday_table(): entered");
   set_pagination_design(league);
-  var table_str = "<h3>" + league + ". Liga</h3>" +
+  var table_str = "<h3>Nächster Spieltag in der " + league + ". Liga</h3>" +
       "<table class=\'table table-hover\'><thead class=\'thead-dark\'><tr>" +
       "<th>Heim</th>" +
       "<th>Gast</th>" +

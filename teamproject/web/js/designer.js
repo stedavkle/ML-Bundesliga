@@ -62,7 +62,7 @@ function training_data_designer(){
 
   display("back_btn");
   hide('spinner_display');
-  hide_and_reset("1-col-1");
+  display("1-col-1");
   hide_and_reset("2-col-1");
   hide_and_reset("2-col-2");
   hide_and_reset("3-col-1");
@@ -177,7 +177,7 @@ function set_3_col_standard(){
 
 
 function create_alert(message){
-  display_block('alert');
+  //display_block('alert');
   display("alert");
   var html_str = "<button type=\'button\' class=\'close\' onclick=\'clear_alert()\'>&times;</button>" +
         "<strong>Fehler!</strong> " + message;
@@ -185,7 +185,7 @@ function create_alert(message){
 }
 
 function clear_alert(){
-  display_none('alert');
+  //display_none('alert');
   hide_and_reset("alert");
 }
 

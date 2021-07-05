@@ -60,7 +60,9 @@ function crawler_data_render(leagues_seasons){
     set_session_item('seasons', seasons);
     set_session_item('leagues_seasons_from_crawler', leagues_seasons);
 
-    var html_str_hint = "<p>Für Mehrfachauswahl <kbd>Strg</kbd> bzw. <kbd>Umschalt</kbd> gedrückt halten.</p>";
+    var html_str_hint = "<h3>Datensatz Auswahl</h3>" +
+        "<p>Wähle die Datensätze, die heruntergeladen und aufbereitet werden sollen. Später kann die Auswahl verfeinert werden.</p>" +
+        "<p>Für Mehrfachauswahl <kbd>Strg</kbd> bzw. <kbd>Umschalt</kbd> gedrückt halten.</p>";
     set_innerHTML('1-col-1', html_str_hint);
 
     set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"store_crawler_parameter()\">Daten beziehen</button>");
@@ -112,7 +114,8 @@ function model_selection_render(models){
     set_session_item('models', models);
 
     set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"set_model()\">Bestätigen</button>");
-    set_innerHTML("1-col-1", "<h5>Wähle einen Algorithmus oder ein ML-Modell aus:</h5>");
+    set_innerHTML("1-col-1", "<h3>Vorhersagemodell</h3>" +
+        "<p>Wähle zwischen mehreren Algorithmen und Machine-Learning-Modellen ein Vorhersagemodell aus.</p>");
 
     var html_str = "<select class=\'form-control\' id=\'model_selection\' onchange=\"show_model_description()\">" +
     "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
@@ -136,6 +139,9 @@ function training_data_render(parameter){
 
     set_innerHTML('right_btn', "<button class=\'btn btn-danger\' onclick=\"store_selected_parameter()\">Training starten</button>");
 
+    var html_str_caption = "<h3>Daten- und Parameterauswahl</h3>" +
+        "<p>Treffe eine Feinauswahl an Daten, auf denen dein Vorhersagemodell eine Aussage treffen soll.</p>" +
+        "<p>Ist der Algorithmus ein Machine-Learning-Modell, so wird dieses mit den gewählten Daten trainiert.</p>";
     var html_str_leagues = "<h5>Ligen:</h5>" + create_select_of_selected('leagues');
     var html_str_seasons = "<h5>Saisons:</h5>" + create_select_of_selected('seasons');
     var html_str_matchdays_first = "<p>ab Spieltag:</p>" + create_matchday_selection('first');
@@ -144,7 +150,7 @@ function training_data_render(parameter){
         "<input type=\'checkbox\' class=\'form-check-input\' id=\'points_checkbox\'>" +
         "<label class=\'form-check-label\'>Tore berücksichtigen</label></div>";
 
-
+    set_innerHTML("1-col-1", html_str_caption);
     set_innerHTML("2-col-1", html_str_leagues);
     set_innerHTML("2-col-2", html_str_seasons);
     set_innerHTML("3-col-1", html_str_matchdays_first);
@@ -212,12 +218,14 @@ function team_select_callback(team_list){
 function team_select_render(){
     //window.alert("team_select_render(): entered");
     clear_page();
+    set_innerHTML('right_btn', "<button type='\button\'>DUMMY</button>");
     team_select_designer();
     set_back_button(2);
     document.body.style.overflowY = 'hidden';
     set_session_item('stage', 5);
     var team_list = get_session_item('team_list');
-    set_innerHTML("1-col-1", "<h3>Matchauswahl</h3>");
+    set_innerHTML("1-col-1", "<h3>Matchauswahl</h3>" +
+        "<p>Wähle ein Heimteam und dessen Gegner. Alternativ kann der nächste Gegner in der Liga gesetzt werden.</p>");
 
     var html_str = "<h5>Heimteam:</h5>" +
     "<select class=\'form-control\' id=\'team1_selection\' onchange=\"set_team(1)\">" +
@@ -236,6 +244,7 @@ function team_select_render(){
  * @param result - result of prediction
  */
 function result_stage_switcher_render(result){
+
     set_session_item('result', result);
     set_session_item('stage', 7);
     build_stage();
