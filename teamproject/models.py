@@ -61,7 +61,7 @@ class Models:
         """
         matches = data[self.MATCHES_INDEX]
         results = data[self.RESULTS_INDEX]
-        print(matches.head())
+        # print(matches.head())
         ids_in_match = matches[self.MATCH_CONTENT]
         end_results = results[results['result_type_id'] == self.END_RESULT]
         data = ids_in_match.merge(end_results, on='match_id')
@@ -155,19 +155,20 @@ class MostWins(Models):
             elif result < 0:
                 outcome[guest_team] = outcome[guest_team] + 1
 
-        # TODO: WENN DIVISION BY ZERO ERROR, DANN GEBE DICT SO ZURÜCL:
-        error_dict = {
-            'outcome': -1,
-            'score': -1
-        }
-        return {
-            'outcome': {
-                            'home_win': round((outcome[team1] / total_matches * 100), 2),
-                            'draw': round((outcome['draw'] / total_matches * 100), 2),
-                            'guest_win': round((outcome[team2] / total_matches * 100), 2)
-                        },
-            'score': -1
-        }
+        if total_matches == 0:
+            return {
+                    'outcome': -1,
+                    'score': -1
+                    }
+        else:
+            return {
+                'outcome': {
+                                'home_win': round((outcome[team1] / total_matches * 100), 2),
+                                'draw': round((outcome['draw'] / total_matches * 100), 2),
+                                'guest_win': round((outcome[team2] / total_matches * 100), 2)
+                            },
+                'score': -1
+            }
 
 
 class PoissonModel(Models):
@@ -327,6 +328,9 @@ class LogisticRegModel(Models):
         home_dummies = self.team_encoding_.transform(home_team_name.reshape(-1, 1))
         away_dummies = self.team_encoding_.transform(away_team_name.reshape(-1, 1))
 
+        print(home_dummies)
+        print(away_dummies)
+
         X = np.concatenate([home_dummies, away_dummies], 1)
         y = np.sign(home_score - away_score)
 
@@ -336,6 +340,8 @@ class LogisticRegModel(Models):
         )
         model.fit(X, y)
         self.model_ = model
+
+        print(model.coef_)
 
     def check_teams(self, home_team_name, away_team_name):
         """Check if team are encoded."""
