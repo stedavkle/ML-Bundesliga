@@ -61,7 +61,7 @@ class Models:
         """
         matches = data[self.MATCHES_INDEX]
         results = data[self.RESULTS_INDEX]
-        print(matches.head())
+        # print(matches.head())
         ids_in_match = matches[self.MATCH_CONTENT]
         end_results = results[results['result_type_id'] == self.END_RESULT]
         data = ids_in_match.merge(end_results, on='match_id')
@@ -91,9 +91,9 @@ class Models:
 
 class MostWins(Models):
     parameter_dict = {'leagues': 1,
-                 'seasons': 1,
-                 'matchdays': 0,
-                 'points': 0}
+                      'seasons': 1,
+                      'matchdays': 0,
+                      'points': 0}
 
     def __init__(self):
         """
@@ -154,12 +154,21 @@ class MostWins(Models):
                 outcome[home_team] = outcome[home_team] + 1
             elif result < 0:
                 outcome[guest_team] = outcome[guest_team] + 1
-        return {'outcome': {'home_win': round((outcome[team1] / total_matches * 100), 2),
-                            'draw': round((outcome['draw'] / total_matches * 100), 2),
-                            'guest_win': round((outcome[team2] / total_matches * 100), 2)
+
+        if total_matches == 0:
+            return {
+                    'outcome': -1,
+                    'score': -1
+                    }
+        else:
+            return {
+                'outcome': {
+                                'home_win': round((outcome[team1] / total_matches * 100), 2),
+                                'draw': round((outcome['draw'] / total_matches * 100), 2),
+                                'guest_win': round((outcome[team2] / total_matches * 100), 2)
                             },
                 'score': -1
-                }
+            }
 
 
 class PoissonModel(Models):
@@ -236,7 +245,7 @@ class PoissonModel(Models):
         home_win = np.sum(np.tril(self.simulation, -1))
         draw = np.sum(np.diag(self.simulation))
         guest_win = np.sum(np.triu(self.simulation, 1))
-        return {'home_win': round(home_win,2), 'draw': round(draw,2), 'guest_win': round(guest_win,2)}
+        return {'home_win': round(home_win, 2), 'draw': round(draw, 2), 'guest_win': round(guest_win, 2)}
 
     def predict_score(self):
         """
@@ -248,8 +257,8 @@ class PoissonModel(Models):
         # argmax gives back the 1 dim. index from maximum in matrix
         # index mod rows = x + (remainer)y
         home_points, guest_points = divmod(index, self.MAX_GOALS + 1)
-        return {1 : {'home_points': int(home_points), 'guest_points': int(guest_points),
-                'probability': round(self.simulation[home_points, guest_points],2)}}
+        return {1: {'home_points': int(home_points), 'guest_points': int(guest_points),
+                    'probability': round(self.simulation[home_points, guest_points], 2)}}
 
     def predict(self, home_id, guest_id):
         """
@@ -319,6 +328,9 @@ class LogisticRegModel(Models):
         home_dummies = self.team_encoding_.transform(home_team_name.reshape(-1, 1))
         away_dummies = self.team_encoding_.transform(away_team_name.reshape(-1, 1))
 
+        print(home_dummies)
+        print(away_dummies)
+
         X = np.concatenate([home_dummies, away_dummies], 1)
         y = np.sign(home_score - away_score)
 
@@ -328,6 +340,8 @@ class LogisticRegModel(Models):
         )
         model.fit(X, y)
         self.model_ = model
+
+        print(model.coef_)
 
     def check_teams(self, home_team_name, away_team_name):
         """Check if team are encoded."""
@@ -376,6 +390,7 @@ class LogisticRegModel(Models):
                 'score': -1
                 }
 
+
 # %%
 # for testing inside the script
 if __name__ == '__main__':
@@ -387,22 +402,20 @@ if __name__ == '__main__':
     # print(algo_trivial)
 
     # MOSTWINS TESTING
-    #crwlr = crawler.Crawler()
-    #data = crwlr.get_data_for_algo([1], [2020, 2019, 2018, 2017, 2016, 2015], 2, 33, 0, 0)
-    #model = MostWins()
+    # crwlr = crawler.Crawler()
+    # data = crwlr.get_data_for_algo([1], [2020, 2019, 2018, 2017, 2016, 2015], 2, 33, 0, 0)
+    # model = MostWins()
 
+    # model = PoissonModel()
+    # model.set_data(data)
 
-    #model = PoissonModel()
-    #model.set_data(data)
-
-
-    #model.start_training()
+    # model.start_training()
     # print(data.head(5))
     # data_2_teams = data.loc[(data['team_home_id'] == '16')]
     #                                 | (data['team_home_id'] == team2) & (data['team_guest_id'] == team1)]
     # print(data[(data['team_home_id'] == '16') & (data['team_guest_id'] == '112')].head(5))
     # print(data[['points_home', 'points_guest']].subtract(axis=1))
-    #print(model.predict(16, 1635))
+    # print(model.predict(16, 1635))
 
     # POISSON TESTING
     # crwlr = crawler.Crawler()
