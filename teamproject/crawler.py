@@ -43,8 +43,8 @@ class Crawler(object):
     API_NEXTMATCHDAY_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team1.TeamName', 'Team2.TeamId', 'Team2.TeamName', 'Location.LocationStadium']
     UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_home_name', 'team_guest_id', 'team_guest_name', 'location_arena']
     
-    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team2.TeamId', 'Location']
-    UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
+    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team1.TeamName', 'Team2.TeamId', 'Team2.TeamName']
+    UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_home_name', 'team_guest_id', 'team_guest_name']
     
 
     API_RESULT_CONTENT_COLUMNS =        ['ResultID', 'PointsTeam1', 'PointsTeam2', 'ResultOrderID', 'MatchID']
@@ -159,10 +159,10 @@ class Crawler(object):
             raise Exception
         match = pd.json_normalize(response.json())
         # extract necessary data
-        
         if (match['MatchID'] == self.NO_MATCH).bool():
             match['Team1.TeamId'] = 0
             match['Team2.TeamId'] = 0
+        
         match = match[self.API_NEXTMATCH_CONTENT_COLUMNS]
         match.columns = [self.UNIFORM_NEXTMATCH_CONTENT_COLUMNS]
         return match
@@ -439,14 +439,29 @@ class Crawler(object):
         """
         league = self.get_league_of_team(team_id)
 
-        print('LEAGUE OF ID: ' + str(team_id) + ' is ' + str(league))
-
         league_id = self.bl_leagues_ids[league]
         match = self.get_next_match_from_API(league_id, team_id)
-        dict = {'team_home_id' : int(match.iloc[0]['team_home_id']),
-                'team_guest_id' : int(match.iloc[0]['team_guest_id'])}
+        # dict = {'team_home_id' : int(match.iloc[0]['team_home_id']),
+        #         'team_guest_id' : int(match.iloc[0]['team_guest_id'])}
         if (match['match_id'] == self.NO_MATCH).bool():
             return 0
+        dict = {'team_home_id': 0, 'team_home_name': 0, 'team_guest_id': 0, 'team_guest_name': 0,
+            'is_finished': 0, 'points_home': 0, 'points_guest': 0,
+            'date': 0, 'time': 0, 'location': 'Unbekannt'}
+
+        dict['team_home_id'] = int(match.loc[0, 'team_home_id'].item())
+        dict['team_home_name'] = match.loc[0, 'team_home_name'].item()
+        dict['team_guest_id'] = int(match.loc[0, 'team_guest_id'].item())
+        dict['team_guest_name'] = match.loc[0, 'team_guest_name'].item()
+
+        utc_string = match.loc[0, 'match_date_time_utc'].item()
+        
+        date, time = self.split_utc(utc_string)
+        dict['date'] = date
+        dict['time'] = time
+
+        #dict['location'] = match.loc[0, 'location_arena'].item()
+        
         return dict
 
     # Function for Data grabbing for Model
@@ -500,7 +515,7 @@ if __name__ == '__main__':
     #print(dict[1])
     # 199, 115
     match = crawler.get_next_opponent(16)
-    print(type(match['team_home_id']))
+    print(match)
 
     #data = crawler.get_next_opponent(16)
     #print(data)
