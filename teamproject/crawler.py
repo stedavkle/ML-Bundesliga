@@ -221,17 +221,17 @@ class Crawler(object):
                     'is_finished': 0, 'points_home': 0, 'points_guest': 0,
                     'date': 0, 'time': 0, 'location': 0}
 
-                match['team_home_id'] = matches.loc[index, 'team_home_id'].item()
+                match['team_home_id'] = int(matches.loc[index, 'team_home_id'].item())
                 match['team_home_name'] = matches.loc[index, 'team_home_name'].item()
-                match['team_guest_id'] = matches.loc[index, 'team_guest_id'].item()
-                match['team_guest_name'] = matches.loc[index, 'team_home_name'].item()
+                match['team_guest_id'] = int(matches.loc[index, 'team_guest_id'].item())
+                match['team_guest_name'] = matches.loc[index, 'team_guest_name'].item()
 
                 if matches.loc[index, 'is_finished'].item():
                     result = results[(results['match_id'] == matches.loc[index, 'match_id'].item())]
                     endresult = result[result['result_type_id'] == self.END_RESULT]
                     match['is_finished'] = 1
-                    match['points_home'] = endresult.iloc[0]['points_home'].item()
-                    match['points_guest'] = endresult.iloc[0]['points_guest'].item()
+                    match['points_home'] = int(endresult.iloc[0]['points_home'].item())
+                    match['points_guest'] = int(endresult.iloc[0]['points_guest'].item())
 
                 utc_string = matches.loc[index, 'match_date_time_utc'].item()
                 
