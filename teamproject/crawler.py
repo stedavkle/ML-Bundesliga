@@ -43,7 +43,7 @@ class Crawler(object):
     API_NEXTMATCHDAY_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team1.TeamName', 'Team2.TeamId', 'Team2.TeamName', 'Location.LocationStadium']
     UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_home_name', 'team_guest_id', 'team_guest_name', 'location_arena']
     
-    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1', 'Team2', 'Location']
+    API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team2.TeamId', 'Location']
     UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
     
 
@@ -69,8 +69,8 @@ class Crawler(object):
         #self.scores = pd.DataFrame()
 
         self.available_leagues = [1,2,3]
-        self.bl_leagues_ids = {1 : 4442, 2 : 4443, 3 : 4444}
-        if(datetime.datetime.now().month >= 8):
+        self.bl_leagues_ids = {1 : 4500, 2 : 4506, 3 : 4507}
+        if(datetime.datetime.now().month >= 7):
             self.current_season = datetime.datetime.now().year
         else:
             self.current_season = datetime.datetime.now().year-1
@@ -159,6 +159,10 @@ class Crawler(object):
             raise Exception
         match = pd.json_normalize(response.json())
         # extract necessary data
+        
+        if (match['MatchID'] == self.NO_MATCH).bool():
+            match['Team1.TeamId'] = 0
+            match['Team2.TeamId'] = 0
         match = match[self.API_NEXTMATCH_CONTENT_COLUMNS]
         match.columns = [self.UNIFORM_NEXTMATCH_CONTENT_COLUMNS]
         return match
@@ -222,9 +226,9 @@ class Crawler(object):
                     'date': 0, 'time': 0, 'location': 0}
 
                 match['team_home_id'] = matches.loc[index, 'team_home_id'].item()
-                match['team_home_name'] = matches.loc[index, 'team_home_name']
+                match['team_home_name'] = matches.loc[index, 'team_home_name'].item()
                 match['team_guest_id'] = matches.loc[index, 'team_guest_id'].item()
-                match['team_guest_name'] = matches.loc[index, 'team_home_name']
+                match['team_guest_name'] = matches.loc[index, 'team_home_name'].item()
 
                 if matches.loc[index, 'is_finished'].item():
                     result = results[(results['match_id'] == matches.loc[index, 'match_id'].item())]
@@ -434,6 +438,9 @@ class Crawler(object):
         :returns: 0 if no upcoming match otherwise dict containing ids of teams.
         """
         league = self.get_league_of_team(team_id)
+
+        print('LEAGUE OF ID: ' + str(team_id) + ' is ' + str(league))
+
         league_id = self.bl_leagues_ids[league]
         match = self.get_next_match_from_API(league_id, team_id)
         dict = {'team_home_id' : match.iloc[0]['team_home_id'],
@@ -487,10 +494,13 @@ if __name__ == '__main__':
     #matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
     #crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
     dict = crawler.get_next_matchday()
-    print(type(dict))
-    print(dict[2][59465])
-    #match = crawler.get_next_opponent(16)
-    #print(match)
+    #print(dict[2])
+    #for key in dict[1].keys():
+    #    print(type(key))
+    #print(dict[1])
+    # 199, 115
+    match = crawler.get_next_opponent(115)
+    print(match)
 
     #data = crawler.get_next_opponent(16)
     #print(data)
