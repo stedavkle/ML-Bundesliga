@@ -40,8 +40,8 @@ class Crawler(object):
     API_MATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']
     UNIFORM_MATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'matchday', 'team_home_id', 'team_guest_id']
     
-    API_NEXTMATCHDAY_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team2.TeamId', 'Location.LocationStadium']
-    UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
+    API_NEXTMATCHDAY_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1.TeamId', 'Team1.TeamName', 'Team2.TeamId', 'Team2.TeamName', 'Location.LocationStadium']
+    UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_home_name', 'team_guest_id', 'team_guest_name', 'location_arena']
     
     API_NEXTMATCH_CONTENT_COLUMNS =     ['MatchID', 'MatchDateTimeUTC', 'MatchIsFinished', 'Team1', 'Team2', 'Location']
     UNIFORM_NEXTMATCH_CONTENT_COLUMNS = ['match_id', 'match_date_time_utc', 'is_finished', 'team_home_id', 'team_guest_id', 'location_arena']
@@ -182,14 +182,16 @@ class Crawler(object):
         if response.status_code != 200:
             raise Exception
         matches = pd.json_normalize(response.json())
+        
         # extract necessary data
         if not('Location.LocationStadium' in matches.columns):
             matches['Location.LocationStadium'] = 'Unbekannt'
         matches = matches[self.API_NEXTMATCHDAY_CONTENT_COLUMNS]
-        matches.columns = self.UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS
-        matches['location_arena'] = matches['location_arena'].fillna('unbekannt')
-        results = pd.json_normalize(response.json(), record_path='MatchResults', meta=self.API_META_DATA)[self.API_RESULT_CONTENT_COLUMNS]
-        results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
+        matches.columns = [self.UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS]
+        results = pd.json_normalize(response.json(), record_path='MatchResults', meta=self.API_META_DATA)
+        if matches['is_finished'].any().item():
+            results = results[self.API_RESULT_CONTENT_COLUMNS]
+            results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
         return matches, results
 
     def get_league_of_team(self, team_id):
@@ -211,27 +213,27 @@ class Crawler(object):
     def get_next_matchday(self):
         all_matches_of_the_day = {1 : {}, 2 : {}, 3 : {}}
         # TODO: dont use teamdicts or skip downloading icons
-        id_to_team, team_to_id = self.get_team_dicts(self.available_leagues, [self.current_season])
+        id_to_team, team_to_id = self.get_team_dicts(self.available_leagues, [2021])
         for league in self.available_leagues:
             matches, results = self.get_next_matchday_from_API(league)
-            endresults = results[results['result_type_id'] == self.END_RESULT]
             for index in matches.index:
                 match = {'team_home_id': 0, 'team_home_name': 0, 'team_guest_id': 0, 'team_guest_name': 0,
                     'is_finished': 0, 'points_home': 0, 'points_guest': 0,
                     'date': 0, 'time': 0, 'location': 0}
-                result = endresults[endresults['match_id'] == matches.loc[index, 'match_id']]
 
                 match['team_home_id'] = matches.loc[index, 'team_home_id'].item()
-                match['team_home_name'] = id_to_team[match['team_home_id']]
+                match['team_home_name'] = matches.loc[index, 'team_home_name']
                 match['team_guest_id'] = matches.loc[index, 'team_guest_id'].item()
-                match['team_guest_name'] = id_to_team[match['team_guest_id']]
+                match['team_guest_name'] = matches.loc[index, 'team_home_name']
 
-                if matches.loc[index, 'is_finished'] == 1:
+                if matches.loc[index, 'is_finished'].item():
+                    result = results[(results['match_id'] == matches.loc[index, 'match_id'].item())]
+                    endresult = result[result['result_type_id'] == self.END_RESULT]
                     match['is_finished'] = 1
-                    match['points_home'] = result.iloc[0]['points_home'].item()
-                    match['points_guest'] = result.iloc[0]['points_guest'].item()
+                    match['points_home'] = endresult.iloc[0]['points_home'].item()
+                    match['points_guest'] = endresult.iloc[0]['points_guest'].item()
 
-                utc_string = matches.loc[index, 'match_date_time_utc']
+                utc_string = matches.loc[index, 'match_date_time_utc'].item()
                 
                 date, time = self.split_utc(utc_string)
                 match['date'] = date
@@ -239,7 +241,7 @@ class Crawler(object):
 
                 match['location'] = matches.loc[index, 'location_arena']
 
-                all_matches_of_the_day[league][int(matches.loc[index, 'match_id'])] = match
+                all_matches_of_the_day[league][matches.loc[index, 'match_id'].item()] = match
         return all_matches_of_the_day
 
     def get_teams(self, leagues, seasons, return_bool):
@@ -478,15 +480,17 @@ if __name__ == '__main__':
     #                                                         day_start, day_end,
     #                                                         team_home_id, team_guest_id)
     leagues = [1,2,3]
-    seasons = [2020]
+    seasons = [2021]
     
+    id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
 
     #matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
     #crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
     dict = crawler.get_next_matchday()
     print(type(dict))
-    match = crawler.get_next_opponent(16)
-    print(match)
+    print(dict[2][59465])
+    #match = crawler.get_next_opponent(16)
+    #print(match)
 
     #data = crawler.get_next_opponent(16)
     #print(data)
@@ -500,6 +504,5 @@ if __name__ == '__main__':
     # matchday = pd.json_normalize(response.json())#[['MatchID', 'MatchDateTimeUTC', 'Group.GroupOrderID', 'Team1.TeamId', 'Team2.TeamId']]
     # print(matchday.head(5))
 
-    #id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
-    #print(team_to_id["1. FC Köln"])
+    
 # %%
