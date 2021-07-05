@@ -222,9 +222,9 @@ class Crawler(object):
                     'date': 0, 'time': 0, 'location': 0}
 
                 match['team_home_id'] = matches.loc[index, 'team_home_id'].item()
-                match['team_home_name'] = matches.loc[index, 'team_home_name']
+                match['team_home_name'] = matches.loc[index, 'team_home_name'].item()
                 match['team_guest_id'] = matches.loc[index, 'team_guest_id'].item()
-                match['team_guest_name'] = matches.loc[index, 'team_home_name']
+                match['team_guest_name'] = matches.loc[index, 'team_home_name'].item()
 
                 if matches.loc[index, 'is_finished'].item():
                     result = results[(results['match_id'] == matches.loc[index, 'match_id'].item())]
@@ -239,9 +239,9 @@ class Crawler(object):
                 match['date'] = date
                 match['time'] = time
 
-                match['location'] = matches.loc[index, 'location_arena']
+                match['location'] = matches.loc[index, 'location_arena'].item()
 
-                all_matches_of_the_day[league][matches.loc[index, 'match_id'].item()] = match
+                all_matches_of_the_day[league][int(matches.loc[index, 'match_id'].item())] = match
         return all_matches_of_the_day
 
     def get_teams(self, leagues, seasons, return_bool):
