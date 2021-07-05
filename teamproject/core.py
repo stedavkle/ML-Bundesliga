@@ -119,6 +119,8 @@ def get_next_matchday_from_parameters(parameter):
 
     matchday = crawler_instance.get_next_matchday()
 
+    print(matchday)
+
     return matchday
 
 
@@ -155,8 +157,22 @@ def get_next_opponent(id):
 
     crawler_instance = Core.crawler_instance
     match = crawler_instance.get_next_opponent(int(id))
+    opponent_name = match['team_home_name']
+    opponent_id = match['team_home_id']
 
-    return match
+    if opponent_id == id:
+        opponent_name = match['team_guest_name']
+        opponent_id = match['team_guest_id']
+
+    next_opponent = {
+        'opponent_id': opponent_id,
+        'opponent_name': opponent_name,
+        'date': match['date'],
+        'time': match['time'],
+        'location': match['location']
+    }
+
+    return next_opponent
 
 
 @eel.expose
@@ -168,8 +184,6 @@ def start_prediction(team1_id, team2_id):
     :return: dictionary with results
     """
     print("\nstart_prediction(): executed successfully")
-    print(team1_id)
-    print(team2_id)
 
     model_instance = Core.model_instance
     result = model_instance.predict(int(team1_id), int(team2_id))
