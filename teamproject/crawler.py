@@ -443,8 +443,8 @@ class Crawler(object):
 
         league_id = self.bl_leagues_ids[league]
         match = self.get_next_match_from_API(league_id, team_id)
-        dict = {'team_home_id' : match.iloc[0]['team_home_id'],
-                'team_guest_id' : match.iloc[0]['team_guest_id']}
+        dict = {'team_home_id' : int(match.iloc[0]['team_home_id']),
+                'team_guest_id' : int(match.iloc[0]['team_guest_id'])}
         if (match['match_id'] == self.NO_MATCH).bool():
             return 0
         return dict
@@ -499,8 +499,8 @@ if __name__ == '__main__':
     #    print(type(key))
     #print(dict[1])
     # 199, 115
-    match = crawler.get_next_opponent(115)
-    print(match)
+    match = crawler.get_next_opponent(16)
+    print(type(match['team_home_id']))
 
     #data = crawler.get_next_opponent(16)
     #print(data)
