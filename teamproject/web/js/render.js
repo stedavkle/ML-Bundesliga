@@ -256,6 +256,7 @@ function result_stage_switcher_render(result){
  */
 function result_screen_render(){
     result_stage_switcher_designer();
+    document.body.style.overflowY = 'hidden';
     var result = get_session_item('result');
     var team_list = get_session_item('team_list');
 

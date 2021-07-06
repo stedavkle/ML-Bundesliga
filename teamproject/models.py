@@ -157,16 +157,16 @@ class MostWins(Models):
 
         if total_matches == 0:
             return {
-                    'outcome': -1,
-                    'score': -1
-                    }
+                'outcome': -1,
+                'score': -1
+            }
         else:
             return {
                 'outcome': {
-                                'home_win': round((outcome[team1] / total_matches * 100), 2),
-                                'draw': round((outcome['draw'] / total_matches * 100), 2),
-                                'guest_win': round((outcome[team2] / total_matches * 100), 2)
-                            },
+                    'home_win': round((outcome[team1] / total_matches * 100), 2),
+                    'draw': round((outcome['draw'] / total_matches * 100), 2),
+                    'guest_win': round((outcome[team2] / total_matches * 100), 2)
+                },
                 'score': -1
             }
 
@@ -345,12 +345,8 @@ class LogisticRegModel(Models):
 
     def check_teams(self, home_team_name, away_team_name):
         """Check if team are encoded."""
-        assert (
-                home_team_name in self.team_encoding_.categories_[0]
-        ), f"{home_team_name} is recognized. It was not in the training data."
-        assert (
-                away_team_name in self.team_encoding_.categories_[0]
-        ), f"{away_team_name} is recognized. It was not in the training data."
+        if not home_team_name in self.team_encoding_.categories_[0]: return -1
+        if not away_team_name in self.team_encoding_.categories_[0]: return -1
 
     def predict(self, home_team_name, away_team_name):
         """
@@ -372,23 +368,28 @@ class LogisticRegModel(Models):
         home_team_name = str(home_team_name)
         away_team_name = str(away_team_name)
         check_is_fitted(self.model_)
-        self.check_teams(home_team_name, away_team_name)
-        home_team_name = np.array(home_team_name)
-        away_team_name = np.array(away_team_name)
-        home_dummies = self.team_encoding_.transform(home_team_name.reshape(-1, 1))
-        away_dummies = self.team_encoding_.transform(away_team_name.reshape(-1, 1))
-        X = np.concatenate([home_dummies, away_dummies], 1)
-
-        outcome = self.model_.predict_proba(X)[0]
-        guest_win = outcome[0]
-        draw = outcome[1]
-        home_win = outcome[2]
-
-        return {'outcome': {'home_win': round(home_win, 2),
-                            'draw': round(draw, 2),
-                            'guest_win': round(guest_win, 2)},
+        if self.check_teams(home_team_name, away_team_name) == -1:
+            return {
+                'outcome': -1,
                 'score': -1
-                }
+            }
+        else:
+            home_team_name = np.array(home_team_name)
+            away_team_name = np.array(away_team_name)
+            home_dummies = self.team_encoding_.transform(home_team_name.reshape(-1, 1))
+            away_dummies = self.team_encoding_.transform(away_team_name.reshape(-1, 1))
+            X = np.concatenate([home_dummies, away_dummies], 1)
+
+            outcome = self.model_.predict_proba(X)[0]
+            guest_win = outcome[0]
+            draw = outcome[1]
+            home_win = outcome[2]
+
+            return {'outcome': {'home_win': round(home_win, 2),
+                                'draw': round(draw, 2),
+                                'guest_win': round(guest_win, 2)},
+                    'score': -1
+                    }
 
 
 # %%
