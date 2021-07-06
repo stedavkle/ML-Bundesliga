@@ -163,9 +163,9 @@ class MostWins(Models):
         else:
             return {
                 'outcome': {
-                    'home_win': round((outcome[team1] / total_matches * 100), 2),
-                    'draw': round((outcome['draw'] / total_matches * 100), 2),
-                    'guest_win': round((outcome[team2] / total_matches * 100), 2)
+                    'home_win': round((outcome[team1] / total_matches), 2),
+                    'draw': round((outcome['draw'] / total_matches), 2),
+                    'guest_win': round((outcome[team2] / total_matches), 2)
                 },
                 'score': -1
             }
