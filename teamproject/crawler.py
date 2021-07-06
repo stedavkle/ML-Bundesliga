@@ -1,5 +1,5 @@
 # %%
-
+from abc import ABCMeta, abstractmethod, ABC
 import pandas as pd
 import json
 import requests
@@ -8,7 +8,53 @@ import urllib.request
 import numpy as np
 import datetime
 
-class Crawler(object):
+
+class Crawler:
+    __metaclass__ = ABCMeta
+
+    # non-abstract methods
+    def get_crawler(self):
+        crawlers = {
+            1: {
+                'crawler_id': 1,
+                'sport': 'Fußball Deutschland',
+                'description': 'Daten zu den drei höchsten Fußball-Ligen in Deutschland. Quelle: openligadb.de',
+                'run': BundesligaCrawler()
+            }
+        }
+        return crawlers
+
+    # abstract methods
+    @abstractmethod
+    def get_available_data_for_leagues(self):
+        pass
+
+    @abstractmethod
+    def get_matches_from_leagues_and_seasons_from_API(self):
+        pass
+
+    @abstractmethod
+    def get_next_matchday(self):
+        pass
+
+    @abstractmethod
+    def get_data_for_algo(self):
+        pass
+
+    @abstractmethod
+    def get_team_dicts(self):
+        pass
+
+    @abstractmethod
+    def get_team_icons_from_wiki(self):
+        pass
+
+    @abstractmethod
+    def get_next_opponent(self):
+        pass
+
+
+class BundesligaCrawler(Crawler):
     # PATHs for uniform Data
     UNIFORM_TEAMS_DB_PATH = r'./data/bl{}_{}_teams_unif.csv'
     UNIFORM_SEASON_MATCHES_DB_PATH = r'./data/bl{}_{}_matches_unif.csv'

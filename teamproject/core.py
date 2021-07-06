@@ -38,6 +38,18 @@ class Core:
 
 
 @eel.expose
+def get_sport_selection():
+    """
+    calls crawler.py for available models
+    :return: dictionary of available models
+    """
+    print("get_sport_selection(): executed successfully")
+    crawler_instance = crawler.Crawler()
+    Core.sport = crawler_instance.get_crawler()
+    return Core.sport
+
+
+@eel.expose
 def get_crawler_data(sport):
     """
     calls crawler for data
@@ -46,18 +58,14 @@ def get_crawler_data(sport):
     """
     print("get_crawler_data(): executed successfully")
     sport = int(sport)
-    Core.sport = sport
 
-    # TODO: rewrite crawler to abstract class, so sport selection also can be set here (- in a later version -)
-    if sport == 1:
-        Core.crawler_instance = crawler.Crawler()
+    selected_sport_data = Core.sport[sport]
+    selected_crawler = selected_sport_data['run']
+    Core.crawler_instance = selected_crawler
 
-        available_data = Core.crawler_instance.get_available_data_for_leagues()
+    available_data = Core.crawler_instance.get_available_data_for_leagues()
 
-        return available_data
-    else:
-        print("get_crawler_data(): no sport selected")
-        return None
+    return available_data
 
 
 @eel.expose

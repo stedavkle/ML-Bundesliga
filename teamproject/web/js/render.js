@@ -5,7 +5,7 @@
  * creates layout of sport selection page
  * creates dropdown based on global sports content
  */
-function sport_selection_render(){
+function sport_selection_render(sports){
     sport_selection_designer();
     set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"create_session()\">Bestätigen</button>");
     var html_str = "<h3>Willkommen!</h3>" +
@@ -13,10 +13,10 @@ function sport_selection_render(){
     "<select class=\'form-control\' id=\'sport_selection\' onchange=\"display(\'right_btn\')\">" +
     "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
 
-    var sports = new Sports();
+    //var sports = new Sports();
 
-    for (var key in sports.sports){
-        html_str += "<option value=" + key + ">" + sports.sports[key] + "</option>";
+    for (var key in sports){
+        html_str += "<option value=" + sports[key].crawler_id + ">" + sports[key].sport + "</option>";
     }
     html_str += "</select>";
 

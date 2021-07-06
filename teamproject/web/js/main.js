@@ -7,7 +7,7 @@
  */
 function on_page_load(){
     if(get_session_item('stage') == null){
-        sport_selection_render();
+        eel.get_sport_selection()(sport_selection_render);
     }
     else {
         build_stage();
