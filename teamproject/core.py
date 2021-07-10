@@ -11,14 +11,14 @@ import models
 class Core:
     """Build Instance of Core: initialize GUI framework"""
 
-    """Initialize Browser Presettings"""
+    """Initialize Browser Presetting"""
     my_options = {
         # TODO: may change settings, after chromium portable is implemented
     }
     """directory where web files located"""
     eel.init('web')
 
-    """set instace variables"""
+    """set instance variables"""
     sport = 0
     crawler_instance = ''
     model = 0
@@ -27,7 +27,7 @@ class Core:
     seasons = []
     first_matchday = 0
     last_matchday = 0
-    points = 0
+    time = False
 
     def __init__(self):
         eel.start('index.html', port=0, size=(1440, 900))  # landing page of gui and window size
@@ -121,7 +121,8 @@ def get_next_matchday_from_parameters(parameter):
     Core.seasons = [int(i) for i in parameter['seasons']]
     Core.first_matchday = int(parameter['first_matchday'])
     Core.last_matchday = int(parameter['last_matchday'])
-    Core.points = int(parameter['points'])
+    if int(parameter['time']) == 1:
+        Core.time = True
 
     crawler_instance = Core.crawler_instance
 
@@ -147,7 +148,7 @@ def start_training_and_get_teams():
 
     model_instance = Core.model_instance
     model_instance.set_data(training_data)
-    model_instance.start_training()
+    model_instance.start_training(Core.time)
 
     id_to_team, team_to_id = crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
     crawler_instance.get_team_icons_from_wiki()

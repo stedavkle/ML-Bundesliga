@@ -408,14 +408,14 @@ function store_selected_parameter(){
       spinner_button();
       if (document.getElementById('points_checkbox').checked){
         points_checked = 1;
-      };
+      }
 
       var selected_parameters = {
         'leagues': selected_leagues,
         'seasons': selected_seasons,
         'first_matchday': first_matchday,
         'last_matchday': last_matchday,
-        'points': points_checked
+        'time': points_checked
       };
 
       set_session_item('final_leagues', selected_leagues);

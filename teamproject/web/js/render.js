@@ -146,16 +146,16 @@ function training_data_render(parameter){
     var html_str_seasons = "<h5>Saisons:</h5>" + create_select_of_selected('seasons');
     var html_str_matchdays_first = "<p>ab Spieltag:</p>" + create_matchday_selection('first');
     var html_str_matchdays_last = "<p>bis einschließlich Spieltag:</p>" + create_matchday_selection('last');
-    var html_str_points = "<div class=\'form-check\'>" +
-        "<input type=\'checkbox\' class=\'form-check-input\' id=\'points_checkbox\'>" +
-        "<label class=\'form-check-label\'>Tore berücksichtigen</label></div>";
+    var html_str_time = "<div class=\'form-check\'>" +
+        "<input type=\'checkbox\' class=\'form-check-input\' id=\'points_checkbox\' checked>" +
+        "<label class=\'form-check-label\'>ältere Spiele schwächer gewichten (empfohlen)</label></div>";
 
     set_innerHTML("1-col-1", html_str_caption);
     set_innerHTML("2-col-1", html_str_leagues);
     set_innerHTML("2-col-2", html_str_seasons);
     set_innerHTML("3-col-1", html_str_matchdays_first);
     set_innerHTML("3-col-2", html_str_matchdays_last);
-    set_innerHTML("3-col-3", html_str_points);
+    set_innerHTML("3-col-3", html_str_time);
 
     // display parameter, if model needs it
     for (var key in parameter){
@@ -172,7 +172,7 @@ function training_data_render(parameter){
                     display('3-col-1');
                     display('3-col-2');
                     break;
-                case 'points':
+                case 'time':
                     display('3-col-3');
                     break;
                 default:

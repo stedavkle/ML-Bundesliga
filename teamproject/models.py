@@ -15,6 +15,7 @@ import statsmodels.formula.api as smf
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.utils.validation import check_is_fitted
+from scipy.optimize import minimize
 
 
 # TODO: Hier fängt abstract an
@@ -24,7 +25,7 @@ class Models:
     MATCHES_INDEX = 0
     RESULTS_INDEX = 1
     MAX_GOALS = 10
-    MATCH_CONTENT = ['match_id', 'team_home_id', 'team_guest_id']
+    MATCH_CONTENT = ['match_id', 'team_home_id', 'team_guest_id', 'time_diff']
     RESULT_CONTENT = ['match_id', 'points_home', 'points_guest']
     TEAM_ID_COLUMNS = ['team_home_id', 'team_guest_id']
     HOME_TEAM_WITH_GOALS = ['team_home_id', 'team_guest_id', 'points_home']
@@ -49,6 +50,13 @@ class Models:
                 'model': 'Logistic Regression Model',
                 'description': 'Berechnet mithilfe logistischer Regression den Ausgang eines Matches zwischen 2 Teams',
                 'run': LogisticRegModel()
+                },
+            4: {'model_id': 4,
+                'model': 'Dixon-Coles Model',
+                'description': 'Verbesserte Version des Poisson Model. Ergebnisse mit wenig Toren werden besser in die Berechnung miteinbezogen.'
+                               '\nÄltere Ergebnisse können optional anders gewichtet werden als neuere (empfohlen).\n'
+                               '\nHINWEIS! Das Training dieses Models dauert ungemein länger!',
+                'run': DixonColes()
                 }
         }
         return models
@@ -61,11 +69,15 @@ class Models:
         """
         matches = data[self.MATCHES_INDEX]
         results = data[self.RESULTS_INDEX]
-        # print(matches.head())
+        matches['match_date_time_utc'] = pd.to_datetime(matches['match_date_time_utc'], format='%Y-%m-%dT%H:%M:%SZ')
+        matches['time_diff'] = ""
+        matches['time_diff'] = (max(matches['match_date_time_utc']) - matches['match_date_time_utc']).dt.days
+
         ids_in_match = matches[self.MATCH_CONTENT]
         end_results = results[results['result_type_id'] == self.END_RESULT]
         data = ids_in_match.merge(end_results, on='match_id')
         data[self.TEAM_ID_COLUMNS] = data[self.TEAM_ID_COLUMNS].astype(str)
+
         return data
 
     # abstract methods
@@ -93,7 +105,7 @@ class MostWins(Models):
     parameter_dict = {'leagues': 1,
                       'seasons': 1,
                       'matchdays': 0,
-                      'points': 0}
+                      'time': 0}
 
     def __init__(self):
         """
@@ -118,7 +130,7 @@ class MostWins(Models):
 
         self.data = self.prepare_data(data)
 
-    def start_training(self):
+    def start_training(self, x=False):
         """No training necessary for this algorithm.
         SKIP"""
         return None
@@ -175,13 +187,16 @@ class PoissonModel(Models):
     parameter_dict = {'leagues': 1,
                       'seasons': 1,
                       'matchdays': 1,
-                      'points': 0
+                      'time': 0
                       }
 
     def __init__(self):
         """
         Classconstructor, initializes 3 internal empty dicts.
         """
+        self.data = ''
+        self.simulation = ''
+        self.model = ''
 
     def get_model_requirements(self):
         """
@@ -209,7 +224,7 @@ class PoissonModel(Models):
         goal_model_data['opponent'] = goal_model_data['opponent'].astype(str)
         self.data = goal_model_data
 
-    def start_training(self):
+    def start_training(self, x=False):
         """
         Creates a model and corrects the algorithms parameters using the given data.
         """
@@ -269,15 +284,167 @@ class PoissonModel(Models):
         self.simulate_match(home_id, guest_id)
         outcome = self.predict_outcome()
         result = self.predict_score()
-        dict = {'outcome': outcome, 'score': result}
-        return dict
+        return {'outcome': outcome, 'score': result}
+
+
+# TODO: DOCSTRINGS!!!
+class DixonColes(Models):
+    XI = 0.0018
+
+    parameter_dict = {'leagues': 1,
+                      'seasons': 1,
+                      'matchdays': 1,
+                      'time': 1}
+
+    def __init__(self):
+        self.model = ''
+        self.data = ''
+        self.simulation = ''
+        self.params = ''
+
+    def get_model_requirements(self):
+        """
+        Returns a dict with bools indicating what can be tuned for this Algorithm.
+        :returns: dict parameter_dict
+        """
+        return self.parameter_dict
+
+    def set_data(self, data):
+        self.data = self.prepare_data(data)
+
+    def start_training(self, xi=False):
+        if xi:
+            self.params = self.solve_parameters_decay(self.data, self.XI)
+        else:
+            self.params = self.solve_parameters(self.data)
+
+    def predict(self, home_id, guest_id):
+        prediction = self.dixon_coles_simulate_match(self.params, str(home_id), str(guest_id), max_goals=self.MAX_GOALS)
+        home_win = np.sum(np.tril(prediction, -1))
+        draw = np.sum(np.diag(prediction))
+        guest_win = np.sum(np.triu(prediction, 1))
+        result = {'home_win': round(home_win, 2), 'draw': round(draw, 2), 'guest_win': round(guest_win, 2)}
+        return {'outcome': result, 'score': -1}
+
+    # specific funcions
+    def rho_correction(self, x, y, lambda_x, mu_y, rho):
+        if x == 0 and y == 0:
+            return 1 - (lambda_x * mu_y * rho)
+        elif x == 0 and y == 1:
+            return 1 + (lambda_x * rho)
+        elif x == 1 and y == 0:
+            return 1 + (mu_y * rho)
+        elif x == 1 and y == 1:
+            return 1 - rho
+        else:
+            return 1.0
+
+    def solve_parameters(self, dataset, debug=False, init_vals=None, options={'disp': True, 'maxiter': 100},
+                         constraints=[{'type': 'eq', 'fun': lambda x: sum(x[:20]) - 20}], **kwargs):
+        """
+        calculates parameters for each team due training
+        return - parameter dictionary
+        """
+        teams = np.sort(dataset['team_home_id'].unique())
+        # check for no weirdness in dataset
+        away_teams = np.sort(dataset['team_guest_id'].unique())
+        if not np.array_equal(teams, away_teams):
+            raise ValueError("Something's not right")
+        n_teams = len(teams)
+        if init_vals is None:
+            # random initialisation of model parameters
+            init_vals = np.concatenate((np.random.uniform(0, 1, (n_teams)),  # attack strength
+                                        np.random.uniform(0, -1, (n_teams)),  # defence strength
+                                        np.array([0, 1.0])  # rho (score correction), gamma (home advantage)
+                                        ))
+
+        def dc_log_like(x, y, alpha_x, beta_x, alpha_y, beta_y, rho, gamma):
+            lambda_x, mu_y = np.exp(alpha_x + beta_y + gamma), np.exp(alpha_y + beta_x)
+            return (np.log(self.rho_correction(x, y, lambda_x, mu_y, rho)) +
+                    np.log(poisson.pmf(x, lambda_x)) + np.log(poisson.pmf(y, mu_y)))
+
+        def estimate_paramters(params):
+            score_coefs = dict(zip(teams, params[:n_teams]))
+            defend_coefs = dict(zip(teams, params[n_teams:(2 * n_teams)]))
+            rho, gamma = params[-2:]
+            log_like = [dc_log_like(row.points_home, row.points_guest, score_coefs[row.team_home_id],
+                                    defend_coefs[row.team_home_id],
+                                    score_coefs[row.team_guest_id], defend_coefs[row.team_guest_id], rho, gamma) for row
+                        in dataset.itertuples()]
+            return -sum(log_like)
+
+        opt_output = minimize(estimate_paramters, init_vals, options=options, constraints=constraints, **kwargs)
+        if debug:
+            # sort of hacky way to investigate the output of the optimisation process
+            return opt_output
+        else:
+            return dict(zip(["attack_" + team for team in teams] +
+                            ["defence_" + team for team in teams] +
+                            ['rho', 'home_adv'],
+                            opt_output.x))
+
+    def solve_parameters_decay(self, dataset, xi=0.001, debug=False, init_vals=None,
+                               options={'disp': True, 'maxiter': 100},
+                               constraints=[{'type': 'eq', 'fun': lambda x: sum(x[:20]) - 20}], **kwargs):
+        teams = np.sort(dataset['team_home_id'].unique())
+        # check for no weirdness in dataset
+        away_teams = np.sort(dataset['team_guest_id'].unique())
+        if not np.array_equal(teams, away_teams):
+            raise ValueError("something not right")
+        n_teams = len(teams)
+        if init_vals is None:
+            # random initialisation of model parameters
+            init_vals = np.concatenate((np.random.uniform(0, 1, (n_teams)),  # attack strength
+                                        np.random.uniform(0, -1, (n_teams)),  # defence strength
+                                        np.array([0, 1.0])  # rho (score correction), gamma (home advantage)
+                                        ))
+
+        def dc_log_like_decay(x, y, alpha_x, beta_x, alpha_y, beta_y, rho, gamma, t, xi=xi):
+            lambda_x, mu_y = np.exp(alpha_x + beta_y + gamma), np.exp(alpha_y + beta_x)
+            return np.exp(-xi * t) * (np.log(self.rho_correction(x, y, lambda_x, mu_y, rho)) +
+                                      np.log(poisson.pmf(x, lambda_x)) + np.log(poisson.pmf(y, mu_y)))
+
+        def estimate_paramters_decay(params):
+            score_coefs = dict(zip(teams, params[:n_teams]))
+            defend_coefs = dict(zip(teams, params[n_teams:(2 * n_teams)]))
+            rho, gamma = params[-2:]
+            log_like = [dc_log_like_decay(row.points_home, row.points_guest, score_coefs[row.team_home_id],
+                                          defend_coefs[row.team_home_id],
+                                          score_coefs[row.team_guest_id], defend_coefs[row.team_guest_id],
+                                          rho, gamma, row.time_diff, xi=xi) for row in dataset.itertuples()]
+            return -sum(log_like)
+
+        opt_output = minimize(estimate_paramters_decay, init_vals, options=options, constraints=constraints)
+        if debug:
+            # sort of hacky way to investigate the output of the optimisation process
+            return opt_output
+        else:
+            return dict(zip(["attack_" + team for team in teams] +
+                            ["defence_" + team for team in teams] +
+                            ['rho', 'home_adv'],
+                            opt_output.x))
+
+    def calc_means(self, param_dict, home_team, away_team):
+        return [
+            np.exp(param_dict['attack_' + home_team] + param_dict['defence_' + away_team] + param_dict['home_adv']),
+            np.exp(param_dict['defence_' + home_team] + param_dict['attack_' + away_team])]
+
+    def dixon_coles_simulate_match(self, params_dict, home_team, away_team, max_goals=10):
+        team_avgs = self.calc_means(params_dict, home_team, away_team)
+        team_pred = [[poisson.pmf(i, team_avg) for i in range(0, max_goals + 1)] for team_avg in team_avgs]
+        output_matrix = np.outer(np.array(team_pred[0]), np.array(team_pred[1]))
+        correction_matrix = np.array([[self.rho_correction(home_goals, away_goals, team_avgs[0],
+                                                           team_avgs[1], params_dict['rho']) for away_goals in range(2)]
+                                      for home_goals in range(2)])
+        output_matrix[:2, :2] = output_matrix[:2, :2] * correction_matrix
+        return output_matrix
 
 
 class LogisticRegModel(Models):
     parameter_dict = {'leagues': 1,
                       'seasons': 1,
                       'matchdays': 1,
-                      'points': 0
+                      'time': 0
                       }
 
     def __init__(self):
@@ -307,7 +474,7 @@ class LogisticRegModel(Models):
         self.home_scores = prepared_data['points_home'].tolist()
         self.away_scores = prepared_data['points_guest'].tolist()
 
-    def start_training(self):
+    def start_training(self, x=False):
         """
             Creates a model and corrects the algorithms parameters using the given data.
         """
@@ -395,48 +562,14 @@ class LogisticRegModel(Models):
 # %%
 # for testing inside the script
 if __name__ == '__main__':
-    # matches, match_results, match_goals = getMatchupHistoryFromAPI(16,87)
-    # algo = SumMostGoalsIsWinner(match_results)
-    # print(algo.predict_winner())
+    crawler = crawler.BundesligaCrawler()
+    dataset = crawler.get_data_for_algo([1], [2020, 2019, 2018], 1, 34, 0, 0)
 
-    # algo_trivial = Model_Handler(6, 16, 0, 0, 1)
-    # print(algo_trivial)
-
-    # MOSTWINS TESTING
-    # crwlr = crawler.Crawler()
-    # data = crwlr.get_data_for_algo([1], [2020, 2019, 2018, 2017, 2016, 2015], 2, 33, 0, 0)
-    # model = MostWins()
-
-    # model = PoissonModel()
-    # model.set_data(data)
-
-    # model.start_training()
-    # print(data.head(5))
-    # data_2_teams = data.loc[(data['team_home_id'] == '16')]
-    #                                 | (data['team_home_id'] == team2) & (data['team_guest_id'] == team1)]
-    # print(data[(data['team_home_id'] == '16') & (data['team_guest_id'] == '112')].head(5))
-    # print(data[['points_home', 'points_guest']].subtract(axis=1))
-    # print(model.predict(16, 1635))
-
-    # POISSON TESTING
-    # crwlr = crawler.Crawler()
-    # data = crwlr.get_data_for_algo([1], [2020], 1, 34, 0, 0)
-    # algo = PoissonModel()
-    # algo.set_data(data)
-    # algo.start_training()
-    # max_goals = 4
-    # algo.simulate_match(16, 1635)
-    # print(algo.predict(16, 87))
-
-    # REGRESSION Testing
-    crawler = crawler.Crawler()
-    dataset = crawler.get_data_for_algo([1], [2020, 2019, 2018], 2, 33, 0, 0)
-
-    model = LogisticRegModel()
+    model = DixonColes()
     model.set_data(dataset)
-    model.start_training()
+    model.start_training(True)
     outcome = model.predict(str(40), str(9))
 
-    print(outcome)
+    #print(outcome)
 
 # %%
