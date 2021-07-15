@@ -236,6 +236,7 @@ class BundesligaCrawler(Crawler):
         # extract necessary data
         if not('Location.LocationStadium' in matches.columns):
             matches['Location.LocationStadium'] = 'Unbekannt'
+        matches['Location.LocationStadium'] = matches['Location.LocationStadium'].fillna('Unbekannt')
         matches = matches[self.API_NEXTMATCHDAY_CONTENT_COLUMNS]
         matches.columns = [self.UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS]
         results = pd.json_normalize(response.json(), record_path='MatchResults', meta=self.API_META_DATA)
@@ -542,7 +543,7 @@ class BundesligaCrawler(Crawler):
 # %%
 if __name__ == '__main__':
     import time
-    crawler = Crawler()
+    crawler = BundesligaCrawler()
 
     # matches, results, scores = crawler.get_data_for_algo(leagues, seasons,
     #                                                         day_start, day_end,
@@ -555,13 +556,14 @@ if __name__ == '__main__':
     #matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
     #crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
     dict = crawler.get_next_matchday()
+    print(dict[2])
     #print(dict[2])
     #for key in dict[1].keys():
     #    print(type(key))
     #print(dict[1])
     # 199, 115
-    match = crawler.get_next_opponent(16)
-    print(match)
+    # match = crawler.get_next_opponent(16)
+    # print(match)
 
     #data = crawler.get_next_opponent(16)
     #print(data)
