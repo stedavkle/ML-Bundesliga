@@ -5,7 +5,7 @@ This module contains code for a prediction models.
 from abc import ABCMeta, abstractmethod, ABC
 
 from numpy.core.numeric import outer
-import crawler
+from teamproject import crawler
 from collections import Counter
 import pandas as pd
 import numpy as np

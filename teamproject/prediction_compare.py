@@ -2,8 +2,8 @@
 import matplotlib.pyplot as plt
 import numpy
 
-import crawler
-import models
+from teamproject import crawler
+from teamproject import models
 
 
 if __name__ == "__main__":

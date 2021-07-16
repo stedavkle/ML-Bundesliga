@@ -2,8 +2,8 @@
 web gui
 """
 import eel
-import crawler
-import models
+from teamproject import crawler
+from teamproject import models
 
 ''' --- CLASS DECLARATION --- '''
 
