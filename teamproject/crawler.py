@@ -31,7 +31,7 @@ class Crawler:
         pass
 
     @abstractmethod
-    def get_matches_from_leagues_and_seasons_from_API(self):
+    def get_matches_from_league_and_season_from_API(self):
         pass
 
     @abstractmethod
@@ -58,9 +58,9 @@ print(__file__)
 class BundesligaCrawler(Crawler):
     # PATHs for uniform Data
     cwd = os.getcwd()
-    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_teams_unif.csv')
-    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_matches_unif.csv')
-    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_results_unif.csv')
+    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'data\\bl{}_{}_teams_unif.csv')
+    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'data\\bl{}_{}_matches_unif.csv')
+    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'data\\bl{}_{}_results_unif.csv')
     # uniform_season_scores_db_path = r'./data/bl{}_{}_scores_unif.csv'
 
     # COLUMNNAMES for uniform Data
@@ -165,38 +165,36 @@ class BundesligaCrawler(Crawler):
         teams.to_csv(self.UNIFORM_TEAMS_DB_PATH.format(league, season), index=False)
         return teams
 
-    def get_matches_from_leagues_and_seasons_from_API(self, leagues, seasons):
+    def get_matches_from_league_and_season_from_API(self, league, season):
         """
         Gets and saves data of all matches played in given leagues/seasons from API to .csv.
         :param int[] leagues: array of league numbers (1,2,3)
         :param int[] seasons: array of seasons, format: [<YYYY>,..] -> see get_available_data_for_leagues()
         :returns: 2 pd.DataFrame (matches, match_results)
         """
-        for league in leagues:
-            for season in seasons:
-                response = requests.get(self.API_MATCHES_LEAGUE_SEASON_URL.format(league, season))
-                # TODO: proper errorcode
-                if response.status_code != 200:
-                    raise Exception
-                data_json = response.json()
+        response = requests.get(self.API_MATCHES_LEAGUE_SEASON_URL.format(league, season))
+        # TODO: proper errorcode
+        if response.status_code != 200:
+            raise Exception
+        data_json = response.json()
 
-                matches = pd.json_normalize(data_json)[self.API_MATCH_CONTENT_COLUMNS]
-                matches.columns = self.UNIFORM_MATCH_CONTENT_COLUMNS
+        matches = pd.json_normalize(data_json)[self.API_MATCH_CONTENT_COLUMNS]
+        matches.columns = self.UNIFORM_MATCH_CONTENT_COLUMNS
 
-                match_results = pd.json_normalize(data_json, record_path='MatchResults', meta=self.API_META_DATA)[
-                    self.API_RESULT_CONTENT_COLUMNS]
-                match_results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
-                # TODO: refactor magic numbers
-                if (league in [1, 2]) & (season in range(2015, 2020)) | (league == 3) & (season in range(2016, 2020)):
-                    match_results['result_type_id'] = match_results['result_type_id'].apply(lambda x: x % 2 + 1)
-                # # TODO: concatenate score_home and score_guest to a tuple (score_home, score_guest) in one column 'temp_score'
-                # # TODO: handle score_db not present
-                # match_scores = pd.json_normalize(data_json, record_path='Goals', meta=self.API_META_DATA)[self.api_score_content_columns]
-                # match_scores.columns = self.uniform_score_content_columns
-                # save datasets as csv
-                matches.to_csv(self.UNIFORM_SEASON_MATCHES_DB_PATH.format(league, season), index=False)
-                match_results.to_csv(self.UNIFORM_SEASON_RESULTS_DB_PATH.format(league, season), index=False)
-                # match_scores.to_csv(self.uniform_season_scores_db_path.format(league,season), index=False)
+        match_results = pd.json_normalize(data_json, record_path='MatchResults', meta=self.API_META_DATA)[
+            self.API_RESULT_CONTENT_COLUMNS]
+        match_results.columns = self.UNIFORM_RESULT_CONTENT_COLUMNS
+        # TODO: refactor magic numbers
+        if (league in [1, 2]) & (season in range(2015, 2020)) | (league == 3) & (season in range(2016, 2020)):
+            match_results['result_type_id'] = match_results['result_type_id'].apply(lambda x: x % 2 + 1)
+        # # TODO: concatenate score_home and score_guest to a tuple (score_home, score_guest) in one column 'temp_score'
+        # # TODO: handle score_db not present
+        # match_scores = pd.json_normalize(data_json, record_path='Goals', meta=self.API_META_DATA)[self.api_score_content_columns]
+        # match_scores.columns = self.uniform_score_content_columns
+        # save datasets as csv
+        matches.to_csv(self.UNIFORM_SEASON_MATCHES_DB_PATH.format(league, season), index=False)
+        match_results.to_csv(self.UNIFORM_SEASON_RESULTS_DB_PATH.format(league, season), index=False)
+        # match_scores.to_csv(self.uniform_season_scores_db_path.format(league,season), index=False)
         return matches, match_results  # , match_scores
 
     def get_next_match_from_API(self, league_id, team_id):
@@ -219,6 +217,7 @@ class BundesligaCrawler(Crawler):
             match['Team2.TeamId'] = 0
             match['Team1.TeamName'] = "unbekannt"
             match['Team2.TeamName'] = "unbekannt"
+            match['match_date_time_utc'] = 'unbekannt'
 
         # extract necessary data
         match = match[self.API_NEXTMATCH_CONTENT_COLUMNS]
@@ -377,7 +376,7 @@ class BundesligaCrawler(Crawler):
         # print(league, season)
         matches, results, LOADED = self.load_season(league, season)
         if not (LOADED):
-            matches, results = self.get_matches_from_leagues_and_seasons_from_API([league], [season])
+            matches, results = self.get_matches_from_league_and_season_from_API(league, season)
         # print('MATCHES SHAPE')
         # print(matches.shape)
         matches, results = self.cut_start_day(matches, results, day_start)
@@ -397,56 +396,6 @@ class BundesligaCrawler(Crawler):
         self.matches = matches
         self.results = results
         return matches, results
-
-    def create_dataset_from_leagues_and_seasons(self, leagues, seasons, day_start, day_end):
-        """
-        Extracts the desired matches and results from specified leagues/seasons and saves them internaly.
-        
-        :param int[] leagues: one or more from (1,2,3)
-        :param int[] seasons: array of seasons, format: [<YYYY>,..]
-        :param int day_start: starting day of first season
-        :param int day_end: end day of last season
-        :returns: 1 if function is done
-
-        -> see get_available_data_for_leagues()
-        """
-        dataset_matches = pd.DataFrame()
-        dataset_results = pd.DataFrame()
-        dataset_scores = pd.DataFrame()
-        is_first_season = True
-        # for all leagues in every year get matchdata
-        for season in seasons:
-            for league in leagues:
-                # format path strings
-                matches_path = self.UNIFORM_SEASON_MATCHES_DB_PATH.format(league, season)
-                results_path = self.UNIFORM_SEASON_RESULTS_DB_PATH.format(league, season)
-                # scores_path = self.uniform_season_scores_db_path.format(league,season)
-                # check if data is stored, if not get from API
-                # TODO: Try: Except: instead of if() else()
-                if (os.path.isfile(matches_path)) & (os.path.isfile(results_path)):  # & (os.path.isfile(scores_path)
-                    matches = pd.read_csv(matches_path)
-                    results = pd.read_csv(results_path)
-                    # scores = pd.read_csv(scores_path)
-                else:
-                    matches, results = self.get_matches_from_leagues_and_seasons_from_API([league], [season])
-                # check if we have to cut the first/last season to start/end day
-                if is_first_season & (day_start > 1):
-                    matches = matches.loc[matches['matchday'] >= day_start]
-                    results = results[results['match_id'].isin(matches['match_id'])]
-                    # scores = scores[scores['match_id'].isin(matches['match_id'])]
-                if season == seasons[-1]:  # & day_end < self.dict[league]['matchdays']:
-                    matches = matches.loc[matches['matchday'] <= day_end]
-                    results = results[results['match_id'].isin(matches['match_id'])]
-                    # scores = scores[scores['match_id'].isin(matches['match_id'])]
-                # concatenate data
-                dataset_matches = pd.concat([dataset_matches, matches])
-                dataset_results = pd.concat([dataset_results, results])
-                # dataset_scores = pd.concat([dataset_scores, scores])
-            is_first_season = False
-        self.matches = dataset_matches
-        self.results = dataset_results
-        # self.scores = dataset_scores
-        return 1
 
     #
     #   Functions for cutting and extracting data from big DB
@@ -557,26 +506,26 @@ class BundesligaCrawler(Crawler):
 if __name__ == '__main__':
     import time
 
-    crawler = Crawler()
+    crawler = BundesligaCrawler()
 
-    # matches, results, scores = crawler.get_data_for_algo(leagues, seasons,
-    #                                                         day_start, day_end,
-    #                                                         team_home_id, team_guest_id)
+    matches, results = crawler.get_data_for_algo([1,2,3], [2019,2020],1,34,0,0)
+    print(matches.head())
     leagues = [1, 2, 3]
     seasons = [2021]
 
-    id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
+    #id_to_team, team_to_id = crawler.get_team_dicts(leagues, seasons)
 
-    # matches, results = crawler.create_dataset_recursive_helper(leagues, seasons, 1, 34)
+
+
     # crawler.create_dataset_from_leagues_and_seasons(leagues, seasons, 1, 34)
-    dict = crawler.get_next_matchday()
+    # dict = crawler.get_next_matchday()
     # print(dict[2])
     # for key in dict[1].keys():
     #    print(type(key))
     # print(dict[1])
     # 199, 115
-    match = crawler.get_next_opponent(16)
-    print(match)
+    # match = crawler.get_next_opponent(16)
+    # print(match)
 
     # data = crawler.get_next_opponent(16)
     # print(data)
