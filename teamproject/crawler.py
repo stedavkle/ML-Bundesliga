@@ -250,6 +250,7 @@ class BundesligaCrawler(Crawler):
             matches['Location.LocationStadium'] = 'Unbekannt'
         matches = matches[self.API_NEXTMATCHDAY_CONTENT_COLUMNS]
         matches.columns = [self.UNIFORM_NEXTMATCHDAY_CONTENT_COLUMNS]
+        matches['location_arena'] = matches['location_arena'].fillna('Unbekannt')
         results = pd.json_normalize(response.json(), record_path='MatchResults', meta=self.API_META_DATA)
         if matches['is_finished'].any().item():
             results = results[self.API_RESULT_CONTENT_COLUMNS]
@@ -326,9 +327,11 @@ class BundesligaCrawler(Crawler):
                     new_teams = self.get_teams_from_API(league, season)
 
                 teams = pd.concat([teams, new_teams])
-                teams = teams.drop_duplicates(['team_id'])
+                teams = teams.drop_duplicates(['team_id']).drop_duplicates(['team_name'])
         if return_bool == 1:
             return teams
+            # TODO: Index should be reset but it causes a weird issue,
+            # where level_0 already exists
         self.teams = teams
 
     def load_season(self, league, season):
@@ -352,7 +355,7 @@ class BundesligaCrawler(Crawler):
         results = results[results['match_id'].isin(matches['match_id'])]
         return matches, results
 
-    def create_dataset_recursive_helper(self, leagues, seasons, day_start, day_end):
+    def create_dataset_recursive(self, leagues, seasons, day_start, day_end):
         """
         Extracts the desired matches and results from specified leagues/seasons and saves them internaly.
         
@@ -370,7 +373,7 @@ class BundesligaCrawler(Crawler):
         if len(seasons) == 0:
             leagues.pop(0)
             seasons = list(self.seasons_backup)
-            return self.create_dataset_recursive_helper(leagues, seasons, day_start, day_end)
+            return self.create_dataset_recursive(leagues, seasons, day_start, day_end)
         league = leagues[0]
         season = seasons.pop(0)
         # print(league, season)
@@ -385,7 +388,7 @@ class BundesligaCrawler(Crawler):
             None
             matches, results = self.cut_end_day(matches, results, day_end)
 
-        next_matches, next_results = self.create_dataset_recursive_helper(leagues, seasons, self.FIRST_DAY, day_end)
+        next_matches, next_results = self.create_dataset_recursive(leagues, seasons, self.FIRST_DAY, day_end)
         # print('MATCHES SIZE')
         # print(matches.shape)
         matches = pd.concat([matches, next_matches])
@@ -496,7 +499,7 @@ class BundesligaCrawler(Crawler):
         """
         # self.create_dataset_from_leagues_and_seasons(leagues, seasons, day_start, day_end)
         self.seasons_backup = list(seasons)
-        self.create_dataset_recursive_helper(list(leagues), list(seasons), day_start, day_end)
+        self.create_dataset_recursive(list(leagues), list(seasons), day_start, day_end)
         if team_home_id != 0:
             self.extract_matchup_history(team_home_id, team_guest_id)
         return [self.matches, self.results]  # , self.scores
