@@ -69,6 +69,13 @@ function build_stage(){
             // calls render function to display result
             result_screen_render();
             break;
+        case 8:
+            // TODO: Special Feature: predict whole matchday
+            alert("Stage 8 erreicht");
+            spinner_on();
+            var league = get_session_item('next_matchday_league');
+            eel.predict_next_matchday(league)(next_matchday_prediction_render)
+            break;
         default:
             window.alert("build_stage(): no case selected!")
     }

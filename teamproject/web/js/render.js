@@ -275,3 +275,8 @@ function result_screen_render(){
     display_outcome(outcome, home_name, guest_name);
     display_score(score, home_name, guest_name);
 }
+
+
+function next_matchday_prediction_render(outcome){
+    // TODO: Display prediction of all matches
+}

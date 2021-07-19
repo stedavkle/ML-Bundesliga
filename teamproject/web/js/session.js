@@ -31,6 +31,7 @@ function open_session(sport){
     set_session_item('result', {});
     set_session_item('next_matchday', {});
     set_session_item('training_complete', false);
+    set_session_item('next_matchday_league', 0);
 }
 
 /**

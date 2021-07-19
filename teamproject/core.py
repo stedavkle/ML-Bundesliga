@@ -205,3 +205,9 @@ def start_prediction(team1_id, team2_id):
     }
 
     return result_dict
+
+
+@eel.expose
+def predict_next_matchday(league):
+    # TODO!!!
+    return None
