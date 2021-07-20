@@ -58,9 +58,9 @@ print(__file__)
 class BundesligaCrawler(Crawler):
     # PATHs for uniform Data
     cwd = os.getcwd()
-    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'data\\bl{}_{}_teams_unif.csv')
-    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'data\\bl{}_{}_matches_unif.csv')
-    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'data\\bl{}_{}_results_unif.csv')
+    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_teams_unif.csv')
+    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_matches_unif.csv')
+    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_results_unif.csv')
     # uniform_season_scores_db_path = r'./data/bl{}_{}_scores_unif.csv'
 
     # COLUMNNAMES for uniform Data
