@@ -265,7 +265,7 @@ function next_matchday_table(league){
       "<th>Spielstand</th>" +
       "<th>Spielort</th>" +
       "<th>Anpfiff</th>" +
-      "<th><button class=\'btn btn-danger btn-sm\' onclick=\"set_session_item(\'stage\', 8), build_stage()\">Matchday vorhersagen</button></th>" +
+      "<th><button class=\'btn btn-danger btn-sm\' onclick=\"spinner_on(), eel.predict_next_matchday(" + league + ")(next_matchday_prediction_stage_switcher)\">Matchday vorhersagen</button></th>" +
       "</tr></thead><tbody>";
 
   var all_leagues_matchday = get_session_item('next_matchday');

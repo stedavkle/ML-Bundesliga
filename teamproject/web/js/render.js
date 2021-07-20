@@ -277,6 +277,15 @@ function result_screen_render(){
 }
 
 
-function next_matchday_prediction_render(outcome){
+function next_matchday_prediction_stage_switcher(outcome){
     // TODO: Display prediction of all matches
+
+    spinner_off();
+    set_session_item('stage', 8);
+    build_stage();
+}
+
+
+function next_matchday_prediction_render(){
+    // TODO: die verfickte kacke nochmal...
 }
