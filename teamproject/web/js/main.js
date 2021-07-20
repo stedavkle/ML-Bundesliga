@@ -69,6 +69,10 @@ function build_stage(){
             // calls render function to display result
             result_screen_render();
             break;
+        case 8:
+            // calls render function to display next matchday prediction
+            next_matchday_prediction_render();
+            break;
         default:
             window.alert("build_stage(): no case selected!")
     }

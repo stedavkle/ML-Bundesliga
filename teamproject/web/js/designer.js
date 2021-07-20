@@ -1,4 +1,9 @@
-// designer functions for pages
+/*  designer functions for pages
+    ----------------------------
+
+    main html is divided up to several <div> row- and column-containers.
+    visibility of each element is controlled for each stage from here
+ */
 
 function sport_selection_designer(){
   document.body.style.overflowY = 'hidden';
@@ -139,6 +144,29 @@ function result_stage_switcher_designer(){
   clear_alert();
 }
 
+
+function next_matchday_prediction_designer(){
+  display_none("2-row");
+  display_none("3-row");
+  display_none('5-row');
+
+  hide("back_btn");
+  hide('spinner_display');
+  display("1-col-1")
+  hide("2-col-1");
+  hide("2-col-2");
+  hide_and_reset("3-col-1");
+  hide_and_reset("3-col-2");
+  hide_and_reset("3-col-3");
+  hide("5-col-1");
+  hide("6-col-1");
+  display("left_btn");
+  display("right_btn");
+
+  clear_alert();
+}
+
+
 function clear_page(){
   display_block("2-row");
   display_block("3-row");
@@ -159,6 +187,8 @@ function clear_page(){
   clear_alert();
 }
 
+
+// fancy spinner display for longer waiting periodes
 function spinner_on(){
   display('spinner_display');
   hide('right_btn');
@@ -169,6 +199,14 @@ function spinner_off(){
   hide('spinner_display');
 }
 
+// fancy spinner button
+function spinner_button(){
+  var spinner = "<button class=\'btn btn-danger\' disabled>" +
+      "<span class=\'spinner-border spinner-border-sm\'></span>\tTraining</button>";
+  set_innerHTML('right_btn', spinner);
+}
+
+// adjust direction of columns
 function set_3_col_standard(){
   document.getElementById('3-col-1').style.maxWidth = '33.3%';
   document.getElementById('3-col-2').style.maxWidth = '33.3%';
@@ -176,6 +214,10 @@ function set_3_col_standard(){
 }
 
 
+/**
+ * displays alert banner under nav bar
+ * @param message - error message string
+ */
 function create_alert(message){
   //display_block('alert');
   display("alert");
@@ -189,8 +231,3 @@ function clear_alert(){
   hide_and_reset("alert");
 }
 
-function spinner_button(){
-  var spinner = "<button class=\'btn btn-danger\' disabled>" +
-      "<span class=\'spinner-border spinner-border-sm\'></span>\tTraining</button>";
-  set_innerHTML('right_btn', spinner);
-}

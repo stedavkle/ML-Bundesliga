@@ -253,14 +253,20 @@ function set_pagination_design(id){
 function next_matchday_table(league){
   //window.alert("next_matchday_table(): entered");
   set_pagination_design(league);
-  var table_str = "<h3>Nächster Spieltag in der " + league + ". Liga</h3>" +
+  // TODO: entscheiden, wo der Button hin soll (evtl. div wieder weg machen)
+  set_session_item('next_matchday_league', league);
+  var table_str = "<div class=\"d-flex justify-content-between\">" +
+      "<div><h3>Nächster Spieltag in der " + league + ". Liga</h3></div>" +
+      "<div><!--<button class=\'btn btn-danger\' onclick=\"set_session_item(\'stage\', 8), build_stage()\">Matchday vorhersagen</button>--></div>" +
+      "</div>" +
       "<table class=\'table table-hover\'><thead class=\'thead-dark\'><tr>" +
       "<th>Heim</th>" +
       "<th>Gast</th>" +
       "<th>Spielstand</th>" +
       "<th>Spielort</th>" +
       "<th>Anpfiff</th>" +
-      "<th></th></tr></thead><tbody>";
+      "<th><button id=\'predictable\' class=\'btn btn-danger btn-sm\' onclick=\"spinner_on(), eel.predict_next_matchday(" + league + ")(next_matchday_prediction_stage_switcher)\" disabled>Matchday vorhersagen</button></th>" +
+      "</tr></thead><tbody>";
 
   var all_leagues_matchday = get_session_item('next_matchday');
   var matchday = all_leagues_matchday[league];

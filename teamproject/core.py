@@ -28,6 +28,7 @@ class Core:
     first_matchday = 0
     last_matchday = 0
     time = False
+    matchday = ''
 
     def __init__(self):
         eel.start('index.html', port=0, size=(1440, 900))  # landing page of gui and window size
@@ -127,6 +128,7 @@ def get_next_matchday_from_parameters(parameter):
     crawler_instance = Core.crawler_instance
 
     matchday = crawler_instance.get_next_matchday()
+    Core.matchday = matchday
 
     print(matchday)
 
@@ -205,3 +207,35 @@ def start_prediction(team1_id, team2_id):
     }
 
     return result_dict
+
+
+@eel.expose
+def predict_next_matchday(league):
+    '''
+    calls model prediction for each match on next matchday
+    :param league id of league, which matchday should be predicted
+    '''
+    print("predict_next_matchday(): executed successfully")
+    model_instance = Core.model_instance
+    matchday = Core.matchday[int(league)]
+
+    matchday_prediction = []
+
+    for match in matchday:
+        team1_id = int(matchday[match]['team_home_id'])
+        team2_id = int(matchday[match]['team_guest_id'])
+
+        result = model_instance.predict(team1_id, team2_id)
+
+        result_dict = {
+            'home': team1_id,
+            'guest': team2_id,
+            'outcome': result['outcome'],
+            'score': result['score']
+        }
+        matchday_prediction.append(result_dict)
+
+    print(matchday_prediction)
+    return matchday_prediction
+
+
