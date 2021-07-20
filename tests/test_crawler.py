@@ -6,9 +6,9 @@ import pytest
 import pandas as pd
 from numpy import int64
 from pandas.api.types import is_string_dtype
-from pandas.api.types import is_numeric_dtype
-#import teamproject.crawler as crawler
-import crawler
+#from pandas.api.types import is_numeric_dtype
+import teamproject.crawler as crawler
+#import crawler
 # TODO: AUSFÜHREN IM TERMINAL MIT:  python -m pytest ML-Bundesliga\test_crawler.py
 
 cr = crawler.BundesligaCrawler()
