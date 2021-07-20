@@ -277,15 +277,68 @@ function result_screen_render(){
 }
 
 
+/**
+ * stores prediction for next matchday and opens new stage
+ * @param outcome - array containing prediction-dictionaries
+ */
 function next_matchday_prediction_stage_switcher(outcome){
-    // TODO: Display prediction of all matches
-
+    set_session_item('result', outcome);
     spinner_off();
     set_session_item('stage', 8);
     build_stage();
 }
 
 
+/**
+ * displays table of predicted matches
+ */
 function next_matchday_prediction_render(){
-    // TODO: die verfickte kacke nochmal...
+    //window.alert("next_matchday_prediction_render(): entered");
+    next_matchday_prediction_designer();
+    document.body.style.overflowY = 'scroll';
+
+    var matchday = get_session_item('result');
+    var team_list = get_session_item('team_list');
+
+    var html_table = "<div class=\"d-flex justify-content-between\">" +
+        "<table class=\'table table-hover\'>" +
+            "<thead class=\'thead-dark\'>" +
+                "<tr>" +
+                    "<th>Heim</th>" +
+                    "<th></th>" +
+                    "<th></th>" +
+                    "<th>Gast</th>" +
+                    "<th></th>" +
+                    "<th>Sieg Heim</th>" +
+                    "<th>Unentschieden</th>" +
+                    "<th>Sieg Gast</th>" +
+                "</tr>" +
+            "</thead>" +
+            "<tbody>";
+
+    for (var i in matchday){
+        var match = matchday[i];
+
+        var home_id = match.home;
+        var guest_id = match.guest;
+        var home = team_list[home_id];
+        var guest = team_list[guest_id];
+        var outcome = match.outcome;
+
+        html_table += "<tr>" +
+                "<th>" + home + "</th>" +
+                "<th><img class=\'result-element, result-img\' src=\'img/" + home_id + ".png\' alt=\'Logo " + home + "\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\" style=\'height: 7vh\'></th>" +
+                "<th><img class=\'result-element, result-img\' src=\'img/colon.png\' style=\'height: 7vh\'></th>" +
+                "<th><img class=\'result-element, result-img\' src=\'img/" + guest_id + ".png\' alt=\'Logo " + guest + "\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\" style=\'height: 7vh\'></th>" +
+                "<th>" + guest + "</th>" +
+                "<th>" + outcome.home_win + "</th>" +
+                "<th>" + outcome.draw + "</th>" +
+                "<th>" + outcome.guest_win + "</th>" +
+            "</tr>";
+    }
+    html_table += "</tbody></table></div>";
+
+    set_innerHTML("left_btn", "<button class=\'btn btn-primary\' onclick=\"set_session_item(\'stage\', 5), build_stage()\">anderes Match wählen</button>");
+    set_innerHTML("right_btn", "<button class=\'btn btn-danger\' onclick=\"reset_program()\">zurück zur Startseite</button>");
+    set_innerHTML('1-col-1', html_table);
 }
