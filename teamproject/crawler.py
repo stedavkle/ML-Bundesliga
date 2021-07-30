@@ -601,6 +601,7 @@ class NBACrawler(Crawler):
             matches['team_guest_id'] = pd.to_numeric(matches['team_guest_id'])
             results['points_home'] = pd.to_numeric(results['points_home'], downcast='integer')
             results['points_guest'] = pd.to_numeric(results['points_guest'], downcast='integer')
+            results['match_id'] = pd.to_numeric(results['match_id'])
             matches.to_csv(self.UNIFORM_SEASON_MATCHES_DB_PATH.format(season), index=False)
             results.to_csv(self.UNIFORM_SEASON_RESULTS_DB_PATH.format(season), index=False)
         return matches, results
@@ -762,9 +763,12 @@ class NBACrawler(Crawler):
         else:
             newest_matches = matches[matches['match_date_time_utc'].apply(lambda x: (datetime.datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%fZ")-current_day).days >= 0)].head(AMOUNT_OF_GAMES)
             #newest_matches['is_finished'] = False
-
+        #print('RESULT_IDs')
+        #print(results['match_id'])
+        #print(newest_matches['match_id'])
+        result_match_ids = results['match_id'].values
         for index in newest_matches.index:
-                if newest_matches.loc[index, 'match_id'] in results['match_id']:
+                if newest_matches.loc[index, 'match_id'] in result_match_ids:
                    newest_matches.loc[index, 'is_finished'] = True
                 else:
                     newest_matches.loc[index, 'is_finished'] = False
@@ -776,7 +780,6 @@ class NBACrawler(Crawler):
                 match['team_home_name'] = id_to_team[match['team_home_id']]
                 match['team_guest_id'] = int(newest_matches.loc[index, 'team_guest_id'])
                 match['team_guest_name'] = id_to_team[match['team_guest_id']]
-
                 if newest_matches.loc[index, 'is_finished']:
                     result = results[(results['match_id'] == newest_matches.loc[index, 'match_id'])]
                     
@@ -815,12 +818,12 @@ if __name__ == '__main__':
     crwlr.get_available_data_for_leagues()
     id_to_team, team_to_id = crwlr.get_team_dicts([1],[2020,2019,2018])
     #print(id_to_team)
-    teams = crwlr.get_teams([2020], 0)
+    #teams = crwlr.get_teams([2020], 0)
     #print(teams)
     #print(teams[teams['team_id'] == 1610612738].team_url_name.item())
     #data = crwlr.get_data_for_algo([1], [2021], 1, 366, 0, 0)
     # dict = crwlr.get_next_opponent(1610612738)
     #print(dict)
-    matches, results = crwlr.get_data_for_algo([1], [2020],1,365,0,0)
-    print(matches)
+    matchday = crwlr.get_next_matchday()
+    print(matchday)
 # %%
