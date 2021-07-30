@@ -8,6 +8,7 @@ from numpy.core.numeric import outer
 from teamproject import crawler
 from collections import Counter
 import pandas as pd
+pd.options.mode.chained_assignment = None
 import numpy as np
 from scipy.stats import poisson, skellam
 import statsmodels.api as sm
