@@ -5,6 +5,7 @@ import eel
 import crawler
 import models
 import pandas as pd
+import sys
 
 ''' --- CLASS DECLARATION --- '''
 
