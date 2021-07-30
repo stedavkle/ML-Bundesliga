@@ -678,9 +678,9 @@ class NBACrawler(Crawler):
 
 
     def get_next_opponent(self, team_id):
-        dict = {'team_home_id': 0, 'team_home_name': 'Unbekannt', 'team_guest_id': 0, 'team_guest_name': 'Unbekannt',,
+        dict = {'team_home_id': 0, 'team_home_name': 'Unbekannt', 'team_guest_id': 0, 'team_guest_name': 'Unbekannt',
                 'is_finished': 0, 'points_home': 0, 'points_guest': 0,
-                'date': 'Unbekannt',, 'time': 'Unbekannt',, 'location': 'Unbekannt'}
+                'date': 'Unbekannt', 'time': 'Unbekannt', 'location': 'Unbekannt'}
         # TODO: Use self.MATCHES_TEAM_URL, get current Date and search for the upcoming game
         team_url_code = self.teams[self.teams['team_id'] == team_id].team_url_name.item()
         current_season = self.available_seasons[-1]

@@ -201,22 +201,25 @@ def get_next_opponent(id):
 
     crawler_instance = Core.crawler_instance
     match = crawler_instance.get_next_opponent(int(id))
-    opponent_name = match['team_home_name']
-    opponent_id = match['team_home_id']
+    if match == 0:
+        return match
+    else:
+        opponent_name = match['team_home_name']
+        opponent_id = match['team_home_id']
 
-    if opponent_id == id:
-        opponent_name = match['team_guest_name']
-        opponent_id = match['team_guest_id']
+        if opponent_id == id:
+            opponent_name = match['team_guest_name']
+            opponent_id = match['team_guest_id']
 
-    next_opponent = {
-        'opponent_id': opponent_id,
-        'opponent_name': opponent_name,
-        'date': match['date'],
-        'time': match['time'],
-        'location': match['location']
-    }
+        next_opponent = {
+            'opponent_id': opponent_id,
+            'opponent_name': opponent_name,
+            'date': match['date'],
+            'time': match['time'],
+            'location': match['location']
+        }
 
-    return next_opponent
+        return next_opponent
 
 
 @eel.expose
