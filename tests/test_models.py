@@ -101,7 +101,9 @@ def test_poisson():
     poisson.set_data(test_data)
 
     # starts the training
-    poisson.start_training()# simulates the match
+    poisson.start_training()
+
+    # simulates the match
     poisson.simulate_match('10', '20')
     assert len(poisson.simulation) == poisson.MAX_GOALS + 1
     assert len(poisson.simulation[0]) == poisson.MAX_GOALS + 1
@@ -158,18 +160,18 @@ def test_poisson():
     assert predict_return['score'] == predict_return_score
 
 
-
+'''
 def test_dixoncoles():
     """ tests the dixoncoles algorithm """
     # creates an instance of dixoncoles
     dixoncoles = models.DixonColes()
 
     # prepares the data
-    prep_data = dixoncoles.prepare_data(test_dataset)
+    prep_data = dixoncoles.prepare_data(test_data)
     assert isinstance(prep_data, dict)
 
     # calls set_data
-    dixoncoles.set_data()
+    dixoncoles.set_data(test_data)
     # todo: check ob poisson.data richtiges format hat
 
     # starts the training
@@ -201,55 +203,42 @@ def test_dixoncoles():
     # output_matrix = dixoncoles.dixon_coles_simulate_match()
     # assert isinstance(output_matrix, dict)
     # todo: check contents of predict_return
+'''
 
 
 def test_LogisticRegModel():
-    """tests the logisitc regression model"""
-    # creates an instance of dixoncoles
-    logisitcRegModel = models.LogisticRegModel()
+    """tests the logistic regression model"""
+    # creates an instance of logistic regression
+    logRegModel = models.LogisticRegModel()
 
     # prepares the data
-    prep_data = logisitcRegModel.prepare_data(test_dataset)
-    assert isinstance(prep_data, dict)
+    prep_data = logRegModel.prepare_data(test_data)
+    assert isinstance(prep_data, pd.DataFrame)
+    assert (prep_data.result_type_id == 1).all()
 
     # calls set_data
-    logisitcRegModel.set_data()
-    # todo: check ob poisson.data richtiges format hat
+    logRegModel.set_data(test_data)
 
     # starts the training
-    logisitcRegModel.start_training()
+    logRegModel.start_training()
 
-    # starts the training
-    test_result = logisitcRegModel.predict('A', 'B')
+    # predicts
+    test_result = logRegModel.predict('10', '30')
+    home_win = test_result['outcome']['home_win']
+    draw = test_result['outcome']['draw']
+    guest_win = test_result['outcome']['guest_win']
     assert isinstance(test_result, dict)
     assert test_result['score'] == -1
-    # todo: check contents of test_result['result']
+    assert home_win >= 0
+    assert draw >= 0
+    assert guest_win >= 0
+    assert home_win + draw + guest_win > 0.9
+    assert home_win + draw + guest_win <= 1
+    print(test_result)
 
-    # simulates the match
-    logisitcRegModel.predict('10', '20')
-    assert len(logisitcRegModel.simulation) == logisitcRegModel.MAX_GOALS + 1
-    assert len(logisitcRegModel.simulation[0]) == logisitcRegModel.MAX_GOALS + 1
 
-    # tests the prediction of outcome
-    predict_return_outcome = logisitcRegModel.predict()
-    assert isinstance(predict_return_outcome, dict)
-    assert predict_return_outcome['home_win'] >= 0
-    assert predict_return_outcome['draw'] >= 0
-    assert predict_return_outcome['guest_win'] >= 0
-    assert predict_return_outcome['home_win'] + predict_return_outcome['draw'] + predict_return_outcome[
-        'guest_win'] <= 1
-    # todo: check contents of predict_return
+test_LogisticRegModel()
 
-    # tests the prediction of score
-    predict_return_score = logisitcRegModel.predict()
-    assert isinstance(predict_return_score, dict)
-    assert predict_return_score[1]['home_points'] >= 0
-    assert predict_return_score[1]['guest_points'] >= 0
-    assert predict_return_score[1]['probability'] >= 0
-    assert predict_return_score[1]['probability'] <= 1
 
-    # test predict
-    predict_return = logisitcRegModel.predict('10', '20')
-    assert isinstance(predict_return, dict)
-    assert predict_return['outcome'] == predict_return_outcome
-    assert predict_return['score'] == predict_return_score
+
+
