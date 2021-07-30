@@ -12,12 +12,12 @@ import pandas as pd
 class Core:
     """Build Instance of Core: initialize GUI framework"""
 
-    """Initialize Browser Presetting"""
-    my_options = {
-        # TODO: may change settings, after chromium portable is implemented
-    }
     """directory where web files located"""
-    eel.init('web')
+    directory = 'teamproject/web'
+    # uncomment for IDE use
+    directory = 'web'
+
+    eel.init(directory)
 
     """set instance variables"""
     sport = 0
@@ -33,7 +33,24 @@ class Core:
     matchday = ''
 
     def __init__(self):
-        eel.start('index.html', port=0, size=(1440, 900))  # landing page of gui and window size
+        # initialize browser settings
+        page = 'index.html'
+        app = 'chrome'
+        eel_kwargs = dict(
+            host='localhost',
+            port= 0,
+            size=(1440, 900),
+        )
+
+        try:
+            eel.start(page, mode=app, **eel_kwargs)  # landing page of gui and window size
+        except EnvironmentError:
+            # If Chrome isn't found, fallback to Microsoft Edge on Win10 or greater
+            if sys.platform in ['win32', 'win64'] and int(platform.release()) >= 10:
+                eel.start(page, mode='edge', **eel_kwargs)
+            else:
+                raise
+
         print("Object of class 'Core' initialized.")
 
 
