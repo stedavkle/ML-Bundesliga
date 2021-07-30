@@ -68,11 +68,13 @@ class Crawler:
         """
         # TODO: check if Pics already saved
         for index, row in self.teams.iterrows():
+            teams_path = self.ICONS_PATH.format(row["team_id"])
             # TODO: handle icons that are .svg instead of .png (ID=9 and ID=95)
-            try:
-                urllib.request.urlretrieve(row["team_icon_url"], self.ICONS_PATH.format(row["team_id"]))
-            except Exception:
-                continue
+            if not(os.path.isfile(teams_path)):
+                try:
+                    urllib.request.urlretrieve(row["team_icon_url"], teams_path)
+                except Exception:
+                    continue
         return 1
     def cut_start_day(self, matches, results, day):
         if day != self.FIRST_DAY:
@@ -462,9 +464,9 @@ class BundesligaCrawler(Crawler):
         #         'team_guest_id' : int(match.iloc[0]['team_guest_id'])}
         if (match['match_id'] == self.NO_MATCH).bool():
             return 0
-        dict = {'team_home_id': 0, 'team_home_name': 0, 'team_guest_id': 0, 'team_guest_name': 0,
+        dict = {'team_home_id': 0, 'team_home_name': 'Unbekannt', 'team_guest_id': 0, 'team_guest_name': 'Unbekannt',
                 'is_finished': 0, 'points_home': 0, 'points_guest': 0,
-                'date': 0, 'time': 0, 'location': 'Unbekannt'}
+                'date': 'Unbekannt', 'time': 'Unbekannt', 'location': 'Unbekannt'}
 
         dict['team_home_id'] = int(match.loc[0, 'team_home_id'].item())
         dict['team_home_name'] = match.loc[0, 'team_home_name'].item()
@@ -676,9 +678,9 @@ class NBACrawler(Crawler):
 
 
     def get_next_opponent(self, team_id):
-        dict = {'team_home_id': 0, 'team_home_name': 0, 'team_guest_id': 0, 'team_guest_name': 0,
+        dict = {'team_home_id': 0, 'team_home_name': 'Unbekannt', 'team_guest_id': 0, 'team_guest_name': 'Unbekannt',,
                 'is_finished': 0, 'points_home': 0, 'points_guest': 0,
-                'date': 0, 'time': 0, 'location': 'Unbekannt'}
+                'date': 'Unbekannt',, 'time': 'Unbekannt',, 'location': 'Unbekannt'}
         # TODO: Use self.MATCHES_TEAM_URL, get current Date and search for the upcoming game
         team_url_code = self.teams[self.teams['team_id'] == team_id].team_url_name.item()
         current_season = self.available_seasons[-1]
