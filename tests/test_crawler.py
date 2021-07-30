@@ -59,7 +59,7 @@ def test_get_teams_from_API_bundesliga(league, season):
 def test_get_teams_from_API_nba(league, season):
     test_teams = cr_nba.get_teams_from_API(season)
     assert isinstance(test_teams, pd.DataFrame)
-    assert test_teams.shape[1] == 3
+    assert test_teams.shape[1] == 4
     assert test_teams.team_id.dtype == 'int64'
     assert (test_teams.team_id > 0).all()
     # TODO: check team_names, team_icon_url
