@@ -7,9 +7,9 @@ import models
 
 
 if __name__ == "__main__":
-    cr = crawler.Crawler()
-    data = cr.get_data_for_algo([1], [2017, 2018, 2019, 2020], 1, 16, 0, 0)
-    data_mostwins = cr.get_data_for_algo([1], [2017, 2018, 2019], 1, 34, 0, 0)
+    cr = crawler.BundesligaCrawler()
+    data = cr.get_data_for_algo([1], [2017, 2018, 2019, 2020], 0, 0, 0, 0)
+    data_mostwins = cr.get_data_for_algo([1], [2017, 2018, 2019, 2020], 1, 34, 0, 0)
 
     # instanzen erstellen
     poisson = models.PoissonModel()
@@ -32,6 +32,25 @@ if __name__ == "__main__":
 
     # alle teams
     id_to_team, team_to_id = cr.get_team_dicts([1], [2020])
+
+
+def draw_analyses(league, season):
+    matches, results = cr.get_matches_from_leagues_and_seasons_from_API(league, season)
+    count_draws = 0
+    count_total_games = 0
+    for index in matches.index:
+        if results.loc[index, 'points_home'] == results.loc[index, 'points_guest']:
+            count_draws += 1
+
+    count_total_games = matches.shape[0]
+    print('Es gab im Jahr ' + str(season[0]) + ' in der ' + str(league[0]) + '. Bundesliga ingesamt ' + str(count_draws) + ' Unentschieden')
+    print('und ' + str(count_total_games) + ' Spiele insgesamt. Das Verhältnis beträgt: ' + str(count_draws/count_total_games))
+
+    ## prediction of mostwins
+
+    # print(matches, results)
+
+draw_analyses([1], [2017, 2018, 2019, 2020])
 
 def poisson_2020_20():
     print('RB vs Augsburg: ')
@@ -99,6 +118,7 @@ def mostwins_2020_20():
 
 #####
 
+
 def poisson_2020_17():
     print('Gladbach vs Bremen')
     print(poisson.predict(87, 134))
@@ -142,6 +162,7 @@ def regression_2020_17():
     print(regression.predict(83, 16))
     print()
 
+
 def mostwins_2020_17():
     print('Gladbach vs Bremen')
     print(mostwins.predict(87, 134))
@@ -171,4 +192,4 @@ def mostwins_2020_17():
 # poisson_2020_17()
 # regression_2020_17()
 
-regression.predict(83, 16)
+# regression.predict(83, 16)

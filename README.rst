@@ -1,127 +1,126 @@
-Teamproject
+Teamproject Sportvorhersage |Bundesliga-Logo|
 -----------
+.. |Bundesliga-Logo| image:: web\img\bl.png
+    :width: 400
+    :alt: Bundesliga-Logo
 
-This serves as a skeleton for setting up new projects.
+space for badges
+# license badge
 
-Usage
-=====
+What is our project about?
+======
+We started this project to predict the results of games of the German Football Bundesliga.
+It started as that, but as this project is programmed modal it is possible to be used for
+any sport or league. You can see a glimpse of that, when you look at our implementation of the
+Basketball League NBA.
 
-To get started, follow these steps:
+But to be more precise, we wanted to use the data from past years and find
+clever algorithms and use machine learning models to predict game results as accurate as possible.
 
-- Fork this repository to your project on github.
-- Invite your team members and us as collaborators in the settings tab
-- clone the repository to your machine: ``git clone git@github.com:<USERNAME>/swp-teamproject``
-- Look through the repository and try to understand its contents
-- remove what you don't need, adapt what needs to be changed in your
-  project (e.g. author, project and package names)
+We also wanted to enable a great user experience, that's why we were striving to make it very
+easy for the user to set all the possible variables themselves. You can now decide which teams you want to predict,
+which algorithm you want to use, with which data the models are trained and so on.
 
+We'll then give you probabilities of a home win, a draw and a guest win.
+With some models you can even get a prediction which exact score is most likely to be the end result.
 
-Environment
-===========
+There is a lot more to see, so let's get started.
 
-We recommend to setup a clean development environment for this project. This
-has several benefits such as preventing version conflicts with packages
-required by other projects and to make it easier to keep track of
-dependencies (type ``pip list`` to get a list of installed packages).
+Visuals
+======
+As we said, this project is about predicting sport games. But also to figure out, if there
+are any interesting facts within the data. How often do draws happen and do our prediction algorithms
+do a good job of finding them. Or is there a correlation between how many or little goals a team scores,
+and their likeliness of winning? There are many interesting questions to be asked. But we decided to include these two.
 
-A good choice for managing environments is to use *conda* (specifically, we
-recommend miniconda_). After installation, you can create and activate python
-environments as follows::
+First, to see the analyses of the draw frequency.
 
-    conda create -n myproject python=3.8
+.. :image:: analyse.png
+    :width: 400
+    :alt:
+(Count, how many draws there were over the last 3 seasons)
 
-    conda activate myproject
-
-Other noteworthy tools for managing environments are
-
-- virtualenvwrapper_ (more low-level, can only create environments for
-  installed python versions)
-- and Pipenv_ a more functional approach to package dependency management,
-  specifically for applications, but with its own set of drawbacks
-
-.. _miniconda:          https://docs.conda.io/en/latest/miniconda.html
-.. _virtualenvwrapper:  https://virtualenvwrapper.readthedocs.io/
-.. _Pipenv:             https://pipenv.kennethreitz.org/
+.. :image:: analyse.png
+    :width: 400
+    :alt: todo
+(Count, how many draws we predicted with each algorithm over the last 3 seasons)
 
 
 Installation
-============
+======
+Bla, wie erstellt man das richtige Environment.
 
 Once you've activated the environment, install the current package and its
 dependencies with::
 
-    pip install -e .[dev]
-
+    cd ML-Bundesliga
+    pip install -e .
 
 Usage
-=====
-
-After the package and all dependencies are installed, you can execute the code
-that's contained in the ``teamproject/__main__.py`` by typing::
+======
+After the package and all dependencies are installed,
+you can execute the code that's contained in the teamproject/__main__.py by typing::
 
     python -m teamproject
 
-If you have executed the ``pip install`` line above, you can also type for
-short::
+If you have executed the pip install line above, you can also type for short::
 
     teamproject
 
+Special Advantages
+======
+**What was our focus while developing?**
 
-Directory structure
-===================
+Our project stands out in terms of the user experience. We realised our user interface with **eel**, which is
+a python library that allows you to create offline user interfaces, that are structured like websites.
+Because we chose this implementation the project is cross-system, which then allows a big clientele.
 
-The following is a short overview of how a python project could be structured::
+We also focussed on robustness and accessibility. Therefore it is possible to jump to any of the previous steps
+of the program, and if you accidentally or intentionally refresh the page, you will still be in the same spot in the process.
+Furthermore, we added alternative texts to all the images, the UI is completely usable
+with the keyboard and we also paid attention to design it very comprehensible.
 
-    .
-    ├── README.rst                      project front page
-    ├── setup.py                        packaging script
-    ├── setup.cfg                       package metadata and tool config
-    ├── MANIFEST.in                     lists data files to be included
-    ├── .gitignore                      lists files to be ignored by git
-    │
-    ├── teamproject
-    |   ├── data                        contains all match data
-    |   ├── web                         contains the gui code
-    │   │   ├──css
-    │   │   ├──js
-    │   │   └──index.html
-    │   ├── __init__.py                 toplevel package variables
-    │   ├── __main__.py                 invoked on `python -m teamproject`
-    │   ├── crawler.py                  web-crawler / queries
-    │   ├── plotting.py                 plotting statistics
-    │   ├── core.py                     connects crawler/gui/plots
-    │   └── models.py                   ML code for predictions
-    │
-    └── tests
-        ├── test_crawler.py             tests grouped by functionality
-        ├── ....
-        └── test_models.py
+Outside of the User Interface, we focussed on the modularity of the crawler and the models file. This means,
+that any new algorithm can easily be implemented and will automatically be included in the GUI. We realised this
+with abstract classes. It is also possible to create a new instance of the crawler, that means you can get
+quickly implement different sports or international leagues.
 
+**Which Algorithms did we use?**
 
-Development/Tooling
-===================
+We implemented four different algorithms. The first one is a very simple algorithm, we called it **MostWins**.
+As the name implies, it analyses the selected games and sums the amount of times both teams won and drew.
+Afterwards these sums are compared and the probabilities are returned accordingly.
 
-We recommend to use at least  flake8_ for basic syntax and style checks, and
-twine_ for checking the created distributions.
+The second one uses the **Poisson Model**. It calculates how likely it is for each team to make a certain amount of goals.
+This calculation leaves a table where the rows represent the amount of goals team 1 is going to make. And the columns for team 2.
+Therefore the diagonal of this calculation shows a draw.
 
-Unit and integration tests are in the ``test/`` subdirectory and can be
-executed via pytest_.
+The third model is the **Dixon-Coles Model**. Was genau ist das?
 
-It is possible to automatically run certain actions such as tests or publish
-releases when pushing to github. This is called continuous integration or
-continuous deployment (CI/CD). Popular CI services are for example:
+And the last model is the **Logistic Regression Model**. It calculates the outcome with logistic regression.
+To do that, is generates factors for each team for a home win and a guest win. These
+factors are compared, and calculates the probability of which outcome.
 
-- `GitHub Actions`_ for linux/mac/windows testing
-- travis-ci.com_ for linux/mac testing
-- appveyor.com_ for windows testing
-- coveralls.io_ for coverage reports
-- readthedocs.org_ for documentation
+Tests
+======
+We focussed on testing everything thoroughly. To execute the tests, go on like this::
 
-.. _flake8:             https://flake8.pycqa.org/
-.. _twine:              https://twine.readthedocs.io/
-.. _pytest:             https://pytest.org/
-.. _GitHub Actions:     https://github.com/features/actions
-.. _travis-ci.com:      https://travis-ci.com
-.. _appveyor.com:       https://appveyor.com
-.. _coveralls.io:       https://coveralls.io
-.. _readthedocs.org:    https://readthedocs.org/
+    python -m pytest teamproject/test_crawler.py
+    python -m pytest teamproject/test_models.py
+
+Roadmap
+======
+
+Project Status
+======
+active
+
+Authors and Acknowledgement
+======
+The authors are Stephan Amann, Cornelius Bopp, David Kleindiek and Amelie Schäfer.
+This project started as an university assignment, therefore we acknowledge and thank our tutors
+Felix Dangel, Thomas Gläßle and Frank Schneider for their feedback and generous help.
+
+License
+======
+This project is licensed under the permissive open source MIT license.
