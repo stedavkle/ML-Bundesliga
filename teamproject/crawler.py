@@ -2,6 +2,7 @@
 import sys
 from abc import ABCMeta, abstractmethod, ABC
 import pandas as pd
+pd.options.mode.chained_assignment = None
 import json
 import requests
 import os
@@ -540,22 +541,25 @@ class NBACrawler(Crawler):
         # print(calendar_json['startDate'])
         self.start_date = 2016
         self.end_date = datetime.datetime.strptime(calendar_json['endDate'], '%Y%m%d')
-        dict = {1: {'name': 'NBA', 'seasons': list(range(self.start_date, self.end_date.year)),
+        self.available_seasons = list(range(self.start_date, self.end_date.year))
+        dict = {1: {'name': 'NBA', 'seasons': self.available_seasons,
                          'size': (self.end_date.year-self.start_date), 'matchdays': 365}}
         return dict
     def get_teams_from_API(self, season):
 
         response = requests.get(self.TEAMS_URL.format(season))
         #teams_json = json.loads(response.content)
-        teams = pd.json_normalize(response.json(), record_path=['league', 'standard'])[['teamId', 'fullName', 'city', 'nickname', 'confName']]
+        teams = pd.json_normalize(response.json(), record_path=['league', 'standard'])[['teamId', 'fullName', 'urlName', 'city', 'nickname', 'confName']]
         teams = teams[(teams['confName'] == 'East') | (teams['confName'] == 'West')]
-
-        teams.columns = ['team_id', 'team_name', 'city', 'team_short_name', 'conference_name']
+        print('TEAMS')
+        print(teams.columns)
+        teams.columns = ['team_id', 'team_name', 'team_url_name', 'city', 'team_short_name', 'conference_name']
         for index, row in teams.iterrows():
             city = row['city']
             name = row['team_short_name']
             teams.loc[index, 'team_icon_url'] = self.ICON_URL.format(city, name).lower()
-        teams = teams[['team_id', 'team_name', 'team_icon_url']]
+        teams = teams[['team_id', 'team_name', 'team_url_name', 'team_icon_url']]
+        teams.team_id = pd.to_numeric(teams.team_id)
         teams.to_csv(self.UNIFORM_TEAMS_DB_PATH.format(season), index=False)
         return teams
     def get_teams(self, seasons, return_bool):
@@ -583,18 +587,21 @@ class NBACrawler(Crawler):
         for season in seasons:
             response = requests.get(self.MATCHES_URL.format(season))
             df = pd.json_normalize(response.json()['league']['standard'])[self.NBA_MATCHES_API_COLUMNS]
-            print(df.head())
             df.columns = self.UNIFORM_MATCHES_RESULTS_COLUMNS
             df['matchday'] = df['match_date_time_utc'].apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%fZ").timetuple().tm_yday)
             df['result_type_id'] = 1
-            df['result_id'] = -1
+            df['result_id'] = 1
             matches = df[self.UNIFORM_MATCH_CONTENT_COLUMNS]
             results = df[self.UNIFORM_RESULT_CONTENT_COLUMNS]
-
+            matches['match_id'] = pd.to_numeric(matches['match_id'])
+            matches['team_home_id'] = pd.to_numeric(matches['team_home_id'])
+            matches['team_guest_id'] = pd.to_numeric(matches['team_guest_id'])
+            results['points_home'] = pd.to_numeric(results['points_home'], downcast='integer')
+            results['points_guest'] = pd.to_numeric(results['points_guest'], downcast='integer')
             matches.to_csv(self.UNIFORM_SEASON_MATCHES_DB_PATH.format(season), index=False)
             results.to_csv(self.UNIFORM_SEASON_RESULTS_DB_PATH.format(season), index=False)
         return matches, results
-    def load_season(self, season):
+    def load_season(self, league, season):
         matches_path = self.UNIFORM_SEASON_MATCHES_DB_PATH.format(season)
         results_path = self.UNIFORM_SEASON_RESULTS_DB_PATH.format(season)
         if (os.path.isfile(matches_path)) & (os.path.isfile(results_path)):  # & (os.path.isfile(scores_path)
@@ -620,9 +627,9 @@ class NBACrawler(Crawler):
             return pd.DataFrame(), pd.DataFrame()
         season = seasons.pop(0)
         # print(league, season)
-        matches, results, LOADED = self.load_season(season)
+        matches, results, LOADED = self.load_season(1, season)
         if not (LOADED):
-            matches, results = self.get_matches_from_season_from_API(season)
+            matches, results = self.get_matches_from_leagues_and_seasons_from_API(1, [season])
         # print('MATCHES SHAPE')
         # print(matches.shape)
         matches, results = self.cut_start_day(matches, results, day_start)
@@ -671,6 +678,44 @@ class NBACrawler(Crawler):
                 'is_finished': 0, 'points_home': 0, 'points_guest': 0,
                 'date': 0, 'time': 0, 'location': 'Unbekannt'}
         # TODO: Use self.MATCHES_TEAM_URL, get current Date and search for the upcoming game
+        team_url_code = self.teams[self.teams['team_id'] == team_id].team_url_name.item()
+        current_season = self.available_seasons[-1]
+
+        response = requests.get(self.MATCHES_TEAM_URL.format(current_season, team_url_code))
+        matches = pd.json_normalize(response.json()['league']['standard'])[self.NBA_MATCHES_API_COLUMNS]
+        matches.columns = self.UNIFORM_MATCHES_RESULTS_COLUMNS
+
+        #current_day = datetime.datetime.now()
+        current_day = datetime.datetime.strptime('2021-05-21 01:00:00', "%Y-%m-%d %H:%M:%S")
+        last_matchday = datetime.datetime.strptime(matches.tail(1)['match_date_time_utc'].item(), "%Y-%m-%dT%H:%M:%S.%fZ")
+        SEASON_FINISHED = (last_matchday-current_day).days<0
+
+        if SEASON_FINISHED:
+            return 0
+        
+        next_match = matches[matches['match_date_time_utc'].apply(lambda x: (datetime.datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%fZ")-current_day).days >= 0)].head(1)
+
+        print(next_match)
+
+        dict = {'team_home_id': 0, 'team_home_name': 0, 'team_guest_id': 0, 'team_guest_name': 0,
+                'is_finished': 0, 'points_home': 0, 'points_guest': 0,
+                'date': 0, 'time': 0, 'location': 'Unbekannt'}
+
+
+        print('TEAMNAME!!!!!!!!!!!!!!')
+        print(next_match['team_guest_id'].item())
+        print(self.teams[self.teams['team_id'] == next_match['team_guest_id'].item()]['team_name'])
+        # TODO: get team_guest_name
+        dict['team_home_id'] = int(next_match['team_home_id'].item())
+        dict['team_home_name'] = self.teams[self.teams['team_id'] == team_id]['team_name'].item()
+        dict['team_guest_id'] = int(next_match['team_guest_id'].item())
+        dict['team_guest_name'] = self.teams[self.teams['team_id'] == next_match['team_guest_id'].item()]['team_name']
+
+        utc_string = next_match['match_date_time_utc'].item()
+
+        date, time = self.split_utc(utc_string)
+        dict['date'] = date
+        dict['time'] = time
         return dict
 
     def split_utc(self, utc_string):
@@ -701,12 +746,17 @@ class NBACrawler(Crawler):
         #print((last_matchday-current_day).days)
         if SEASON_FINISHED:
             newest_matches = matches.tail(AMOUNT_OF_GAMES)
-            newest_matches['is_finished'] = True
+            #newest_matches['is_finished'] = True
         else:
             newest_matches = matches[matches['match_date_time_utc'].apply(lambda x: (datetime.datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%fZ")-current_day).days >= 0)].head(AMOUNT_OF_GAMES)
-            newest_matches['is_finished'] = False
-        print(newest_matches)
+            #newest_matches['is_finished'] = False
+
         for index in newest_matches.index:
+                if newest_matches.loc[index, 'match_id'] in results['match_id']:
+                   newest_matches.loc[index, 'is_finished'] = True
+                else:
+                    newest_matches.loc[index, 'is_finished'] = False
+                   
                 match = {'team_home_id': 0, 'team_home_name': 0, 'team_guest_id': 0, 'team_guest_name': 0,
                          'is_finished': 0, 'points_home': 0, 'points_guest': 0,
                          'date': 0, 'time': 0, 'location': 0}
@@ -718,6 +768,7 @@ class NBACrawler(Crawler):
 
                 if newest_matches.loc[index, 'is_finished']:
                     result = results[(results['match_id'] == newest_matches.loc[index, 'match_id'])]
+                    
                     endresult = result[result['result_type_id'] == self.END_RESULT]
                     match['is_finished'] = 1
                     match['points_home'] = int(endresult.iloc[0]['points_home'])
@@ -750,14 +801,12 @@ if __name__ == '__main__':
     crwlr = NBACrawler()
 
     #print(crwlr.get_next_matchday())
-    # #print(crawler.get_available_data_for_leagues())
-    #id_teams, teams_to_id = crwlr.get_team_dicts(1, [2020,2019,2018])
-    #print(id_teams)
-    # matches, results = crwlr.get_data_for_algo([1], [2016], 1, 365, 1610612737, 1610612738)
-    # print(matches.shape)
-    #print(idTt)
-    #matches, results = crwlr.get_matches_from_leagues_and_seasons_from_API(1, [2020])
-    #print(matches.tail(1))
-    matchday = crwlr.get_next_matchday()
-    print(matchday[1])
+    print(crwlr.get_available_data_for_leagues()[1])
+    id_to_team, team_to_id = crwlr.get_team_dicts([1],[2020,2019,2018])
+    print(str(1610612751) + str(id_to_team[1610612751]))
+    teams = crwlr.get_teams([2020], 0)
+    #print(teams[teams['team_id'] == 1610612738].team_url_name.item())
+    #data = crwlr.get_data_for_algo([1], [2021], 1, 366, 0, 0)
+    dict = crwlr.get_next_opponent(1610612738)
+    print(dict)
 # %%
