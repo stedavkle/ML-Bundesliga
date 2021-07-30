@@ -599,8 +599,8 @@ class NBACrawler(Crawler):
             matches['match_id'] = pd.to_numeric(matches['match_id'])
             matches['team_home_id'] = pd.to_numeric(matches['team_home_id'])
             matches['team_guest_id'] = pd.to_numeric(matches['team_guest_id'])
-            results['points_home'] = pd.to_numeric(results['points_home'], downcast='integer')
-            results['points_guest'] = pd.to_numeric(results['points_guest'], downcast='integer')
+            results['points_home'] = pd.to_numeric(results['points_home'], downcast='integer').fillna(0)
+            results['points_guest'] = pd.to_numeric(results['points_guest'], downcast='integer').fillna(0)
             results['match_id'] = pd.to_numeric(results['match_id'])
             matches.to_csv(self.UNIFORM_SEASON_MATCHES_DB_PATH.format(season), index=False)
             results.to_csv(self.UNIFORM_SEASON_RESULTS_DB_PATH.format(season), index=False)
@@ -817,13 +817,11 @@ if __name__ == '__main__':
     #print(crwlr.get_next_matchday())
     crwlr.get_available_data_for_leagues()
     id_to_team, team_to_id = crwlr.get_team_dicts([1],[2020,2019,2018])
-    #print(id_to_team)
-    #teams = crwlr.get_teams([2020], 0)
-    #print(teams)
-    #print(teams[teams['team_id'] == 1610612738].team_url_name.item())
-    #data = crwlr.get_data_for_algo([1], [2021], 1, 366, 0, 0)
-    # dict = crwlr.get_next_opponent(1610612738)
-    #print(dict)
-    matchday = crwlr.get_next_matchday()
-    print(matchday)
+
+    matches, results = crwlr.get_data_for_algo([1], range(2016,2021),1,366,0,0)
+    #results['points_home'] = results['points_home'].fillna(0)
+    for index, row in results.iterrows():
+        if not(row['points_home'] <= 200):
+            print('ERROR')
+            print(row['points_home'])
 # %%
