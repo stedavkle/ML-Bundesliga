@@ -7,6 +7,7 @@ import models
 import pandas as pd
 import sys
 
+
 ''' --- CLASS DECLARATION --- '''
 
 

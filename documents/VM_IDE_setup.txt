@@ -1,0 +1,40 @@
+VM Downloaden von: https://www.vmware.com/products/workstation-pro/workstation-pro-evaluation.html
+installation befolgen
+Ubuntu Desktop downloaden von: https://ubuntu.com/download/desktop
+VMware öffnen, neue VM anlegen, installation befolgen und ubuntu .iso als datei angeben
+konsole öffnen(Rechtsclick auf Hintergrund->'Open in Terminal')
+kommandos ausführen(und ggf. bestätigen):
+---anfang kommandos---
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install python3.9
+sudo apt-get install pip
+sudo apt-get install chromium-browser
+sudo apt-get install pycharm-professional
+---ende kommandos---
+credentials in pycharm eingeben
+in gewünschtem ordner(filebrowser ist links das weiße ordnersymbol) konsole öffnen:
+---anfang kommandos---
+git clone https://github.com/stedavkle/ML-Bundesliga
+---ende kommandos---
+in pycharm ordner öffnen
+warten(unten rechts ist progress bar)
+interpreter unten rechts auswählen(python3.9)
+'venv' ordner ÜBER dem git ordner, da sonst git beim commit die dateien ggf. mitcommiten will
+__main__.py ausführen und je nach fehlermeldung packages installieren ODER,
+über die imports in core, crawler und models hovern um sie zu installieren.
+nun auf gewünschten branch wechseln.
+run-edit configuration->dropdownmenu bei 'script path' auf 'module name' ändern und 'teamproject'
+als module name eingeben.
+apply, dann ok.
+nun per terminal(unten links, muss in ordner ML-Bundesliga ausgeführt werden)
+---anfang kommandos---
+pip install -e .
+---ende kommandos---
+nun je nach wunsch in der konsole:
+---anfang kommandos---
+python -m teamproject				(normale ausführung)
+python -m pytest tests/test_crawler.py	(test ausführung, hier beispiel für crawler tests)
+---ende kommandos---
+
+setup abgeschlossen.

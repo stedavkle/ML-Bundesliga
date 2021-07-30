@@ -4,7 +4,7 @@
 import matplotlib.pyplot as plt
 import numpy
 
-import crawler
+from teamproject import crawler
 
 cr = crawler.Crawler()
 
