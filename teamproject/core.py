@@ -33,6 +33,7 @@ class Core:
     time = False
     pretrained_data = False
     matchday = ''
+    max_goals = ''
 
     def __init__(self):
         # initialize browser settings
@@ -83,6 +84,7 @@ def get_crawler_data(sport):
 
     selected_sport_data = Core.sport[sport]
     selected_crawler = selected_sport_data['run']
+    Core.max_goals = selected_sport_data['max_goals']
     Core.crawler_instance = selected_crawler
 
     available_data = Core.crawler_instance.get_available_data_for_leagues()
@@ -125,7 +127,7 @@ def get_required_model_data(model):
     selected_model = selected_model_data['run']
     Core.model_instance = selected_model
     parameter = selected_model.get_model_requirements()
-
+    selected_model.set_max_goals(Core.max_goals)
     return parameter
 
 
@@ -175,10 +177,7 @@ def start_training_and_get_teams():
     model_instance = Core.model_instance
     model_instance.set_data(training_data)
     if Core.pretrained_data:
-        if Core.time:
-            csv_name = 'teamproject/data/dixon_coles_pre_trained_dataset_decay.csv'
-        else:
-            csv_name = 'teamproject/data/dixon_coles_pre_trained_dataset_no_decay.csv'
+        csv_name = crawler_instance.pretrained_data_source(Core.time)
         data = pd.read_csv(csv_name, header=None, index_col=0, squeeze=True).to_dict()
         model_instance.set_pretrained_data(data)
     else:

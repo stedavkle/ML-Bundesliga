@@ -28,13 +28,15 @@ class Crawler:
                             'crawler_id': 1,
                             'sport': 'Fußball Deutschland',
                             'description': 'Daten zu den drei höchsten Fußball-Ligen in Deutschland. Quelle: openligadb.de',
-                            'run': BundesligaCrawler()
+                            'run': BundesligaCrawler(),
+                            'max_goals': 15
                         },
                         2: {
                             'crawler_id': 2,
                             'sport': 'NBA - National Basketball Association',
                             'description': 'Daten zur NBA der USA, Quelle: data.nba.net',
-                            'run': NBACrawler()
+                            'run': NBACrawler(),
+                            'max_goals': 170
                         }
                     }
         return crawlers
@@ -58,6 +60,10 @@ class Crawler:
 
     @abstractmethod
     def get_next_opponent(self):
+        pass
+
+    @abstractmethod
+    def pretrained_data_source(self):
         pass
 
     def get_team_icons_from_wiki(self):
@@ -181,6 +187,12 @@ class BundesligaCrawler(Crawler):
         self.first_league_available_seasons = list(range(2002, self.current_season + 1))
         self.second_league_available_seasons = list(range(2006, self.current_season + 1))
         self.third_league_available_seasons = list(range(2008, self.current_season + 1))
+
+    def pretrained_data_source(self, decay=False):
+        if decay:
+            return 'teamproject/data/bl_dixon_coles_pre_trained_dataset_decay.csv'
+        else:
+            return 'teamproject/data/bl_dixon_coles_pre_trained_dataset_no_decay.csv'
 
     def get_available_data_for_leagues(self):
         """
@@ -532,6 +544,12 @@ class NBACrawler(Crawler):
     
     FIRST_DAY = 1
     END_RESULT = 1
+
+    def pretrained_data_source(self, decay=False):
+        if decay:
+            return 'teamproject/data/nba_dixon_coles_pre_trained_dataset_decay.csv'
+        else:
+            return 'teamproject/data/nba_dixon_coles_pre_trained_dataset_no_decay.csv'
     
     def get_available_data_for_leagues(self):
         response = requests.get(self.CALENDAR)
@@ -799,6 +817,7 @@ class NBACrawler(Crawler):
                 all_matches[league][int(newest_matches.loc[index, 'match_id'])] = match
 
         return all_matches
+
 # %%
 if __name__ == '__main__':
     import time

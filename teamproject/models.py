@@ -97,6 +97,9 @@ class Models:
         print(team2_in_data)
         return team1_in_data and team2_in_data
 
+    def set_max_goals(self, max_goals):
+        self.MAX_GOALS = max_goals
+
     # abstract methods
     @abstractmethod
     def get_model_requirements(self):
