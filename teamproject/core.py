@@ -2,8 +2,8 @@
 web gui
 """
 import eel
-import crawler
-import models
+from teamproject import crawler
+from teamproject import models
 import pandas as pd
 import sys
 
@@ -17,7 +17,7 @@ class Core:
     """directory where web files located"""
     directory = 'teamproject/web'
     # uncomment for IDE use
-    directory = 'web'
+    #directory = 'web'
 
     eel.init(directory)
 
@@ -176,9 +176,9 @@ def start_training_and_get_teams():
     model_instance.set_data(training_data)
     if Core.pretrained_data:
         if Core.time:
-            csv_name = 'data/dixon_coles_pre_trained_dataset_decay.csv'
+            csv_name = 'teamproject/data/dixon_coles_pre_trained_dataset_decay.csv'
         else:
-            csv_name = 'data/dixon_coles_pre_trained_dataset_no_decay.csv'
+            csv_name = 'teamproject/data/dixon_coles_pre_trained_dataset_no_decay.csv'
         data = pd.read_csv(csv_name, header=None, index_col=0, squeeze=True).to_dict()
         model_instance.set_pretrained_data(data)
     else:
