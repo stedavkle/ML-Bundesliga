@@ -12,7 +12,6 @@ import teamproject.crawler as crawler
 # TODO: AUSFÜHREN IM TERMINAL MIT:  python -m pytest ML-Bundesliga\test_crawler.py
 
 cr = crawler.BundesligaCrawler()
-
 def test_get_crawler():
     test_return = cr.get_crawler()
     assert isinstance(test_return, dict)
@@ -57,8 +56,7 @@ test_get_teams_from_API(1,2020)
 @pytest.mark.parametrize("season", [2008, 2015, 2020])
 
 def test_get_matches_from_league_and_season_from_API(league, season):
-    test_matches, test_results = cr.get_matches_from_league_and_season_from_API(league, season)
-    print(test_matches.tail())
+    test_matches, test_results = cr.get_matches_from_leagues_and_seasons_from_API([league], [season])
     # TEST MATCHES
     assert isinstance(test_matches, pd.DataFrame)
     assert test_matches.shape[1] == 5
