@@ -16,7 +16,25 @@ test_dataset = pd.DataFrame([
 # data = md_mostwins.prepare_data()
 # print(data)
 # The following is an example of how useful tests could look like:
+matches = pd.DataFrame({'match_id': [1, 2, 3, 4],
+                        'matchday': [1, 2, 3, 4],
+                        'team_home_id': [10, 20, 30, 40],
+                        'team_guest_id': [30, 10, 10, 30],
+                        'match_date_time_utc': ['2020-06-02T18:00:00Z', '2020-06-02T18:00:00Z', '2020-06-02T18:00:00Z', '2020-06-02T18:00:00Z']})
+results = pd.DataFrame({'result_id': [1, 2, 3, 4],
+                        'points_home': [1, 2, 1, 5],
+                        'points_guest': [2, 0, 1, 5],
+                        'result_type_id': [1, 1, 1, 1],
+                        'match_id': [1, 2, 3, 4]})
 
+test_data = [matches, results]
+
+'''
+Team 10 vs Team 30 mit 1:2
+Team 20 vs Team 10 mit 2:0
+Team 30 vs Team 10 mit 1:1
+Team 40 vs Team 30 mit 5:5      
+'''
 
 
 def test_mostwins():
@@ -25,20 +43,49 @@ def test_mostwins():
     mostwins = models.MostWins()
 
     # prepares the data for most wins
-    prep_data = mostwins.prepare_data(test_dataset)
-    assert isinstance(prep_data, dict)
+    prep_data = mostwins.prepare_data(test_data)
+    assert isinstance(prep_data, pd.DataFrame)
+    assert (prep_data.result_type_id == 1).all()
 
     # calls set_data
-    mostwins.set_data(test_dataset)
+    mostwins.set_data(test_data)
 
     # starts the training, here it skips it
     test_return = mostwins.start_training()
-    assert isinstance(test_return, None)
+    assert test_return is None
 
-    # tests the algorithm
-    predict_return = mostwins.predict
-    assert isinstance(predict_return, dict)
-    # todo: test the contents of dictionaries
+    # tests the algorithm with 10 - 30
+    predict_return_10_30 = mostwins.predict(10, 30)
+    assert isinstance(predict_return_10_30, dict)
+    assert predict_return_10_30['outcome']['home_win'] == 0.0
+    assert predict_return_10_30['outcome']['draw'] == 0.5
+    assert predict_return_10_30['outcome']['guest_win'] == 0.5
+    assert predict_return_10_30['score'] == -1
+
+    # edge case, no previous matches with 0 - 10
+    predict_return_0_10 = mostwins.predict(0, 10)
+    assert isinstance(predict_return_0_10, dict)
+    assert predict_return_0_10['outcome'] == -1
+    assert predict_return_10_30['score'] == -1
+
+    predict_return_20_10 = mostwins.predict(20, 10)
+    assert isinstance(predict_return_20_10, dict)
+    assert predict_return_20_10['outcome']['home_win'] == 1.0
+    assert predict_return_20_10['outcome']['draw'] == 0.0
+    assert predict_return_20_10['outcome']['guest_win'] == 0.0
+    assert predict_return_20_10['score'] == -1
+
+    predict_return_40_30 = mostwins.predict(40, 30)
+    assert isinstance(predict_return_40_30, dict)
+    assert predict_return_40_30['outcome']['home_win'] == 0.0
+    assert predict_return_40_30['outcome']['draw'] == 1.0
+    assert predict_return_40_30['outcome']['guest_win'] == 0.0
+    assert predict_return_40_30['score'] == -1
+
+    # {'outcome': {'home_win': 0.0, 'draw': 0.0, 'guest_win': 1.0}, 'score': -1}
+
+test_mostwins()
+
 
 def test_poisson():
     """ tests the poisson algorithm """
@@ -46,33 +93,45 @@ def test_poisson():
     poisson = models.PoissonModel()
 
     # prepares the data
-    prep_data = poisson.prepare_data(test_dataset)
-    assert isinstance(prep_data, dict)
+    prep_data = poisson.prepare_data(test_data)
+    assert isinstance(prep_data, pd.DataFrame)
+    assert (prep_data.result_type_id == 1).all()
 
     # calls set_data
-    poisson.set_data()
-    # todo: check ob poisson.data richtiges format hat
+    poisson.set_data(test_data)
 
     # starts the training
     poisson.start_training()
 
-    # starts the training
-    poisson.simulate_match('A', 'B')
-    # todo: check contents of poisson.simulation
+    # simulates the match
+    poisson.simulate_match('10', '20')
+    assert len(poisson.simulation) == poisson.MAX_GOALS + 1
+    assert len(poisson.simulation[0]) == poisson.MAX_GOALS + 1
 
     # tests the prediction of outcome
-    predict_return = poisson.predict_outcome()
-    assert isinstance(predict_return, dict)
+    predict_return_outcome = poisson.predict_outcome()
+    assert isinstance(predict_return_outcome, dict)
+    assert predict_return_outcome['home_win'] >= 0
+    assert predict_return_outcome['draw'] >= 0
+    assert predict_return_outcome['guest_win'] >= 0
+    assert predict_return_outcome['home_win'] + predict_return_outcome['draw'] + predict_return_outcome['guest_win'] <= 1
     # todo: check contents of predict_return
-    # todo: is the home_win >= guest_win >= draw
 
     # tests the prediction of score
-    predict_return = poisson.predict_score()
-    assert isinstance(predict_return, dict)
-    # todo: check contents of predict_return
-    # todo: is home/guest points >= 0
+    predict_return_score = poisson.predict_score()
+    assert isinstance(predict_return_score, dict)
+    assert predict_return_score[1]['home_points'] >= 0
+    assert predict_return_score[1]['guest_points'] >= 0
+    assert predict_return_score[1]['probability'] >= 0
+    assert predict_return_score[1]['probability'] <= 1
 
-    # todo: test predict
+    # test predict
+    predict_return = poisson.predict('10', '20')
+    assert isinstance(predict_return, dict)
+    assert predict_return['outcome'] == predict_return_outcome
+    assert predict_return['score'] == predict_return_score
+
+
 
 def test_dixoncoles():
     """ tests the dixoncoles algorithm """
@@ -116,25 +175,3 @@ def test_dixoncoles():
     # output_matrix = dixoncoles.dixon_coles_simulate_match()
     # assert isinstance(output_matrix, dict)
     # todo: check contents of predict_return
-
-
-
-
-def test_experience_always_wins():
-    model = models.ExperienceAlwaysWins(test_dataset)
-    winner = model.predict_winner
-
-    # B is the most experienced team with two matches:
-    assert winner('A', 'B') == winner('B', 'A') == 'B'
-    assert winner('C', 'B') == winner('B', 'C') == 'B'
-
-    # A and C are tied with one match, so the home team wins:
-    assert winner('A', 'C') == 'A'
-    assert winner('C', 'A') == 'C'
-
-    # We don't know 'D' or 'E' yet, so they should be counted as having zero
-    # matches:
-    assert winner('A', 'D') == winner('D', 'A') == 'A'
-    assert winner('A', 'E') == winner('E', 'A') == 'A'
-    assert winner('D', 'E') == 'D'
-    assert winner('E', 'D') == 'E'
