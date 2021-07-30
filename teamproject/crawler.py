@@ -646,6 +646,7 @@ class NBACrawler(Crawler):
         # print(matches.shape)
         results = pd.concat([results, next_results])
         # print('recursion done')
+        matches['match_date_time_utc'] = matches['match_date_time_utc'].apply(lambda x: x[:19] + 'Z')
         self.matches = matches
         self.results = results
         return matches, results
@@ -816,6 +817,8 @@ if __name__ == '__main__':
     #print(teams)
     #print(teams[teams['team_id'] == 1610612738].team_url_name.item())
     #data = crwlr.get_data_for_algo([1], [2021], 1, 366, 0, 0)
-    dict = crwlr.get_next_opponent(1610612738)
-    print(dict)
+    # dict = crwlr.get_next_opponent(1610612738)
+    #print(dict)
+    matches, results = crwlr.get_data_for_algo([1], [2020],1,365,0,0)
+    print(matches)
 # %%
