@@ -105,8 +105,8 @@ Tests
 ======
 We focussed on testing everything thoroughly. To execute the tests, go on like this::
 
-    python -m pytest teamproject/test_crawler.py
-    python -m pytest teamproject/test_models.py
+    python -m pytest tests/test_crawler.py
+    python -m pytest tests/test_models.py
 
 Roadmap
 ======
