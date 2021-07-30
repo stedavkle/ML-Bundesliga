@@ -4,6 +4,7 @@ web gui
 import eel
 import crawler
 import models
+import pandas as pd
 
 ''' --- CLASS DECLARATION --- '''
 
@@ -28,6 +29,7 @@ class Core:
     first_matchday = 0
     last_matchday = 0
     time = False
+    pretrained_data = False
     matchday = ''
 
     def __init__(self):
@@ -124,6 +126,9 @@ def get_next_matchday_from_parameters(parameter):
     Core.last_matchday = int(parameter['last_matchday'])
     if int(parameter['time']) == 1:
         Core.time = True
+    if int(parameter['pretrained_data']) == 1:
+        print("Vortrinierter Datensatz wird verwendet!")
+        Core.pretrained_data = True
 
     crawler_instance = Core.crawler_instance
 
@@ -150,9 +155,18 @@ def start_training_and_get_teams():
 
     model_instance = Core.model_instance
     model_instance.set_data(training_data)
-    model_instance.start_training(Core.time)
+    if Core.pretrained_data:
+        if Core.time:
+            csv_name = 'data/dixon_coles_pre_trained_dataset_decay.csv'
+        else:
+            csv_name = 'data/dixon_coles_pre_trained_dataset_no_decay.csv'
+        data = pd.read_csv(csv_name, header=None, index_col=0, squeeze=True).to_dict()
+        model_instance.set_pretrained_data(data)
+    else:
+        model_instance.start_training(Core.time)
 
     id_to_team, team_to_id = crawler_instance.get_team_dicts(Core.leagues, Core.seasons)
+    Core.pretrained_data = False
     crawler_instance.get_team_icons_from_wiki()
     return id_to_team
 

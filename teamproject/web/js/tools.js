@@ -400,6 +400,7 @@ function store_selected_parameter(){
   var first_matchday = parseInt(get_single_selected('first_matchday'));
   var last_matchday = parseInt(get_single_selected('last_matchday'));
   var points_checked = 0;
+  var pretrained_data = 0;
 
   if (selected_seasons.length == 1 && first_matchday > last_matchday)
   {
@@ -415,13 +416,17 @@ function store_selected_parameter(){
       if (document.getElementById('points_checkbox').checked){
         points_checked = 1;
       }
+      if (document.getElementById('pretrained_data').checked){
+        pretrained_data = 1;
+      }
 
       var selected_parameters = {
         'leagues': selected_leagues,
         'seasons': selected_seasons,
         'first_matchday': first_matchday,
         'last_matchday': last_matchday,
-        'time': points_checked
+        'time': points_checked,
+        'pretrained_data': pretrained_data
       };
 
       set_session_item('final_leagues', selected_leagues);

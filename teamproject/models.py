@@ -1,5 +1,5 @@
 """
-This module contains code for a prediction models.
+This module contains code for prediction models.
 """
 # %%
 from abc import ABCMeta, abstractmethod, ABC
@@ -80,6 +80,22 @@ class Models:
 
         return data
 
+    def check_ids_in_data(self, team1_id, team2_id, data):
+        team_columns = data[['team_home_id', 'team_guest_id']]
+        team1_id = str(team1_id)
+        team2_id = str(team2_id)
+
+        team1_in_data = False
+        team2_in_data = False
+
+        if (team_columns["team_home_id"] == team1_id).any() or (team_columns["team_guest_id"] == team1_id).any():
+            team1_in_data = True
+        if (team_columns["team_home_id"] == team2_id).any() or (team_columns["team_guest_id"] == team2_id).any():
+            team2_in_data = True
+        print(team1_in_data)
+        print(team2_in_data)
+        return team1_in_data and team2_in_data
+
     # abstract methods
     @abstractmethod
     def get_model_requirements(self):
@@ -147,40 +163,39 @@ class MostWins(Models):
         team1 = str(team1)
         team2 = str(team2)
 
-        outcome = {team1: 0, 'draw': 0, team2: 0}
-        # extract the matchup history from the given teams
-        data_2_teams = self.data[(self.data['team_home_id'] == team1) & (self.data['team_guest_id'] == team2)
-                                 | (self.data['team_home_id'] == team2) & (self.data['team_guest_id'] == team1)]
-        # subtract the goals and create new column
-        data_2_teams['result'] = data_2_teams['points_home'] - data_2_teams['points_guest']
-
-        total_matches = data_2_teams.shape[0]
-        # look wich team scored more and sum the wins/draws
-        for index in data_2_teams.index:
-            result = data_2_teams.loc[index, 'result']
-            home_team = data_2_teams.loc[index, 'team_home_id']
-            guest_team = data_2_teams.loc[index, 'team_guest_id']
-            if result == 0:
-                outcome['draw'] = outcome['draw'] + 1
-            elif result > 0:
-                outcome[home_team] = outcome[home_team] + 1
-            elif result < 0:
-                outcome[guest_team] = outcome[guest_team] + 1
-
-        if total_matches == 0:
-            return {
-                'outcome': -1,
-                'score': -1
-            }
+        if not self.check_ids_in_data(team1, team2, self.data):
+            outcome = -1
         else:
-            return {
-                'outcome': {
-                    'home_win': round((outcome[team1] / total_matches), 2),
-                    'draw': round((outcome['draw'] / total_matches), 2),
-                    'guest_win': round((outcome[team2] / total_matches), 2)
-                },
-                'score': -1
-            }
+            outcome = {team1: 0, 'draw': 0, team2: 0}
+            # extract the matchup history from the given teams
+            data_2_teams = self.data[(self.data['team_home_id'] == team1) & (self.data['team_guest_id'] == team2)
+                                     | (self.data['team_home_id'] == team2) & (self.data['team_guest_id'] == team1)]
+            # subtract the goals and create new column
+            data_2_teams['result'] = data_2_teams['points_home'] - data_2_teams['points_guest']
+
+            total_matches = data_2_teams.shape[0]
+            # look wich team scored more and sum the wins/draws
+            for index in data_2_teams.index:
+                result = data_2_teams.loc[index, 'result']
+                home_team = data_2_teams.loc[index, 'team_home_id']
+                guest_team = data_2_teams.loc[index, 'team_guest_id']
+                if result == 0:
+                    outcome['draw'] = outcome['draw'] + 1
+                elif result > 0:
+                    outcome[home_team] = outcome[home_team] + 1
+                elif result < 0:
+                    outcome[guest_team] = outcome[guest_team] + 1
+
+            outcome = {
+                        'home_win': round((outcome[team1] / total_matches), 2),
+                        'draw': round((outcome['draw'] / total_matches), 2),
+                        'guest_win': round((outcome[team2] / total_matches), 2)
+                    }
+
+        return {
+            'outcome': outcome,
+            'score': -1
+        }
 
 
 class PoissonModel(Models):
@@ -281,9 +296,16 @@ class PoissonModel(Models):
 
         :returns: dict: 2 dicts in Uniformat
         """
-        self.simulate_match(home_id, guest_id)
-        outcome = self.predict_outcome()
-        result = self.predict_score()
+        print(self.data)
+
+        if not (((self.data["team"] == str(home_id)).any() or (self.data["opponent"] == str(home_id)).any()) and
+            ((self.data["team"] == str(guest_id)).any() or (self.data["opponent"] == str(guest_id)).any())):
+            outcome = -1
+            result = -1
+        else:
+            self.simulate_match(home_id, guest_id)
+            outcome = self.predict_outcome()
+            result = self.predict_score()
         return {'outcome': outcome, 'score': result}
 
 
@@ -318,12 +340,19 @@ class DixonColes(Models):
         else:
             self.params = self.solve_parameters(self.data)
 
+    def set_pretrained_data(self, data):
+        self.params = data
+
     def predict(self, home_id, guest_id):
-        prediction = self.dixon_coles_simulate_match(self.params, str(home_id), str(guest_id), max_goals=self.MAX_GOALS)
-        home_win = np.sum(np.tril(prediction, -1))
-        draw = np.sum(np.diag(prediction))
-        guest_win = np.sum(np.triu(prediction, 1))
-        result = {'home_win': round(home_win, 2), 'draw': round(draw, 2), 'guest_win': round(guest_win, 2)}
+
+        if not self.check_ids_in_data(home_id, guest_id, self.data):
+            result = -1
+        else:
+            prediction = self.dixon_coles_simulate_match(self.params, str(home_id), str(guest_id), max_goals=self.MAX_GOALS)
+            home_win = np.sum(np.tril(prediction, -1))
+            draw = np.sum(np.diag(prediction))
+            guest_win = np.sum(np.triu(prediction, 1))
+            result = {'home_win': round(home_win, 2), 'draw': round(draw, 2), 'guest_win': round(guest_win, 2)}
         return {'outcome': result, 'score': -1}
 
     # specific funcions
@@ -448,6 +477,7 @@ class LogisticRegModel(Models):
                       }
 
     def __init__(self):
+        self.data = ''
         self.home_teams = ''
         self.away_teams = ''
         self.home_scores = ''
@@ -469,6 +499,7 @@ class LogisticRegModel(Models):
         :param pd.DF: DB containing matches and the results in Uniformat
         """
         prepared_data = self.prepare_data(data)
+        self.data = prepared_data
         self.home_teams = prepared_data['team_home_id'].tolist()
         self.away_teams = prepared_data['team_guest_id'].tolist()
         self.home_scores = prepared_data['points_home'].tolist()
@@ -532,31 +563,34 @@ class LogisticRegModel(Models):
         A dataframe with the probabilities.
 
         """
-        home_team_name = str(home_team_name)
-        away_team_name = str(away_team_name)
-        check_is_fitted(self.model_)
-        if self.check_teams(home_team_name, away_team_name) == -1:
-            return {
-                'outcome': -1,
-                'score': -1
-            }
+        if not self.check_ids_in_data(home_team_name, away_team_name, self.data):
+            outcome = -1
         else:
-            home_team_name = np.array(home_team_name)
-            away_team_name = np.array(away_team_name)
-            home_dummies = self.team_encoding_.transform(home_team_name.reshape(-1, 1))
-            away_dummies = self.team_encoding_.transform(away_team_name.reshape(-1, 1))
-            X = np.concatenate([home_dummies, away_dummies], 1)
+            home_team_name = str(home_team_name)
+            away_team_name = str(away_team_name)
+            check_is_fitted(self.model_)
+            if self.check_teams(home_team_name, away_team_name) == -1:
+                outcome = -1
+            else:
+                home_team_name = np.array(home_team_name)
+                away_team_name = np.array(away_team_name)
+                home_dummies = self.team_encoding_.transform(home_team_name.reshape(-1, 1))
+                away_dummies = self.team_encoding_.transform(away_team_name.reshape(-1, 1))
+                X = np.concatenate([home_dummies, away_dummies], 1)
 
-            outcome = self.model_.predict_proba(X)[0]
-            guest_win = outcome[0]
-            draw = outcome[1]
-            home_win = outcome[2]
+                outcome = self.model_.predict_proba(X)[0]
+                guest_win = outcome[0]
+                draw = outcome[1]
+                home_win = outcome[2]
 
-            return {'outcome': {'home_win': round(home_win, 2),
-                                'draw': round(draw, 2),
-                                'guest_win': round(guest_win, 2)},
-                    'score': -1
-                    }
+                outcome = {'home_win': round(home_win, 2),
+                                    'draw': round(draw, 2),
+                                    'guest_win': round(guest_win, 2)
+                           }
+
+        return {'outcome': outcome,
+                'score': -1
+                }
 
 
 # %%

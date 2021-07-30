@@ -148,7 +148,10 @@ function training_data_render(parameter){
     var html_str_matchdays_last = "<p>bis einschließlich Spieltag:</p>" + create_matchday_selection('last');
     var html_str_time = "<div class=\'form-check\'>" +
         "<input type=\'checkbox\' class=\'form-check-input\' id=\'points_checkbox\' checked>" +
-        "<label class=\'form-check-label\'>ältere Spiele schwächer gewichten (empfohlen)</label></div>";
+        "<label class=\'form-check-label\'>ältere Spiele schwächer gewichten (empfohlen)</label></div>" +
+        "<div class=\'form-check\'>" +
+        "<input type=\'checkbox\' class=\'form-check-input\' id=\'pretrained_data\'>" +
+        "<label class=\'form-check-label\'>Vortrainierten Datensatz verwenden</label></div>";
 
     set_innerHTML("1-col-1", html_str_caption);
     set_innerHTML("2-col-1", html_str_leagues);
@@ -330,11 +333,20 @@ function next_matchday_prediction_render(){
                 "<th><img class=\'result-element, result-img\' src=\'img/" + home_id + ".png\' alt=\'Logo " + home + "\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\" style=\'height: 7vh\'></th>" +
                 "<th><img class=\'result-element, result-img\' src=\'img/colon.png\' style=\'height: 7vh\'></th>" +
                 "<th><img class=\'result-element, result-img\' src=\'img/" + guest_id + ".png\' alt=\'Logo " + guest + "\' onerror=\"this.onerror=null; this.src=\'img/no_icon.png\'\" style=\'height: 7vh\'></th>" +
-                "<th>" + guest + "</th>" +
-                "<th>" + outcome.home_win + "</th>" +
+                "<th>" + guest + "</th>";
+
+        var NO_RESULT = -1;
+        if (outcome == NO_RESULT){
+            html_table += "<th>keine</th>" +
+                "<th>Vorhersage</th>" +
+                "<th>möglich!</th>";
+        }
+        else {
+            html_table += "<th>" + outcome.home_win + "</th>" +
                 "<th>" + outcome.draw + "</th>" +
-                "<th>" + outcome.guest_win + "</th>" +
-            "</tr>";
+                "<th>" + outcome.guest_win + "</th>";
+        }
+        html_table += "</tr>";
     }
     html_table += "</tbody></table></div>";
 
