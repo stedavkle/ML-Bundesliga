@@ -110,9 +110,9 @@ class Crawler:
 class BundesligaCrawler(Crawler):
     # PATHs for uniform Data
     cwd = os.getcwd()
-    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject/data/bl{}_{}_teams_unif.csv')
-    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject/data/bl{}_{}_matches_unif.csv')
-    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject/data/bl{}_{}_results_unif.csv')
+    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_teams_unif.csv')
+    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_matches_unif.csv')
+    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_results_unif.csv')
     # uniform_season_scores_db_path = r'./data/bl{}_{}_scores_unif.csv'
 
     # COLUMNNAMES for uniform Data
@@ -521,9 +521,9 @@ class NBACrawler(Crawler):
     MATCHES_TEAM_URL = 'http://data.nba.net/10s/prod/v1/{}/teams/{}/schedule.json'
     ICON_URL = 'http://loodibee.com/wp-content/uploads/nba-{}-{}-logo.png'
 
-    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject/data/nba_{}_teams_unif.csv')
-    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject/data/nba_{}_matches_unif.csv')
-    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject/data/nba_{}_results_unif.csv')
+    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\nba_{}_teams_unif.csv')
+    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject\\data\\nba_{}_matches_unif.csv')
+    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\nba_{}_results_unif.csv')
 
     NBA_MATCHES_API_COLUMNS =           ['gameId',  'startTimeUTC',         'hTeam.teamId', 'hTeam.score', 'vTeam.teamId',  'vTeam.score']
     UNIFORM_MATCHES_RESULTS_COLUMNS =   ['match_id','match_date_time_utc',  'team_home_id', 'points_home', 'team_guest_id', 'points_guest']
@@ -686,8 +686,8 @@ class NBACrawler(Crawler):
         matches = pd.json_normalize(response.json()['league']['standard'])[self.NBA_MATCHES_API_COLUMNS]
         matches.columns = self.UNIFORM_MATCHES_RESULTS_COLUMNS
 
-        #current_day = datetime.datetime.now()
-        current_day = datetime.datetime.strptime('2021-05-21 01:00:00', "%Y-%m-%d %H:%M:%S")
+        current_day = datetime.datetime.now()
+        #current_day = datetime.datetime.strptime('2021-05-21 01:00:00', "%Y-%m-%d %H:%M:%S")
         last_matchday = datetime.datetime.strptime(matches.tail(1)['match_date_time_utc'].item(), "%Y-%m-%dT%H:%M:%S.%fZ")
         SEASON_FINISHED = (last_matchday-current_day).days<0
 
@@ -702,15 +702,23 @@ class NBACrawler(Crawler):
                 'is_finished': 0, 'points_home': 0, 'points_guest': 0,
                 'date': 0, 'time': 0, 'location': 'Unbekannt'}
 
+        # print(self.teams[['team_id', 'team_name']])
+        # print('GUEST_TEAM_ID')
+        # guest_team_id = next_match['team_guest_id'].item()
+        # print(guest_team_id)
+        # print(self.teams[self.teams['team_id'] == int(guest_team_id)]['team_name'].item())
+        # print('HOME_TEAM_ID')
+        # home_team_id = next_match['team_home_id'].item()
+        # print(home_team_id)
+        # print(self.teams[self.teams['team_id'] == int(home_team_id)]['team_name'].item())
 
-        print('TEAMNAME!!!!!!!!!!!!!!')
-        print(next_match['team_guest_id'].item())
-        print(self.teams[self.teams['team_id'] == next_match['team_guest_id'].item()]['team_name'])
-        # TODO: get team_guest_name
-        dict['team_home_id'] = int(next_match['team_home_id'].item())
-        dict['team_home_name'] = self.teams[self.teams['team_id'] == team_id]['team_name'].item()
-        dict['team_guest_id'] = int(next_match['team_guest_id'].item())
-        dict['team_guest_name'] = self.teams[self.teams['team_id'] == next_match['team_guest_id'].item()]['team_name']
+        home_team_id = int(next_match['team_home_id'].item())
+        guest_team_id = int(next_match['team_guest_id'].item())
+
+        dict['team_home_id'] = home_team_id
+        dict['team_home_name'] = self.teams[self.teams['team_id'] == int(home_team_id)]['team_name'].item()
+        dict['team_guest_id'] = guest_team_id
+        dict['team_guest_name'] = self.teams[self.teams['team_id'] == int(guest_team_id)]['team_name'].item()
 
         utc_string = next_match['match_date_time_utc'].item()
 
@@ -801,10 +809,11 @@ if __name__ == '__main__':
     crwlr = NBACrawler()
 
     #print(crwlr.get_next_matchday())
-    print(crwlr.get_available_data_for_leagues()[1])
+    crwlr.get_available_data_for_leagues()
     id_to_team, team_to_id = crwlr.get_team_dicts([1],[2020,2019,2018])
-    print(str(1610612751) + str(id_to_team[1610612751]))
+    #print(id_to_team)
     teams = crwlr.get_teams([2020], 0)
+    #print(teams)
     #print(teams[teams['team_id'] == 1610612738].team_url_name.item())
     #data = crwlr.get_data_for_algo([1], [2021], 1, 366, 0, 0)
     dict = crwlr.get_next_opponent(1610612738)
