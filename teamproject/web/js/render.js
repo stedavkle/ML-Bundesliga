@@ -121,7 +121,13 @@ function model_selection_render(models){
     "<option value=0 selected disabled hidden>nichts ausgewählt</option>";
 
     for (var key in models){
-        html_str += "<option value=" + key + ">" + models[key]['model'] + "</option>";
+
+        // <== This part is hardcoded until there is a solution for NBA Dixon Coles Issue
+        if (!(get_session_item('sport') == 2 && key == 4)){
+            html_str += "<option value=" + key + ">" + models[key]['model'] + "</option>";
+        }
+        // 'remove if-condition when issue is solved ==>
+
     }
     html_str += "</select>";
 
