@@ -273,4 +273,5 @@ def predict_next_matchday(league):
     print(matchday_prediction)
     return matchday_prediction
 
-
+if __name__ == '__main__':
+    Core()
