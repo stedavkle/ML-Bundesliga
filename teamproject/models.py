@@ -81,6 +81,48 @@ class Models:
 
         return data
 
+    def evaluate(self, eval_data, filename):
+        test_matches = eval_data[0]
+        test_results = eval_data[1]
+        endresults = test_results[test_results['result_type_id'] == 1]
+
+        test_data = pd.merge(test_matches, endresults, on='match_id')[
+            ['match_id', 'matchday', 'team_home_id', 'team_guest_id', 'points_home', 'points_guest']]
+        test_data['outcome'] = 0
+
+        evaluation_data = pd.DataFrame(columns=['match_id', 'home_win', 'draw', 'guest_win', 'outcome'])
+
+        for index, match in test_data.iterrows():
+            team_home_id = match.team_home_id
+            team_guest_id = match.team_guest_id
+            if match['points_home'] > match['points_guest']:
+                match['outcome'] = 1
+            elif match['points_home'] < match['points_guest']:
+                match['outcome'] = -1
+
+            prediction = self.predict(team_home_id, team_guest_id)
+            #
+            outcome = prediction['outcome']
+            if outcome == -1:
+                continue
+            evaluation_data = evaluation_data.append({'match_id': match['match_id'].item(),
+                                                      'home_win': outcome['home_win'],
+                                                      'draw': outcome['draw'],
+                                                      'guest_win': outcome['guest_win'],
+                                                      'outcome': (np.argmax(list(outcome.values())) - 1) * (-1)},
+                                                     ignore_index=True)
+
+        evaluation_data['match_id'] = evaluation_data['match_id'].astype('int64')
+        evaluation_data['outcome'] = evaluation_data['outcome'].astype('int64')
+
+        test_data_path = 'teamproject/data/evaluation/{}_test_data.csv'.format(filename)
+        eval_data_path = 'teamproject/data/evaluation/{}_eval_data.csv'.format(filename)
+        test_data.to_csv(test_data_path, index=False)
+        evaluation_data.to_csv(eval_data_path, index=False)
+
+        return test_data, evaluation_data
+
+
     def check_ids_in_data(self, team1_id, team2_id, data):
         team_columns = data[['team_home_id', 'team_guest_id']]
         team1_id = str(team1_id)
@@ -93,8 +135,6 @@ class Models:
             team1_in_data = True
         if (team_columns["team_home_id"] == team2_id).any() or (team_columns["team_guest_id"] == team2_id).any():
             team2_in_data = True
-        print(team1_in_data)
-        print(team2_in_data)
         return team1_in_data and team2_in_data
 
     def set_max_goals(self, max_goals):
@@ -116,7 +156,6 @@ class Models:
     @abstractmethod
     def predict(self):
         pass
-
 
 # TODO: hier hört abstract auf
 
@@ -178,28 +217,33 @@ class MostWins(Models):
             data_2_teams['result'] = data_2_teams['points_home'] - data_2_teams['points_guest']
 
             total_matches = data_2_teams.shape[0]
-            # look wich team scored more and sum the wins/draws
-            for index in data_2_teams.index:
-                result = data_2_teams.loc[index, 'result']
-                home_team = data_2_teams.loc[index, 'team_home_id']
-                guest_team = data_2_teams.loc[index, 'team_guest_id']
-                if result == 0:
-                    outcome['draw'] = outcome['draw'] + 1
-                elif result > 0:
-                    outcome[home_team] = outcome[home_team] + 1
-                elif result < 0:
-                    outcome[guest_team] = outcome[guest_team] + 1
 
-            outcome = {
-                        'home_win': round((outcome[team1] / total_matches), 2),
-                        'draw': round((outcome['draw'] / total_matches), 2),
-                        'guest_win': round((outcome[team2] / total_matches), 2)
-                    }
+            if total_matches == 0:
+                outcome = -1
+            else:
+                # look wich team scored more and sum the wins/draws
+                for index in data_2_teams.index:
+                    result = data_2_teams.loc[index, 'result']
+                    home_team = data_2_teams.loc[index, 'team_home_id']
+                    guest_team = data_2_teams.loc[index, 'team_guest_id']
+                    if result == 0:
+                        outcome['draw'] = outcome['draw'] + 1
+                    elif result > 0:
+                        outcome[home_team] = outcome[home_team] + 1
+                    elif result < 0:
+                        outcome[guest_team] = outcome[guest_team] + 1
+
+                outcome = {
+                            'home_win': round((outcome[team1] / total_matches), 2),
+                            'draw': round((outcome['draw'] / total_matches), 2),
+                            'guest_win': round((outcome[team2] / total_matches), 2)
+                        }
 
         return {
             'outcome': outcome,
             'score': -1
         }
+
 
 
 class PoissonModel(Models):
@@ -300,7 +344,6 @@ class PoissonModel(Models):
 
         :returns: dict: 2 dicts in Uniformat
         """
-        print(self.data)
 
         if not (((self.data["team"] == str(home_id)).any() or (self.data["opponent"] == str(home_id)).any()) and
             ((self.data["team"] == str(guest_id)).any() or (self.data["opponent"] == str(guest_id)).any())):
@@ -530,9 +573,6 @@ class LogisticRegModel(Models):
         home_dummies = self.team_encoding_.transform(home_team_name.reshape(-1, 1))
         away_dummies = self.team_encoding_.transform(away_team_name.reshape(-1, 1))
 
-        print(home_dummies)
-        print(away_dummies)
-
         X = np.concatenate([home_dummies, away_dummies], 1)
         y = np.sign(home_score - away_score)
 
@@ -543,7 +583,6 @@ class LogisticRegModel(Models):
         model.fit(X, y)
         self.model_ = model
 
-        print(model.coef_)
 
     def check_teams(self, home_team_name, away_team_name):
         """Check if team are encoded."""
@@ -598,15 +637,39 @@ class LogisticRegModel(Models):
 
 
 # %%
+
+def compare(test_matches, evaluation_data):
+    total = evaluation_data.shape[0]
+    correct = 0
+    for match_id in evaluation_data['match_id']:
+        predicted_outcome = evaluation_data[evaluation_data['match_id'] == match_id]['outcome'].item()
+        real_outcome = test_matches[test_matches['match_id'] == match_id]['outcome'].item()
+
+        if predicted_outcome == real_outcome:
+            correct += 1
+    hit_percentage = correct/total
+    return hit_percentage
+
 # for testing inside the script
 if __name__ == '__main__':
     crawler = crawler.BundesligaCrawler()
-    dataset = crawler.get_data_for_algo([1], [2020, 2019, 2018], 1, 34, 0, 0)
+    dataset = crawler.get_data_for_algo([1, 2], [2019], 1, 34, 0, 0)
+    test_data = crawler.get_data_for_algo([1], [2020], 1, 34, 0, 0)
 
-    model = DixonColes()
+    model = LogisticRegModel()
     model.set_data(dataset)
-    model.start_training(True)
-    outcome = model.predict(str(40), str(9))
+
+    #csv_name = crawler.pretrained_data_source(True)
+    #data = pd.read_csv(csv_name, header=None, index_col=0, squeeze=True).to_dict()
+    #model.set_pretrained_data(data)
+
+    model.start_training()
+
+    test_data, evaluation_data = model.evaluate(test_data, 'log-reg_bl1u2_2019')
+    perc = compare(test_data, evaluation_data)
+    print(perc)
+
+    #outcome = model.predict(str(40), str(9))
 
     #print(outcome)
 
