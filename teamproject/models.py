@@ -19,7 +19,7 @@ from sklearn.utils.validation import check_is_fitted
 from scipy.optimize import minimize
 
 
-# TODO: Hier fängt abstract an
+# begin of abstract class
 class Models:
     __metaclass__ = ABCMeta
 
@@ -35,6 +35,9 @@ class Models:
 
     # non-abstract methods
     def get_models(self):
+        '''
+        returns a dictionary with available models
+        '''
         # TODO: if model added, edit models object
         models = {
             1: {'model_id': 1,
@@ -82,6 +85,13 @@ class Models:
         return data
 
     def evaluate(self, eval_data, filename):
+        """
+        compares prediction of each match listed in eval_data with real result and stores it in csv
+        eval_data will be transformed to a dataset, containing important values for comparison
+        :eval_data pd.Dataframe of matches and results
+        :filename string with name of file
+        :return pd.Dataframe of test dataset, pd.Dataframe of predicted results
+        """
         test_matches = eval_data[0]
         test_results = eval_data[1]
         endresults = test_results[test_results['result_type_id'] == 1]
@@ -124,6 +134,13 @@ class Models:
 
 
     def check_ids_in_data(self, team1_id, team2_id, data):
+        """
+        checks if training dataset contains team ids, otherwise prediction is not possible
+        :team1_id int id of team 1
+        :team2_id int id of team 2
+        :data pd.Dataframe training dataset
+        :return bool
+        """
         team_columns = data[['team_home_id', 'team_guest_id']]
         team1_id = str(team1_id)
         team2_id = str(team2_id)
@@ -157,8 +174,9 @@ class Models:
     def predict(self):
         pass
 
-# TODO: hier hört abstract auf
+# end of abstract class
 
+# -------------- implement new models here --------------
 
 class MostWins(Models):
     parameter_dict = {'leagues': 1,
@@ -330,7 +348,6 @@ class PoissonModel(Models):
         Extracts the most likely outcome with goals using the simulation done in advance.
         :returns dict: homePoints:x, guestPoints:y, probab:z
         """
-        # TODO: second, third likely score?
         index = np.argmax(self.simulation)
         # argmax gives back the 1 dim. index from maximum in matrix
         # index mod rows = x + (remainer)y
@@ -356,7 +373,6 @@ class PoissonModel(Models):
         return {'outcome': outcome, 'score': result}
 
 
-# TODO: DOCSTRINGS!!!
 class DixonColes(Models):
     XI = 0.0018
 
@@ -382,16 +398,29 @@ class DixonColes(Models):
         self.data = self.prepare_data(data)
 
     def start_training(self, xi=False):
+        """
+        starts dixon-coles training with decay or without
+        :xi bool if True is set, dixon coles traines with decay, otherwise not
+        """
         if xi:
             self.params = self.solve_parameters_decay(self.data, self.XI)
         else:
             self.params = self.solve_parameters(self.data)
 
     def set_pretrained_data(self, data):
+        """
+        upload dataset with pretrained values
+        :data dict pretrained values
+        """
         self.params = data
 
     def predict(self, home_id, guest_id):
-
+        """
+        predicts possible outcome of a match by given team ids
+        :home_id int
+        :guest_id int
+        :return dict with result of prediction
+        """
         if not self.check_ids_in_data(home_id, guest_id, self.data):
             result = -1
         else:
@@ -462,6 +491,10 @@ class DixonColes(Models):
     def solve_parameters_decay(self, dataset, xi=0.001, debug=False, init_vals=None,
                                options={'disp': True, 'maxiter': 100},
                                constraints=[{'type': 'eq', 'fun': lambda x: sum(x[:20]) - 20}], **kwargs):
+        """
+        calculates parameters for each team due training, including decay
+        return - parameter dictionary
+        """
         teams = np.sort(dataset['team_home_id'].unique())
         # check for no weirdness in dataset
         away_teams = np.sort(dataset['team_guest_id'].unique())
@@ -638,7 +671,14 @@ class LogisticRegModel(Models):
 
 # %%
 
+# functions for evaluation
 def compare(test_matches, evaluation_data):
+    """
+    compares each predicted result with real result and calculates prediction precision
+    :test_matches pd.Dataframe test dataset
+    :evaluation_data pd.Dataframe predicted data
+    :return float prediction precision
+    """
     total = evaluation_data.shape[0]
     correct = 0
     for match_id in evaluation_data['match_id']:

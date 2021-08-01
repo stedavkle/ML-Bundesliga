@@ -118,9 +118,9 @@ class Crawler:
 class BundesligaCrawler(Crawler):
     # PATHs for uniform Data
     cwd = os.getcwd()
-    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_teams_unif.csv')
-    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_matches_unif.csv')
-    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\bl{}_{}_results_unif.csv')
+    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject/data/bl{}_{}_teams_unif.csv')
+    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject/data/bl{}_{}_matches_unif.csv')
+    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject/data/bl{}_{}_results_unif.csv')
     # uniform_season_scores_db_path = r'./data/bl{}_{}_scores_unif.csv'
 
     # COLUMNNAMES for uniform Data
@@ -535,9 +535,9 @@ class NBACrawler(Crawler):
     MATCHES_TEAM_URL = 'http://data.nba.net/10s/prod/v1/{}/teams/{}/schedule.json'
     ICON_URL = 'http://loodibee.com/wp-content/uploads/nba-{}-{}-logo.png'
 
-    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\nba_{}_teams_unif.csv')
-    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject\\data\\nba_{}_matches_unif.csv')
-    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject\\data\\nba_{}_results_unif.csv')
+    UNIFORM_TEAMS_DB_PATH = os.path.join(cwd, 'teamproject/data/nba_{}_teams_unif.csv')
+    UNIFORM_SEASON_MATCHES_DB_PATH = os.path.join(cwd, 'teamproject/data/nba_{}_matches_unif.csv')
+    UNIFORM_SEASON_RESULTS_DB_PATH = os.path.join(cwd, 'teamproject/data/nba_{}_results_unif.csv')
 
     NBA_MATCHES_API_COLUMNS =           ['gameId',  'startTimeUTC',         'hTeam.teamId', 'hTeam.score', 'vTeam.teamId',  'vTeam.score']
     UNIFORM_MATCHES_RESULTS_COLUMNS =   ['match_id','match_date_time_utc',  'team_home_id', 'points_home', 'team_guest_id', 'points_guest']

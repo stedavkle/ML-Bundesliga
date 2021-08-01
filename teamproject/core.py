@@ -156,8 +156,6 @@ def get_next_matchday_from_parameters(parameter):
     matchday = crawler_instance.get_next_matchday()
     Core.matchday = matchday
 
-    print(matchday)
-
     return matchday
 
 
@@ -270,7 +268,6 @@ def predict_next_matchday(league):
         }
         matchday_prediction.append(result_dict)
 
-    print(matchday_prediction)
     return matchday_prediction
 
 if __name__ == '__main__':

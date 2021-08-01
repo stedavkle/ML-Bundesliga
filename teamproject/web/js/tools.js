@@ -253,11 +253,10 @@ function set_pagination_design(id){
 function next_matchday_table(league){
   //window.alert("next_matchday_table(): entered");
   set_pagination_design(league);
-  // TODO: entscheiden, wo der Button hin soll (evtl. div wieder weg machen)
   set_session_item('next_matchday_league', league);
   var table_str = "<div class=\"d-flex justify-content-between\">" +
       "<div><h3>Nächster Spieltag in der " + league + ". Liga</h3></div>" +
-      "<div><!--<button class=\'btn btn-danger\' onclick=\"set_session_item(\'stage\', 8), build_stage()\">Matchday vorhersagen</button>--></div>" +
+      "<div></div>" +
       "</div>" +
       "<table class=\'table table-hover\'><thead class=\'thead-dark\'><tr>" +
       "<th>Heim</th>" +

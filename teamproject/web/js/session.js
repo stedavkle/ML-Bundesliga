@@ -1,11 +1,6 @@
-// TODO: edit new sports here (- may be moved to core in later version -)
-class Sports {
-    sports = {
-        1: 'Fussball Deutschland'
-    };
-}
-
-
+/*
+    constructs stage through session storage
+ */
 /**
  * set inital states of session storage
  * @param sport - selected database id
