@@ -4,7 +4,6 @@ from teamproject import models
 # models as models
 import pandas as pd
 
-
 # It is important to test your algorithms against handcrafted data to reliably
 # cover edge cases! So feel free to make up several test datasets in the same
 # format as would be returned by your crawler:
@@ -26,7 +25,6 @@ results = pd.DataFrame({'result_id': [1, 2, 3, 4],
                         'points_guest': [2, 0, 1, 5],
                         'result_type_id': [1, 1, 1, 1],
                         'match_id': [1, 2, 3, 4]})
-
 test_data = [matches, results]
 
 '''
@@ -237,8 +235,35 @@ def test_LogisticRegModel():
     print(test_result)
 
 
-test_LogisticRegModel()
+def test_evaluate():
+    #instance all 3 testable models
+    mostwins = models.MostWins()
+    poisson = models.PoissonModel()
+    logRegModel = models.LogisticRegModel()
 
+    #set modeldata
+    mostwins.set_data(test_data)
+    poisson.set_data(test_data)
+    logRegModel.set_data(test_data)
 
+    #train models
+    poisson.start_training()
+    logRegModel.start_training()
 
+    #run evaluate function for all 3 testable models
+    results_mostwins = mostwins.evaluate(test_data, 'test_mostwins')
+    results_poisson = poisson.evaluate(test_data, 'test_poisson')
+    results_logRegModel = logRegModel.evaluate(test_data, 'test_logRegModel')
 
+    #test if returned object is dataframe
+    assert isinstance(results_mostwins[0], pd.DataFrame)
+    assert isinstance(results_mostwins[1], pd.DataFrame)
+    assert isinstance(results_mostwins, object)
+
+    assert isinstance(results_poisson[0], pd.DataFrame)
+    assert isinstance(results_poisson[1], pd.DataFrame)
+    assert isinstance(results_poisson, object)
+
+    assert isinstance(results_logRegModel[0], pd.DataFrame)
+    assert isinstance(results_logRegModel[1], pd.DataFrame)
+    assert isinstance(results_logRegModel, object)
