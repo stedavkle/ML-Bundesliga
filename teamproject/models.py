@@ -693,7 +693,7 @@ def compare(test_matches, evaluation_data):
 # for testing inside the script
 if __name__ == '__main__':
     crawler = crawler.BundesligaCrawler()
-    dataset = crawler.get_data_for_algo([1, 2], [2019], 1, 34, 0, 0)
+    dataset = crawler.get_data_for_algo([1, 2], [2019, 2018, 2017, 2016], 1, 34, 0, 0)
     test_data = crawler.get_data_for_algo([1], [2020], 1, 34, 0, 0)
 
     model = LogisticRegModel()
@@ -705,7 +705,7 @@ if __name__ == '__main__':
 
     model.start_training()
 
-    test_data, evaluation_data = model.evaluate(test_data, 'log-reg_bl1u2_2019')
+    test_data, evaluation_data = model.evaluate(test_data, 'log-reg_bl1u2_2019-2016')
     perc = compare(test_data, evaluation_data)
     print(perc)
 
