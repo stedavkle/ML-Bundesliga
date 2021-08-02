@@ -36,7 +36,7 @@ Teamproject Sportvorhersage |Bundesliga-Logo|
 What is our project about?
 ======
 This project was started as a university team project, the goal being to predict the outcomes of
-games in the german Premier-League, the Bundesliga. Being programmed in a modal and abstract manner,
+games in the German Bundesliga. Being programmed in a modal and abstract manner,
 this algorithm features easy ways to tie in and predict various other sports, provided only that they
 feature a quantifiable way to track scores. One example of this flexibility is our already implemented
 adaptation of basketball, more specifically the US' NBA.
@@ -55,7 +55,7 @@ The resulting predictions are dependant on the algorithm used, simpler models me
 a draw or win for either team, whereas the more complex machine learning models may also give a concrete score
 predicted for the match.
 
-There is a lot more to be discovered, so let's get started with the
+There is a lot more to be discovered, so let's get started.
 
 Visuals
 ======
