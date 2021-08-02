@@ -35,29 +35,36 @@ Teamproject Sportvorhersage |Bundesliga-Logo|
 
 What is our project about?
 ======
-We started this project to predict the results of games of the German Football Bundesliga.
-It started as that, but as this project is programmed modal it is possible to be used for
-any sport or league. You can see a glimpse of that, when you look at our implementation of the
-Basketball League NBA.
+This project was started as a university team project, the goal being to predict the outcomes of
+games in the german Premier-League, the Bundesliga. Being programmed in a modal and abstract manner,
+this algorithm features easy ways to tie in and predict various other sports, provided only that they
+feature a quantifiable way to track scores. One example of this flexibility is our already implemented
+adaptation of basketball, more specifically the US' NBA.
 
-But to be more precise, we wanted to use the data from past years and find
-clever algorithms and use machine learning models to predict game results as accurately as possible.
+To elaborate further on what this project is about: we wanted to utilize past data to find
+clever algorithms and machine learning models,
+striving to accurately predict future outcomes using the aforementioned models.
 
-We also wanted to enable a great user experience, that's why we were striving to make it very
-easy for the user to set all the possible variables themselves. You can now decide which teams you want to predict,
-which algorithm you want to use, with which data the models are trained and so on.
+With more features however, came a more complex user interaction. As a means of counteracting this,
+we built a web based, streamlined User Interface to guide the user through this extensive selection process.
+Advanced settings in the UI are pre selected, allowing newer users to easily navigate, without needing
+detailed knowledge of the algorithms capabilities, while giving more experienced users direct access to
+fine tuned predictions.
 
-We'll then give you probabilities of a home win, a draw and a guest win.
-With some models you can even get a prediction which exact score is most likely to be the end result.
+The resulting predictions are dependant on the algorithm used, simpler models merely return the chances for
+a draw or win for either team, whereas the more complex machine learning models may also give a concrete score
+predicted for the match.
 
-There is a lot more to see, so let's get started.
+There is a lot more to be discovered, so let's get started with the
 
 Visuals
 ======
 To give you a glimpse of our User Interface and how to navigate through, we decided to show you
 these two screenshots.
-First you can see our start screen. Here you can choose the sport, but it also shows, how we decided to
-include selection menus. Once you choose the sport, a button to continue will appear on the lower right side.
+The first of which shows our starting screen, where you select the sport you'd like to predict.
+As you can see, the selections take place over multiple pages, letting us hide unnecessary menus
+and display only those that we need for the selected sport and algorithm.
+To prevent incomplete inputs, the button to continue to the next site, only appears once a selection has been made.
 
 |start_screen|
 
@@ -65,10 +72,11 @@ include selection menus. Once you choose the sport, a button to continue will ap
     :width: 400
     :alt: start-screen of the user interface
 
-After choosing the sport, the general data, which model you want to use,
-the specific data on which the models will train and the concrete match you want to predict,
-this screen will appear. It shows the two teams, the possibilities of the different outcomes
-and in this case (because we chose the Poisson algorithm) a result prediction as well.
+After choosing the sport, general data and model to be used, the advanced selection will appear.
+This page lets you fine tune your data down to the day, when choosing what the model will train on,
+as well as what teams or matches you want to predict. following it is the page displayed below,
+it shows the predicted possibilities for each outcome and in addition to that (courtesy of the poisson model),
+a prediction for the resulting score.
 
 |prediction_screen|
 
