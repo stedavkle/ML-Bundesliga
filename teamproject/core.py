@@ -147,9 +147,9 @@ def get_next_matchday_from_parameters(parameter):
     Core.last_matchday = int(parameter['last_matchday'])
     if int(parameter['time']) == 1:
         Core.time = True
-    if int(parameter['pretrained_data']) == 1:
+    if parameter['pretrained_data'][0] != '0':
         print("Vortrinierter Datensatz wird verwendet!")
-        Core.pretrained_data = True
+        Core.pretrained_data = parameter['pretrained_data'][0]
 
     crawler_instance = Core.crawler_instance
 
@@ -174,8 +174,8 @@ def start_training_and_get_teams():
 
     model_instance = Core.model_instance
     model_instance.set_data(training_data)
-    if Core.pretrained_data:
-        csv_name = crawler_instance.pretrained_data_source(Core.time)
+    if type(Core.pretrained_data) == str:
+        csv_name = crawler_instance.pretrained_data_source(Core.pretrained_data, Core.time)
         data = pd.read_csv(csv_name, header=None, index_col=0, squeeze=True).to_dict()
         model_instance.set_pretrained_data(data)
     else:

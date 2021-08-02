@@ -156,8 +156,25 @@ function training_data_render(parameter){
         "<input type=\'checkbox\' class=\'form-check-input\' id=\'points_checkbox\' checked>" +
         "<label class=\'form-check-label\'>ältere Spiele schwächer gewichten (empfohlen)</label></div>" +
         "<div class=\'form-check\'>" +
-        "<input type=\'checkbox\' class=\'form-check-input\' id=\'pretrained_data\'>" +
-        "<label class=\'form-check-label\'>Vortrainierten Datensatz verwenden</label></div>";
+        "<p><strong>vortrainierter Datensatz?</strong></p>" +
+        "<select class=\'form-control\' id=\'pretrained_data\'>" +
+        "<option value=0>nein</option>";
+        //hardcoded part for presentation
+
+    var pretrained_data = {
+        '2019_2015' : '1. & 2. BL 2015-2019',
+        '2019_2016' : '1. & 2. BL 2016-2019',
+        '2019_2017' : '1. & 2. BL 2017-2019',
+        '2019_2018' : '1. & 2. BL 2018-2019',
+        '2019_2019' : '1. & 2. BL 2019',
+        '2018_2016' : '1. & 2. BL 2016-2018',
+        '2017_2015' : '1. & 2. BL 2017-2017',
+    };
+
+    for (var key in pretrained_data){
+        html_str_time += "<option value=" + key + ">" + pretrained_data[key] + "</option>";
+    }
+    html_str_time += "</select></div>";
 
     set_innerHTML("1-col-1", html_str_caption);
     set_innerHTML("2-col-1", html_str_leagues);

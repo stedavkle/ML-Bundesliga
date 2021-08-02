@@ -79,6 +79,7 @@ function training_data_designer(){
   display("right_btn");
 
   clear_alert();
+  set_3_col_standard();
 }
 
 function next_matchday_designer(){

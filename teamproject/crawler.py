@@ -188,11 +188,11 @@ class BundesligaCrawler(Crawler):
         self.second_league_available_seasons = list(range(2006, self.current_season + 1))
         self.third_league_available_seasons = list(range(2008, self.current_season + 1))
 
-    def pretrained_data_source(self, decay=False):
+    def pretrained_data_source(self, set, decay=False, ):
         if decay:
-            return 'teamproject/data/bl_dixon_coles_pre_trained_dataset_decay.csv'
+            return 'teamproject/data/dc_pretrained_data/bl1u2_{}_pretrained_data_decay.csv'.format(set)
         else:
-            return 'teamproject/data/bl_dixon_coles_pre_trained_dataset_no_decay.csv'
+            return 'teamproject/data/dc_pretrained_data/bl1u2_{}_pretrained_data_NO_decay.csv'.format(set)
 
     def get_available_data_for_leagues(self):
         """
