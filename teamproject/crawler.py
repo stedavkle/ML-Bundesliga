@@ -426,12 +426,12 @@ class BundesligaCrawler(Crawler):
         # print('MATCHES SHAPE')
         # print(matches.shape)
         matches, results = self.cut_start_day(matches, results, day_start)
-
-        if len(seasons) == 1:
-            None
+        print('LENGTH')
+        print(len(seasons))
+        if len(seasons) == 0:
             matches, results = self.cut_end_day(matches, results, day_end)
 
-        next_matches, next_results = self.create_dataset_recursive(leagues, seasons, self.FIRST_DAY, day_end)
+        next_matches, next_results = self.create_dataset_recursive(leagues, seasons, day_start, day_end)
         # print('MATCHES SIZE')
         # print(matches.shape)
         matches = pd.concat([matches, next_matches])
@@ -663,7 +663,7 @@ class NBACrawler(Crawler):
         # print(matches.shape)
         matches, results = self.cut_start_day(matches, results, day_start)
 
-        if len(seasons) == 1:
+        if len(seasons) == 0:
             matches, results = self.cut_end_day(matches, results, day_end)
 
         next_matches, next_results = self.create_dataset_recursive(seasons, self.FIRST_DAY, day_end)
@@ -838,16 +838,17 @@ if __name__ == '__main__':
     # leagues = [1, 2, 3]
     # seasons = [2021]
 
-    crwlr = NBACrawler()
+    #crwlr = NBACrawler()
 
     #print(crwlr.get_next_matchday())
-    crwlr.get_available_data_for_leagues()
-    id_to_team, team_to_id = crwlr.get_team_dicts([1],[2020,2019,2018])
+    #crwlr.get_available_data_for_leagues()
+    #id_to_team, team_to_id = crwlr.get_team_dicts([1],[2020,2019,2018])
 
-    matches, results = crwlr.get_data_for_algo([1], range(2016,2021),1,366,0,0)
-    #results['points_home'] = results['points_home'].fillna(0)
-    for index, row in results.iterrows():
-        if not(row['points_guest'] <= 200):
-            print('ERROR')
-            print(row['points_guest'])
+    matches, results = crawler.get_data_for_algo([1], [2020],1,7,0,0)
+    print(matches)
+    # #results['points_home'] = results['points_home'].fillna(0)
+    # for index, row in results.iterrows():
+    #     if not(row['points_guest'] <= 200):
+    #         print('ERROR')
+    #         print(row['points_guest'])
 # %%
