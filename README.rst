@@ -59,17 +59,22 @@ these two screenshots.
 First you can see our start screen. Here you can choose the sport, but it also shows, how we decided to
 include selection menus. Once you choose the sport, a button to continue will appear on the lower right side.
 
-.. :image:: teamproject/web/img/start_screen.png
+|start_screen|
+
+.. |start_screen| :image:: teamproject/web/img/start_screen.png
     :width: 400
-    :alt:
+    :alt: start-screen of the user interface
 
 After choosing the sport, the general data, which model you want to use,
 the specific data on which the models will train and the concrete match you want to predict,
 this screen will appear. It shows the two teams, the possibilities of the different outcomes
 and in this case (because we chose the Poisson algorithm) a result prediction as well.
-.. :image:: teamproject/web/img/prediction_screen.png
+
+|prediction_screen|
+
+.. |prediction_screen| :image:: teamproject/web/img/prediction_screen.png
     :width: 400
-    :alt: todo
+    :alt: prediction-screen of the user interface
 
 Installation
 ======
