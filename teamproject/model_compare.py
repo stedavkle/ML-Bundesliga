@@ -19,7 +19,7 @@ model_dict = {
 
 
 
-def compare_algo_precision_for_2020(seasons, last_matchday=34, inlcude_matchdays=False):
+def compare_algo_precision_for_2020(seasons, last_matchday=34, include_matchdays=False):
     """
     :seasons array mit saisons
     :last_matchday int mit letztem spieltag, default=34
@@ -29,7 +29,7 @@ def compare_algo_precision_for_2020(seasons, last_matchday=34, inlcude_matchdays
 
     craw = crawler.BundesligaCrawler()
 
-    if inlcude_matchdays:
+    if include_matchdays:
         seasons.append(2020)
         training_data = craw.get_data_for_algo([1, 2], seasons, 1, last_matchday, 0, 0)
     else:
@@ -42,15 +42,19 @@ def compare_algo_precision_for_2020(seasons, last_matchday=34, inlcude_matchdays
         model_instance.set_data(training_data)
 
         if key == 4:
-            continue #todo: wegmachen nicht vergessen!
-            path = 'teamproject/data/evaluation/bl1u2_{}_{}_pretrained_data_NO_decay.csv'.format(seasons[0], seasons[-1])
+            if include_matchdays:
+                path = 'teamproject/data/dc_pretrained_data/bl1u2_md{}_{}_{}_pretrained_data_NO_decay.csv'.format(last_matchday, seasons[-1],seasons[-2])
+            else:
+                path = 'teamproject/data/dc_pretrained_data/bl1u2_{}_{}_pretrained_data_NO_decay.csv'.format(seasons[0], seasons[-1])
 
             data = pd.read_csv(path, header=None, index_col=0, squeeze=True).to_dict()
             model_instance.set_pretrained_data(data)
 
         elif key == 5:
-            continue #todo: wegmachen nicht vergessen!
-            path = 'teamproject/data/evaluation/bl1u2_{}_{}_pretrained_data_decay.csv'.format(seasons[0], seasons[-1])
+            if include_matchdays:
+                path = 'teamproject/data/dc_pretrained_data/bl1u2_md{}_{}_{}_pretrained_data_decay.csv'.format(last_matchday, seasons[-1], seasons[-2])
+            else:
+                path = 'teamproject/data/dc_pretrained_data/bl1u2_{}_{}_pretrained_data_decay.csv'.format(seasons[0], seasons[-1])
 
             data = pd.read_csv(path, header=None, index_col=0, squeeze=True).to_dict()
             model_instance.set_pretrained_data(data)
@@ -94,25 +98,22 @@ def draw_analysis(seasons):
     dataset = {}
 
     for key in model_dict:
-        if key == 4 or key == 5:
-            continue #todo:
-        else:
-            filename = model_dict[key]['file']
-            path_test = 'teamproject/data/evaluation/{}_test_data.csv'.format(filename)
-            path_eval = 'teamproject/data/evaluation/{}_eval_data.csv'.format(filename)
+        filename = model_dict[key]['file']
+        path_test = 'teamproject/data/evaluation/{}_test_data.csv'.format(filename)
+        path_eval = 'teamproject/data/evaluation/{}_eval_data.csv'.format(filename)
 
-            test_data = pd.read_csv(path_test)
-            pred_data = pd.read_csv(path_eval)
+        test_data = pd.read_csv(path_test)
+        pred_data = pd.read_csv(path_eval)
 
-            draws_in_2020 = test_data[test_data['outcome'] == 0].shape[0]
-            predicted_draws = pred_data[pred_data['outcome'] == 0].shape[0]
-            precision = predicted_draws/draws_in_2020
+        draws_in_2020 = test_data[test_data['outcome'] == 0].shape[0]
+        predicted_draws = pred_data[pred_data['outcome'] == 0].shape[0]
+        precision = predicted_draws/draws_in_2020
 
-            dataset[filename] = {
-                'draws_2020': draws_in_2020,
-                'pred_draws': predicted_draws,
-                'precision': precision
-            }
+        dataset[filename] = {
+            'draws_2020': draws_in_2020,
+            'pred_draws': predicted_draws,
+            'precision': precision
+        }
 
     return dataset
 
@@ -139,39 +140,37 @@ def matchday_analysis(season, day):
 def create_matchday_dataset(day):
     diction = {}
     for key in model_dict:
-        if key == 4 or key == 5:
-            continue #todo
-        else:
-            filename = model_dict[key]['file']
-            path_test = 'teamproject/data/evaluation/{}_test_data.csv'.format(filename)
-            path_eval = 'teamproject/data/evaluation/{}_eval_data.csv'.format(filename)
 
-            test_data = pd.read_csv(path_test)
-            pred_data = pd.read_csv(path_eval)
+        filename = model_dict[key]['file']
+        path_test = 'teamproject/data/evaluation/{}_test_data.csv'.format(filename)
+        path_eval = 'teamproject/data/evaluation/{}_eval_data.csv'.format(filename)
 
-            matchday = test_data[test_data['matchday'] == day]
-            if key == 1:
-                matches = {}
-                for index, row in matchday.iterrows():
-                    matches[row['match_id'].item()] = {
-                        'team_home_id': row['team_home_id'].item(),
-                        'team_guest_id': row['team_guest_id'].item(),
-                        'points_home': row['points_home'].item(),
-                        'points_guest': row['points_guest'].item()
-                    }
-                diction['matches'] = matches
+        test_data = pd.read_csv(path_test)
+        pred_data = pd.read_csv(path_eval)
 
-            prediction = {}
+        matchday = test_data[test_data['matchday'] == day]
+        if key == 1:
+            matches = {}
             for index, row in matchday.iterrows():
-                id = row['match_id'].item()
-                match = pred_data.index[pred_data['match_id'] == id].tolist()
-                for i in match:
-                    prediction[id] = {
-                        'home_win': pred_data.loc[i, 'home_win'],
-                        'draw': pred_data.loc[i, 'draw'],
-                        'guest_win': pred_data.loc[i, 'guest_win']
-                    }
-            diction[model_dict[key]['file']] = prediction
+                matches[row['match_id'].item()] = {
+                    'team_home_id': row['team_home_id'].item(),
+                    'team_guest_id': row['team_guest_id'].item(),
+                    'points_home': row['points_home'].item(),
+                    'points_guest': row['points_guest'].item()
+                }
+            diction['matches'] = matches
+
+        prediction = {}
+        for index, row in matchday.iterrows():
+            id = row['match_id'].item()
+            match = pred_data.index[pred_data['match_id'] == id].tolist()
+            for i in match:
+                prediction[id] = {
+                    'home_win': pred_data.loc[i, 'home_win'],
+                    'draw': pred_data.loc[i, 'draw'],
+                    'guest_win': pred_data.loc[i, 'guest_win']
+                }
+        diction[model_dict[key]['file']] = prediction
     return diction
 
 
@@ -214,8 +213,8 @@ def matchday_dict_to_csv(dict, filename):
     most_wins = dict['Most_Wins']
     poisson = dict['Poisson_Model']
     log_reg = dict['Logistic_Regression']
-    #dixon_coles = dict['Dixon_Coles_ohne_Zeit']
-    #dixon_coles_decay = dict['Dixon_Coles_mit_Zeit']
+    dixon_coles = dict['Dixon_Coles_ohne_Zeit']
+    dixon_coles_decay = dict['Dixon_Coles_mit_Zeit']
 
     craw = crawler.BundesligaCrawler()
     id_to_team, team_to_id = craw.get_team_dicts([1], [2020])
@@ -229,8 +228,8 @@ def matchday_dict_to_csv(dict, filename):
     most_wins_list = []
     poisson_list = []
     log_reg_list = []
-    #dixon_coles_list = []
-    #dixon_coles_decay_list = []
+    dixon_coles_list = []
+    dixon_coles_decay_list = []
     for id in matches.keys():
         match_id.append(id)
         home.append(id_to_team[matches[id]['team_home_id']])
@@ -252,7 +251,6 @@ def matchday_dict_to_csv(dict, filename):
         else:
             log_reg_list.append("")
 
-        '''
         if dixon_coles.get(id):
             dixon_coles_list.append("{} x {} x {}".format(dixon_coles[id]['home_win'], dixon_coles[id]['draw'], dixon_coles[id]['guest_win']))
         else:
@@ -262,7 +260,7 @@ def matchday_dict_to_csv(dict, filename):
             dixon_coles_decay_list.append("{} x {} x {}".format(dixon_coles_decay[id]['home_win'], dixon_coles_decay[id]['draw'], dixon_coles_decay[id]['guest_win']))
         else:
             dixon_coles_decay_list.append("")
-        '''
+
     table = {
         'match_id': match_id,
         'home': home,
@@ -271,8 +269,8 @@ def matchday_dict_to_csv(dict, filename):
         'most_wins': most_wins_list,
         'poisson': poisson_list,
         'logistic_regression': log_reg_list,
-        #'dc_no_decay': dixon_coles_list,
-        #'dc_decay': dixon_coles_decay_list
+        'dc_no_decay': dixon_coles_list,
+        'dc_decay': dixon_coles_decay_list
     }
     df = pd.DataFrame(table, columns=columns)
 
@@ -283,7 +281,7 @@ def matchday_dict_to_csv(dict, filename):
 
 
 if __name__ == '__main__':
-
+    '''
     # stat 1
     print('\nalgorithmenvergleich: alle algos precision von 2019-2015 für 1. BL 2020\n')
     prec_all_models_2019_2015 = compare_algo_precision_for_2020([2019, 2018, 2017, 2016, 2015])
@@ -291,10 +289,10 @@ if __name__ == '__main__':
     plot.plot_algorithm_compare_on_one_dataset(prec_all_models_2019_2015,
                                                'Vorhersagegenauigkeit für Saison 2020 auf Datensatz Saison 2015-2019',
                                                'acc_alle_algos_fuer_2020_auf_2015_2019')
-    
-    # stat 2
-    print('\n\nzeit faktor: alle algos precision von 2019-2015, 2019-2018, 2018-2016, 2017-2015 für 1. BL 2020\n')
-    seasons = [[2017, 2016, 2015], [2018, 2017, 2016], [2019, 2018], [2019, 2018, 2017, 2016, 2015]]
+
+    # stat 2.1
+    print('\n\nzeit faktor: alle algos precision von von 2019-2015 in je 3 jahres blöcken für 1. BL 2020\n')
+    seasons = [[2017, 2016, 2015], [2018, 2017, 2016], [2019, 2018, 2017]]
 
     prec_all_models_diff_seasons = {}
 
@@ -305,26 +303,43 @@ if __name__ == '__main__':
 
     print(prec_all_models_diff_seasons)
     plot.plot_algorithm_compare_on_diff_datasets(prec_all_models_diff_seasons,
-                                                 'Vorhersagegenauigkeit für Saison 2020 auf verschiedenen Datensätzen',
-                                                 'acc_alle_algos_fuer_2020_diff_datensaetze')
+                                                 'Vorhersagegenauigkeit für Saison 2020 auf Datensätze von je 3 Saisons',
+                                                 'acc_alle_algos_fuer_2020_diff_datensaetze_3_jahr_block')
+
+    # stat 2.2
+    print('\n\nzeit faktor: alle algos precision von 2019-2015, immer eine saison mehr für 1. BL 2020\n')
+    seasons = [[2019], [2019, 2018], [2019, 2018, 2017], [2019, 2018, 2017, 2016], [2019, 2018, 2017, 2016, 2015]]
+
+    prec_all_models_diff_seasons = {}
+
+    for s in seasons:
+        prec = compare_algo_precision_for_2020(s)
+        key = '{}-{}'.format(s[0], s[-1])
+        prec_all_models_diff_seasons[key] = prec
+
+    print(prec_all_models_diff_seasons)
+    plot.plot_algorithm_compare_on_diff_datasets(prec_all_models_diff_seasons,
+                                                 'Vorhersagegenauigkeit für Saison 2020 auf Datensätzen mit je einer Saison mehr',
+                                                 'acc_alle_algos_fuer_2020_diff_datensaetze_jahr_inkrement')
 
     # stat 3
     print('\n\n unentschieden: alle algos precision von 2019-2015 die unentschieden für 1. BL 2020 vorhersagen')
     draws = draw_analysis([2019, 2018, 2017, 2016, 2015])
     print(draws)
     plot.plot_draw_prediction(draws, 'acc_unentschieden_2020')
-
+    '''
     # stat 4
-    print('\n\n einfluss von aktueller saison: alle algos precision von 2019-2015 für spieltag 8, 18 und 28 in 1. BL 2020')
-    days = [8, 18, 28]
+    print('\n\n einfluss von aktueller saison: alle algos precision von 2019-2015 für spieltag 8 und 18 in 1. BL 2020')
+    days = [8, 18]
     for day in days:
         without_2020_dict, with_2020_dict = matchday_analysis([2019, 2018, 2017, 2016, 2015], day)
-        matchday_dict_to_csv(without_2020_dict, 'bl1_2020_md{}_without2020_prediction'.format(day))
-        matchday_dict_to_csv(with_2020_dict, 'bl1_2020_md{}_with2020_prediction'.format(day))
+        #matchday_dict_to_csv(without_2020_dict, 'bl1_2020_md{}_without2020_prediction'.format(day))
+        #matchday_dict_to_csv(with_2020_dict, 'bl1_2020_md{}_with2020_prediction'.format(day))
         precision_matchday_without_2020 = compare_matchday(without_2020_dict)
         precision_matchday_with_2020 = compare_matchday(with_2020_dict)
         print("Genauigkeit mit Datensatz 2019-2015 zu Spieltag {}: ".format(day) + str(precision_matchday_without_2020))
         print("Genauigkeit mit Datensatz 2020-2015 zu Spieltag {}: ".format(day) + str(precision_matchday_with_2020))
+        plot.plot_matchday_compare(precision_matchday_without_2020, precision_matchday_with_2020, day)
 
 
 

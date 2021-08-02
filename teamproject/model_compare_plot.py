@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 test_acc = {'Most_Wins': 0.425531914893617, 'Poisson_Model': 0.4738562091503268, 'Logistic_Regression': 0.4869281045751634}
+
+x_height = 12
+y_height = 5
 
 test_acc_diff = {
     '2019-2015': {
@@ -60,6 +64,10 @@ def plot_algorithm_compare_on_one_dataset(acc_dict, title, filename):
     x_pos = [i for i in range(1, len(x_label)+1)]
     data = list(acc_dict.values())
 
+    f = plt.figure()
+    f.set_figwidth(x_height)
+    f.set_figheight(y_height)
+
     plt.bar(x_pos, data, tick_label=x_label, width=0.8, color=color[0:len(x_pos)])
 
     for i in x_pos:
@@ -70,6 +78,7 @@ def plot_algorithm_compare_on_one_dataset(acc_dict, title, filename):
     plt.title(title)
 
     filename = plot_path + filename + '.png'
+
     plt.savefig(filename)
     plt.show()
 
@@ -82,11 +91,16 @@ def plot_algorithm_compare_on_diff_datasets(acc_dict, title, filename):
     models = list(acc_dict[x_label[0]].keys())
     x_pos = [i for i in range(1, len(x_label)+1)]
 
+    f = plt.figure()
+    f.set_figwidth(x_height)
+    f.set_figheight(y_height+3)
+
     col_count = 0
     for model in models:
         acc_model = [] # y-axis
         for key in x_label:
             acc_model.append(acc_dict[key][model])
+
         plt.plot(x_label, acc_model, color=color[col_count], linestyle='dashed',
                  linewidth=3, marker='o', markersize=10)
         col_count += 1
@@ -105,9 +119,50 @@ def plot_algorithm_compare_on_diff_datasets(acc_dict, title, filename):
     plt.legend(models)
 
     filename = plot_path + filename + '.png'
+
     plt.savefig(filename)
     plt.show()
 
+def plot_matchday_compare(without_2020, with_2020, day):
+    color = ['dodgerblue', 'orange', 'dodgerblue', 'orange','dodgerblue', 'orange','dodgerblue', 'orange','dodgerblue', 'orange']
+    x_label = list(with_2020.keys())
+    x_pos = [i for i in range(1, (len(x_label) * 2) + 1)]
+
+    keys_without2020 = list(without_2020.keys())
+    keys_with2020 = list(with_2020.keys())
+    values_without2020 = list(without_2020.values())
+    values_with2020 = list(with_2020.values())
+    data = []
+    label = []
+
+    for i in range(len(x_label)):
+        data.append(values_without2020[i])
+        data.append(values_with2020[i])
+        label.append(keys_without2020[i])
+        label.append(keys_with2020[i])
+
+    f = plt.figure()
+    f.set_figwidth(x_height)
+    f.set_figheight(y_height)
+    plt.xticks(rotation=45)
+
+    plt.bar(x_pos, data, align='edge', tick_label=label, width=0.6, color=color[0:len(x_pos)])
+
+    for i in x_pos:
+        plt.text(i, data[i - 1], '{:.2f}'.format(data[i - 1]), ha='left')
+
+    plt.xlabel('Vorhersagemodelle')
+    plt.ylabel('Genauigkeit')
+    plt.title('Vorhersagegenauigkeit {}. Spieltag 2020'.format(day))
+
+    filename = plot_path + 'prediction_of_matchday_{}.png'.format(day)
+
+    blue_patch = mpatches.Patch(color='dodgerblue', label='Datensatz 2015-2019')
+    red_patch = mpatches.Patch(color='orange', label='Datensatz 2015 - {}. Spieltag 2020'.format(day-1))
+    plt.legend(handles=[blue_patch, red_patch])
+
+    plt.savefig(filename)
+    plt.show()
 
 
 if __name__ == '__main__':
