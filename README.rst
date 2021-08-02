@@ -61,7 +61,7 @@ include selection menus. Once you choose the sport, a button to continue will ap
 
 |start_screen|
 
-.. |start_screen| :image:: teamproject/web/img/start_screen.png
+.. |start_screen| image:: teamproject/web/img/start_screen.png
     :width: 400
     :alt: start-screen of the user interface
 
@@ -72,7 +72,7 @@ and in this case (because we chose the Poisson algorithm) a result prediction as
 
 |prediction_screen|
 
-.. |prediction_screen| :image:: teamproject/web/img/prediction_screen.png
+.. |prediction_screen| image:: teamproject/web/img/prediction_screen.png
     :width: 400
     :alt: prediction-screen of the user interface
 
