@@ -85,9 +85,10 @@ a prediction for the resulting score.
 
 Installation
 ======
-You need Python3 with pip and the Chromium Browser installed.::
-
-    sudo apt install python3 python3-pip chromium-browser
+Requirements:
+- Python 3.9
+- pip
+- Chrome, Chromium or Mircosoft Edge Browser
    
 Then download the whole Repo or clone it with git.::
     
