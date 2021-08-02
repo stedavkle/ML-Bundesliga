@@ -614,12 +614,19 @@ class NBACrawler(Crawler):
             df['result_id'] = 1
             matches = df[self.UNIFORM_MATCH_CONTENT_COLUMNS]
             results = df[self.UNIFORM_RESULT_CONTENT_COLUMNS]
-            matches['match_id'] = pd.to_numeric(matches['match_id'])
-            matches['team_home_id'] = pd.to_numeric(matches['team_home_id'])
-            matches['team_guest_id'] = pd.to_numeric(matches['team_guest_id'])
-            results['points_home'] = pd.to_numeric(results['points_home'], downcast='integer').fillna(0)
-            results['points_guest'] = pd.to_numeric(results['points_guest'], downcast='integer').fillna(0)
-            results['match_id'] = pd.to_numeric(results['match_id'])
+            # matches['match_id'] = pd.to_numeric(matches['match_id'])
+            # matches['team_home_id'] = pd.to_numeric(matches['team_home_id'])
+            # matches['team_guest_id'] = pd.to_numeric(matches['team_guest_id'])
+            # results['points_home'] = pd.to_numeric(results['points_home'], downcast='integer').fillna(0)
+            # results['points_guest'] = pd.to_numeric(results['points_guest'], downcast='integer').fillna(0)
+            # results['match_id'] = pd.to_numeric(results['match_id'])
+            matches['match_id'] = matches['match_id'].astype('int64')
+            matches['team_home_id'] = matches['team_home_id'].astype('int64')
+            matches['team_guest_id'] = matches['team_guest_id'].astype('int64')
+            results['points_home'] = results['points_home'].replace('', 0).fillna(0).astype('int64')
+            results['points_guest'] = results['points_guest'].replace('', 0).fillna(0).astype('int64')
+            results['match_id'] = results['match_id'].astype('int64')
+
             matches.to_csv(self.UNIFORM_SEASON_MATCHES_DB_PATH.format(season), index=False)
             results.to_csv(self.UNIFORM_SEASON_RESULTS_DB_PATH.format(season), index=False)
         return matches, results
@@ -840,7 +847,7 @@ if __name__ == '__main__':
     matches, results = crwlr.get_data_for_algo([1], range(2016,2021),1,366,0,0)
     #results['points_home'] = results['points_home'].fillna(0)
     for index, row in results.iterrows():
-        if not(row['points_home'] <= 200):
+        if not(row['points_guest'] <= 200):
             print('ERROR')
-            print(row['points_home'])
+            print(row['points_guest'])
 # %%
