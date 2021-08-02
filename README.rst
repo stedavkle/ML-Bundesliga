@@ -35,29 +35,35 @@ Teamproject Sportvorhersage |Bundesliga-Logo|
 
 What is our project about?
 ======
-We started this project to predict the results of games of the German Football Bundesliga.
-It started as that, but as this project is programmed modal it is possible to be used for
-any sport or league. You can see a glimpse of that, when you look at our implementation of the
-Basketball League NBA.
+This project was started as a university team project, the goal being to predict the outcomes of
+games in the German Bundesliga. Being programmed in a modal and abstract manner,
+this algorithm features easy ways to tie in and predict various other sports, provided only that they
+feature a quantifiable way to track scores. One example of this flexibility is our already implemented
+adaptation of basketball, more specifically the US' NBA.
 
-But to be more precise, we wanted to use the data from past years and find
-clever algorithms and use machine learning models to predict game results as accurately as possible.
+To elaborate further on what this project is about: we wanted to utilize past data to find
+clever algorithms and machine learning models,
+striving to accurately predict future outcomes using the aforementioned models.
 
-We also wanted to enable a great user experience, that's why we were striving to make it very
-easy for the user to set all the possible variables themselves. You can now decide which teams you want to predict,
-which algorithm you want to use, with which data the models are trained and so on.
+With more features, however, came a more complex user interaction. As a means of counteracting this,
+we built a web based, streamlined User Interface (UI) to guide the user through this extensive selection process.
+Advanced settings in the UI are pre-selected, allowing newer users to easily navigate, without needing
+detailed knowledge of the algorithms capabilities, while giving more experienced users direct access to
+fine-tuned predictions.
 
-We'll then give you probabilities of a home win, a draw and a guest win.
-With some models you can even get a prediction which exact score is most likely to be the end result.
+The resulting predictions are dependent on the algorithm used, simpler models merely return the chances for
+a draw or win for either team, whereas the more complex machine learning models may also give a concrete score
+predicted for the match.
 
-There is a lot more to see, so let's get started.
+There is a lot more to be discovered, so let's get started.
 
 Visuals
 ======
 To give you a glimpse of our User Interface and how to navigate through, we decided to show you
-these two screenshots.
-First you can see our start screen. Here you can choose the sport, but it also shows, how we decided to
-include selection menus. Once you choose the sport, a button to continue will appear on the lower right side.
+two screenshots, the first of which shows our starting screen, where you select the sport you'd like to let us predict.
+As you can see, the selections take place over multiple pages, allowing us to hide unnecessary menus
+and display only those that we need for the selected sport and algorithm.
+To prevent incomplete inputs, the button to continue to the next site only appears once a selection has been made.
 
 |start_screen|
 
@@ -65,10 +71,11 @@ include selection menus. Once you choose the sport, a button to continue will ap
     :width: 400
     :alt: start-screen of the user interface
 
-After choosing the sport, the general data, which model you want to use,
-the specific data on which the models will train and the concrete match you want to predict,
-this screen will appear. It shows the two teams, the possibilities of the different outcomes
-and in this case (because we chose the Poisson algorithm) a result prediction as well.
+After choosing the sport, general data and model to be used, the advanced selection will appear.
+This page lets you fine-tune your data down to the day, when choosing what the model will train on,
+as well as what teams or matches you want to predict. Following it is the page displayed below.
+It shows the predicted possibilities for each outcome and in addition to that (courtesy of the poisson model),
+a prediction for the resulting score.
 
 |prediction_screen|
 
@@ -80,7 +87,7 @@ Installation
 ======
 Bla, wie erstellt man das richtige Environment.
 
-Once you've activated the environment, install the current package and its
+Once you have activated the environment, install the current package and its
 dependencies using::
 
     cd ML-Bundesliga
@@ -103,7 +110,7 @@ Special Advantages
 
 Our project stands out in terms of the user experience. We realised our user interface with **eel**,
 a python library that allows you to create offline user interfaces structured like websites.
-Because we chose this implementation the project is cross-platform, which allows for a wider audience.
+Because we chose this implementation, the project is cross-platform, which allows for a wider audience.
 
 We also focused on robustness and accessibility. Therefore it is possible to jump to any of the previous steps
 of the program, and if you accidentally refresh the page, you will still be in the same step of the process.
@@ -117,20 +124,20 @@ integrated by the UI, reducing the needed work to add new sports, leagues or pre
 **Which Algorithms did we use?**
 
 We implemented four different algorithms. The first one is short and sweet algorithm, we called it **MostWins**.
-It filters the given dataset for the selected match up and enumerates all past results.
+It filters the given dataset for the selected match-up and enumerates all past results.
 Once this is completed, the algorithm makes a simple prediction and,
 as the name implies, returns the chances of a win for either team or draw occurring.
 
 The second one uses the **Poisson Model** to predict the amount of goals (or any quantifiable scoring value).
-The predicted values are displayed as a Matrix, where each entry represents one possible outcome to the game
-with X and Y axis representing each Teams score.
+The predicted values are displayed as a matrix, where each entry represents one possible outcome to the game
+with X and Y axis representing each team's score.
 
 The third model is the **Dixon-Coles Model**, an improvement upon the Poisson Model, iterating over the given data
-repeatedly to increase accuracy at the expense of computing time. A selection can be made, whether to weigh all
-data equally, or progressively according to age.
+repeatedly to increase accuracy at the expense of computing time. A selection can be made between weighing all
+data equally or weighing the data progressively according to age.
 
 And the last standard model is the **Logistic Regression Model**. It calculates a table of factors using the logistic
-regression function, each entry representing a modifier to the game, such as home-field advantage or simply the teams
+regression function, each entry representing a modifier to the game, such as home-field advantage or simply the teams'
 overall success in the past.
 
 Tests
@@ -148,7 +155,7 @@ active
 Authors and Acknowledgement
 ======
 The authors are Stephan Amann, Cornelius Bopp, David Kleindiek and Amelie Schäfer.
-This project started as an university assignment, therefore we acknowledge and thank our tutors
+This project started as a university assignment, therefore we acknowledge and thank our tutors
 Felix Dangel, Thomas Gläßle and Frank Schneider for their feedback and generous help.
 
 License
