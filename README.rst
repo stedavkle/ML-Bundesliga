@@ -2,6 +2,7 @@ Teamproject Sportvorhersage |Bundesliga-Logo|
 -----------
 .. |Bundesliga-Logo| image:: teamproject/web/img/bl.png
     :width: 50
+    :crop: (50, 50)
     :alt: Bundesliga-Logo
 
 |Maintenance no| |made-with-python| |made-with-javascript| |MIT license|
