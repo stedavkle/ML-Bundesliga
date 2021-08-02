@@ -426,7 +426,7 @@ class BundesligaCrawler(Crawler):
         # print('MATCHES SHAPE')
         # print(matches.shape)
         # TODO: only cut first season
-        #matches, results = self.cut_start_day(matches, results, day_start)
+        matches, results = self.cut_start_day(matches, results, day_start)
         if len(seasons) == 0:
             matches, results = self.cut_end_day(matches, results, day_end)
 
