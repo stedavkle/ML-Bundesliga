@@ -85,10 +85,15 @@ a prediction for the resulting score.
 
 Installation
 ======
-Bla, wie erstellt man das richtige Environment.
+You need Python3 with pip and the Chromium Browser installed.::
 
-Once you have activated the environment, install the current package and its
-dependencies using::
+    sudo apt install python3 python3-pip chromium-browser
+   
+Then download the whole Repo or clone it with git.::
+    
+    git clone https://github.com/stedavkle/ML-Bundesliga/
+
+Now navigate in the project folder and install all dependencies.::
 
     cd ML-Bundesliga
     pip install -e .
@@ -96,13 +101,9 @@ dependencies using::
 Usage
 ======
 After the package and all dependencies are installed,
-you can execute the code contained in the teamproject/__main__.py file by executing this command::
+you can execute the program as followed.::
 
-    python -m teamproject
-
-If you have executed the pip install line above, you may instead use::
-
-    teamproject
+    python3 teamproject
 
 Special Advantages
 ======
