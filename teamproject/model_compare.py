@@ -19,10 +19,10 @@ model_dict = {
 
 
 
-def compare_algo_precision_for_2020(seasons, last_matchday=34, include_matchdays=False):
+def compare_algo_precision_for_2020(seasons, last_matchday, include_matchdays=False):
     """
     :seasons array mit saisons
-    :last_matchday int mit letztem spieltag, default=34
+    :last_matchday int mit letztem spieltag
     :include_matchdays bool rechne spieltage der neuen saisons mit ein, default=False
     """
     precision_dict = {}
@@ -127,7 +127,7 @@ def matchday_analysis(season, day):
                             w_most_wins: {outcome},
                             w_poisson
                            }}'''
-    precision_without_2020 = compare_algo_precision_for_2020(season)
+    precision_without_2020 = compare_algo_precision_for_2020(season, 34)
     without_2020_dict = create_matchday_dataset(day)
 
     precision_with_2020 = compare_algo_precision_for_2020(season, day-1, True)
@@ -333,8 +333,8 @@ if __name__ == '__main__':
     days = [8, 18]
     for day in days:
         without_2020_dict, with_2020_dict = matchday_analysis([2019, 2018, 2017, 2016, 2015], day)
-        #matchday_dict_to_csv(without_2020_dict, 'bl1_2020_md{}_without2020_prediction'.format(day))
-        #matchday_dict_to_csv(with_2020_dict, 'bl1_2020_md{}_with2020_prediction'.format(day))
+        matchday_dict_to_csv(without_2020_dict, 'bl1_2020_md{}_without2020_prediction'.format(day))
+        matchday_dict_to_csv(with_2020_dict, 'bl1_2020_md{}_with2020_prediction'.format(day))
         precision_matchday_without_2020 = compare_matchday(without_2020_dict)
         precision_matchday_with_2020 = compare_matchday(with_2020_dict)
         print("Genauigkeit mit Datensatz 2019-2015 zu Spieltag {}: ".format(day) + str(precision_matchday_without_2020))
