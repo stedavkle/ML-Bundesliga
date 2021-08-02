@@ -68,6 +68,7 @@ def compare_algo_precision_for_2020(seasons, last_matchday, include_matchdays=Fa
 
         precision_dict[model_dict[key]['file']] = precision
 
+
     return precision_dict
 
 
@@ -128,6 +129,7 @@ def matchday_analysis(season, day):
                             w_poisson
                            }}'''
     precision_without_2020 = compare_algo_precision_for_2020(season, 34)
+
     without_2020_dict = create_matchday_dataset(day)
 
     precision_with_2020 = compare_algo_precision_for_2020(season, day-1, True)
@@ -330,7 +332,7 @@ if __name__ == '__main__':
     '''
     # stat 4
     print('\n\n einfluss von aktueller saison: alle algos precision von 2019-2015 für spieltag 8 und 18 in 1. BL 2020')
-    days = [8, 18]
+    days = [26]
     for day in days:
         without_2020_dict, with_2020_dict = matchday_analysis([2019, 2018, 2017, 2016, 2015], day)
         matchday_dict_to_csv(without_2020_dict, 'bl1_2020_md{}_without2020_prediction'.format(day))
