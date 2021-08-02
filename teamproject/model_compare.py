@@ -2,6 +2,7 @@ import models
 import crawler
 import matplotlib
 import pandas as pd
+import model_compare_plot as plot
 
 model_dict = {
     1: {'run': models.MostWins(),
@@ -287,14 +288,15 @@ if __name__ == '__main__':
     print('\nalgorithmenvergleich: alle algos precision von 2019-2015 für 1. BL 2020\n')
     prec_all_models_2019_2015 = compare_algo_precision_for_2020([2019, 2018, 2017, 2016, 2015])
     print(prec_all_models_2019_2015)
-
+    plot.plot_algorithm_compare_on_one_dataset(prec_all_models_2019_2015,
+                                               'Vorhersagegenauigkeit für Saison 2020 auf Datensatz Saison 2015-2019',
+                                               'acc_alle_algos_fuer_2020_auf_2015_2019')
+    
     # stat 2
     print('\n\nzeit faktor: alle algos precision von 2019-2015, 2019-2018, 2018-2016, 2017-2015 für 1. BL 2020\n')
-    seasons = [[2019, 2018], [2018, 2017, 2016], [2017, 2016, 2015]]
+    seasons = [[2017, 2016, 2015], [2018, 2017, 2016], [2019, 2018], [2019, 2018, 2017, 2016, 2015]]
 
-    prec_all_models_diff_seasons = {
-        '2019-2015': prec_all_models_2019_2015,
-    }
+    prec_all_models_diff_seasons = {}
 
     for s in seasons:
         prec = compare_algo_precision_for_2020(s)
@@ -302,11 +304,15 @@ if __name__ == '__main__':
         prec_all_models_diff_seasons[key] = prec
 
     print(prec_all_models_diff_seasons)
+    plot.plot_algorithm_compare_on_diff_datasets(prec_all_models_diff_seasons,
+                                                 'Vorhersagegenauigkeit für Saison 2020 auf verschiedenen Datensätzen',
+                                                 'acc_alle_algos_fuer_2020_diff_datensaetze')
 
     # stat 3
     print('\n\n unentschieden: alle algos precision von 2019-2015 die unentschieden für 1. BL 2020 vorhersagen')
     draws = draw_analysis([2019, 2018, 2017, 2016, 2015])
     print(draws)
+    plot.plot_draw_prediction(draws, 'acc_unentschieden_2020')
 
     # stat 4
     print('\n\n einfluss von aktueller saison: alle algos precision von 2019-2015 für spieltag 8, 18 und 28 in 1. BL 2020')
