@@ -54,23 +54,22 @@ There is a lot more to see, so let's get started.
 
 Visuals
 ======
-As we said, this project is about predicting sport games. But also to figure out, if there
-are any interesting facts within the data. How often do draws happen and do our prediction algorithms
-do a good job of finding them. Or is there a correlation between how many or little goals a team scores,
-and their likeliness of winning? There are many interesting questions to be asked. But we decided to include these two.
+To give you a glimpse of our User Interface and how to navigate through, we decided to show you
+these two screenshots.
+First you can see our start screen. Here you can choose the sport, but it also shows, how we decided to
+include selection menus. Once you choose the sport, a button to continue will appear on the lower right side.
 
-First, to see the analyses of the draw frequency.
-
-.. :image:: analyse.png
+.. :image:: teamproject/web/img/start_screen.png
     :width: 400
     :alt:
-(Count, how many draws there were over the last 3 seasons)
 
-.. :image:: analyse.png
+After choosing the sport, the general data, which model you want to use,
+the specific data on which the models will train and the concrete match you want to predict,
+this screen will appear. It shows the two teams, the possibilities of the different outcomes
+and in this case (because we chose the Poisson algorithm) a result prediction as well.
+.. :image:: teamproject/web/img/prediction_screen.png
     :width: 400
     :alt: todo
-(Count, how many draws we predicted with each algorithm over the last 3 seasons)
-
 
 Installation
 ======
@@ -113,13 +112,13 @@ integrated by the UI, reducing the needed work to add new sports, leagues or pre
 **Which Algorithms did we use?**
 
 We implemented four different algorithms. The first one is short and sweet algorithm, we called it **MostWins**.
-it filters the given dataset for the selected match up and enumerates all past results.
+It filters the given dataset for the selected match up and enumerates all past results.
 Once this is completed, the algorithm makes a simple prediction and,
 as the name implies, returns the chances of a win for either team or draw occurring.
 
-The second one uses the **Poisson Model** to predict the amount of goals(or any quantifiable scoring value).
+The second one uses the **Poisson Model** to predict the amount of goals (or any quantifiable scoring value).
 The predicted values are displayed as a Matrix, where each entry represents one possible outcome to the game
-with X and Y Axis representing each Teams score.
+with X and Y axis representing each Teams score.
 
 The third model is the **Dixon-Coles Model**, an improvement upon the Poisson Model, iterating over the given data
 repeatedly to increase accuracy at the expense of computing time. A selection can be made, whether to weigh all
@@ -131,14 +130,11 @@ overall success in the past.
 
 Tests
 ======
-there are thorough tests written with pytest for both the models and crawler functions. these can be found in the 'tests'
+There are thorough tests written with pytest for both the models and crawler functions. These can be found in the 'tests'
 folder and executed with the following commands::
 
     python -m pytest tests/test_crawler.py
     python -m pytest tests/test_models.py
-
-Roadmap
-======
 
 Project Status
 ======
