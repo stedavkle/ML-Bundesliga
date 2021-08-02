@@ -86,9 +86,9 @@ a prediction for the resulting score.
 Installation
 ======
 Requirements:
-* Python 3.9
-* pip
-* Chrome, Chromium or Mircosoft Edge Browser
+* Python 3.9.
+* pip.
+* Chrome, Chromium or Mircosoft Edge Browser.
    
 Then download the whole Repo or clone it with git.::
     
