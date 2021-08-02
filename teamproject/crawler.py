@@ -425,7 +425,8 @@ class BundesligaCrawler(Crawler):
             matches, results = self.get_matches_from_leagues_and_seasons_from_API([league], [season])
         # print('MATCHES SHAPE')
         # print(matches.shape)
-        matches, results = self.cut_start_day(matches, results, day_start)
+        # TODO: only cut first season
+        #matches, results = self.cut_start_day(matches, results, day_start)
         print('LENGTH')
         print(len(seasons))
         if len(seasons) == 0:
@@ -520,7 +521,8 @@ class BundesligaCrawler(Crawler):
         """
         # self.create_dataset_from_leagues_and_seasons(leagues, seasons, day_start, day_end)
         self.seasons_backup = list(seasons)
-        self.create_dataset_recursive(list(leagues), list(seasons), day_start, day_end)
+
+        self.create_dataset_recursive(list(leagues), sorted(seasons), day_start, day_end)
         if team_home_id != 0:
             self.extract_matchup_history(team_home_id, team_guest_id)
         return [self.matches, self.results]  # , self.scores
@@ -844,7 +846,8 @@ if __name__ == '__main__':
     #crwlr.get_available_data_for_leagues()
     #id_to_team, team_to_id = crwlr.get_team_dicts([1],[2020,2019,2018])
 
-    matches, results = crawler.get_data_for_algo([1], [2020],1,7,0,0)
+    matches, results = crawler.get_data_for_algo([1], [2020,2019],1,33,0,0)
+    print(matches.shape)
     print(matches)
     # #results['points_home'] = results['points_home'].fillna(0)
     # for index, row in results.iterrows():
