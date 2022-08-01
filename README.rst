@@ -153,10 +153,6 @@ folder and executed with the following commands::
     python -m pytest tests/test_crawler.py
     python -m pytest tests/test_models.py
 
-Project Status
-======
-active
-
 Authors and Acknowledgement
 ======
 The authors are Stephan Amann, Cornelius Bopp, David Kleindiek and Amelie Schäfer.
